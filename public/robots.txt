@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and sensitive areas
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /vendor/
+Disallow: /login/
+Disallow: /register/
+Disallow: /password/reset
+Disallow: /_debugbar/
+Disallow: /checkout/
+Disallow: /cart
+Disallow: /wishlist
+Disallow: /orders/
+
+# Allow important pages
+Allow: /products/
+Allow: /stores/
+
+# Sitemap location
+Sitemap: https://haatpoint.com/sitemap.xml
+
+# Crawl delay (optional, helps with server load)
+Crawl-delay: 1
