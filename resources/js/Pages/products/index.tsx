@@ -245,8 +245,8 @@ function FilterPanel({
                 </h3>
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-[#1B1B1B]">à§³{current.min_price_filter || min_price || 0}</span>
-                        <span className="text-sm font-medium text-[#1B1B1B]">à§³{current.max_price_filter || max_price || 10000}</span>
+                        <span className="text-sm font-medium text-[#1B1B1B]">Tk {current.min_price_filter || min_price || 0}</span>
+                        <span className="text-sm font-medium text-[#1B1B1B]">Tk {current.max_price_filter || max_price || 10000}</span>
                     </div>
                     <input
                         type="range"
@@ -259,8 +259,8 @@ function FilterPanel({
                         className="w-full h-1.5 bg-[#F2F2EE] rounded-lg appearance-none cursor-pointer accent-[#6E7F5C] disabled:opacity-50"
                     />
                     <div className="flex items-center justify-between text-xs text-[#767470]">
-                        <span>Min: à§³{min_price || 0}</span>
-                        <span>Max: à§³{max_price || 10000}</span>
+                        <span>Min: Tk {min_price || 0}</span>
+                        <span>Max: Tk {max_price || 10000}</span>
                     </div>
                 </div>
             </div>
@@ -617,7 +617,7 @@ const Products = ({ products, auth, wishlist, productRatings = {}, filters }: Pr
                                     <h4 className="font-medium text-[#1B1B1B]">Free Shipping</h4>
                                 </div>
                                 <p className="text-sm text-[#767470] mb-4">
-                                    Free shipping on all orders over à§³1000
+                                    Free shipping on all orders over Tk 1000
                                 </p>
                                 <div className="flex items-center gap-3">
                                     <FiCheck className="text-green-600" />
@@ -832,7 +832,7 @@ const Products = ({ products, auth, wishlist, productRatings = {}, filters }: Pr
                                                                         </span>
                                                                         {product.brand && (
                                                                             <>
-                                                                                <span className="text-[#E3E1DB]">â€¢</span>
+                                                                                <span className="text-[#E3E1DB]">/</span>
                                                                                 <span className="text-[10px] font-mono text-[#6E7F5C] uppercase tracking-wider font-semibold">
                                                                                     {product.brand}
                                                                                 </span>

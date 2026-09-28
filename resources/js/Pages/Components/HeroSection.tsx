@@ -5,10 +5,10 @@ import { useGSAP } from "@gsap/react";
 import { Link } from "@inertiajs/react";
 
 const collage = [
-  { emoji: "ðŸ‘•", c1: "#6E7F5C", c2: "#57654A" },
-  { emoji: "ðŸ“±", c1: "#4F6B63", c2: "#3E5350" },
-  { emoji: "ðŸ¥­", c1: "#C9B37E", c2: "#A0844A" },
-  { emoji: "ðŸ‘Ÿ", c1: "#1B1B1B", c2: "#1B1B1B" },
+  { label: "Fresh", c1: "#6E7F5C", c2: "#57654A" },
+  { label: "Tech", c1: "#4F6B63", c2: "#3E5350" },
+  { label: "Home", c1: "#C9B37E", c2: "#A0844A" },
+  { label: "Wear", c1: "#1B1B1B", c2: "#1B1B1B" },
 ];
 
 export default function Hero() {
@@ -56,7 +56,8 @@ export default function Hero() {
 
           <p className="text-text-soft text-[15px] sm:text-[17px] max-w-[440px] my-5 sm:my-6 leading-relaxed">
             Everything from fresh produce to electronics, sold directly by verified
-            local vendors â€” no middlemen, better prices, faster delivery.
+            local vendors, with no middlemen. Better prices, faster delivery, and
+            every order goes straight to the seller.
           </p>
 
           {/* CTA Buttons */}
@@ -95,10 +96,10 @@ export default function Hero() {
               {collage.map((c, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-center text-[40px] sm:text-[52px]"
+                  className="flex items-center justify-center px-2 text-center font-mono text-[11px] sm:text-[13px] font-semibold uppercase tracking-wider text-white/90"
                   style={{ background: `linear-gradient(135deg, ${c.c1}, ${c.c2})` }}
                 >
-                  {c.emoji}
+                  {c.label}
                 </div>
               ))}
             </div>
@@ -106,18 +107,19 @@ export default function Hero() {
 
           {/* Category Card */}
           <div className="float-card absolute bottom-6 sm:bottom-8 -left-2 sm:-left-4 bg-white border-[1.5px] border-ink rounded px-3.5 sm:px-4 py-3 sm:py-3.5 shadow-hard-sm">
-            <div className="flex items-center gap-2.5">
-              <span className="text-2xl sm:text-3xl">ðŸ›ï¸</span>
+            <div>
               <div>
                 <strong className="text-xs sm:text-sm block">All categories</strong>
-                <small className="font-mono text-[9px] sm:text-[10px] text-text-soft">One marketplace, every need</small>
+                <small className="font-mono text-[9px] sm:text-[10px] text-text-soft">
+                  Every seller, one marketplace
+                </small>
               </div>
             </div>
-          </div>
 
-          {/* Free Delivery Badge */}
+            {/* Free Delivery Badge */}
           <div className="float-card absolute top-2 left-2 bg-white/90 backdrop-blur-sm border border-line rounded-full px-3 py-1.5 shadow-hard-sm">
-            <span className="text-[10px] font-bold uppercase">ðŸšš Secure delivery</span>
+            <span className="text-[10px] font-bold uppercase">Secure delivery</span>
+          </div>
           </div>
         </div>
       </div>

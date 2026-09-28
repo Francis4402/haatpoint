@@ -12,27 +12,22 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      *
-     * Order matters: categories feed the product catalogue, and stores must
-     * exist before products because products.store_id is a foreign key.
+     * Only reference data is seeded. Accounts, vendors, stores, products,
+     * comments and wishlists are deliberately left empty: those demo seeders
+     * create accounts that all share one published password, which must never
+     * be reachable from a real environment. They are still available as opt-in
+     * fixtures for a throwaway local database, for example:
      *
-     * Everything is idempotent, so `php artisan db:seed` is safe to re-run.
+     *   php artisan db:seed --class=ProductsSeeder
      */
     public function run(): void
     {
         $this->call([
             CategoriesSeeder::class,
-            UsersSeeder::class,
-            AgentsSeeder::class,
-            StoreSeeder::class,
-            ProductsSeeder::class,
-            CommentsSeeder::class,
-            WishlistSeeder::class,
         ]);
 
         $this->command?->newLine();
-        $this->command?->info('Seeding complete. Accounts (password: ' . UsersSeeder::PASSWORD . ')');
-        $this->command?->comment('  superadmin@haatpoint.test / admin@haatpoint.test  (admins)');
-        $this->command?->comment('  agent1@haatpoint.test … agent5@haatpoint.test        (vendor agents)');
-        $this->command?->comment('  test@example.com …                          (customers)');
+        $this->command?->info('Seeding complete. Only categories were created.');
+        $this->command?->comment('  Accounts, stores, products, comments and wishlists are intentionally not seeded.');
     }
 }

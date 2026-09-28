@@ -20,17 +20,17 @@ interface ProductCardProps {
   initialAverageRating?: number;
 }
 
-const CATEGORY_EMOJI: Record<string, string> = {
-  Electronics: "ðŸ’»",
-  Fashion: "ðŸ‘—",
-  "Home & Living": "ðŸ ",
-  Beauty: "ðŸ’„",
-  Food: "ðŸ•",
-  Books: "ðŸ“š",
-  Sports: "âš½",
-  Toys: "ðŸ§¸",
-  Gaming: "ðŸŽ®",
-  Automotive: "ðŸš—",
+const CATEGORY_LABEL: Record<string, string> = {
+  Electronics: "Devices",
+  Fashion: "Apparel",
+  "Home & Living": "Home",
+  Beauty: "Beauty",
+  Food: "Grocery",
+  Books: "Books",
+  Sports: "Sports",
+  Toys: "Toys",
+  Gaming: "Gaming",
+  Automotive: "Auto",
 };
 
 const CATEGORY_GRADIENT: Record<string, [string, string]> = {
@@ -125,7 +125,9 @@ const ProductCard = ({
   const [loading, setLoading] = useState(true);
 
   const imageSrc = getImageSrc(product.images);
-  const emoji = "emoji" in product ? (product as any).emoji : CATEGORY_EMOJI[product.category ?? ""] ?? "ðŸ“¦";
+  const categoryLabel = "emoji" in product && (product as any).emoji
+    ? (product as any).emoji
+    : CATEGORY_LABEL[product.category ?? ""] ?? (product.category || "Product");
   const [gradientFrom, gradientTo] = CATEGORY_GRADIENT[product.category ?? ""] ?? DEFAULT_GRADIENT;
   const vendor = ("vendor" in product ? (product as any).vendor : null) ?? product.category ?? "General";
 
@@ -183,12 +185,11 @@ const ProductCard = ({
           />
         ) : (
           <div
-            className="w-full h-full flex items-center justify-center text-6xl transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full flex items-center justify-center px-3 text-center transition-transform duration-500 group-hover:scale-105"
             style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}
-            aria-hidden="true"
           >
-            <span role="img" aria-label={product.category || 'Product'}>
-              {emoji}
+            <span className="font-mono text-sm font-semibold uppercase tracking-wider text-[#1B1B1B]/70">
+              {categoryLabel}
             </span>
           </div>
         )}
@@ -256,7 +257,7 @@ const ProductCard = ({
             <span>{vendor}</span>
             {product.brand && (
               <>
-                <span className="text-[#E3E1DB]" aria-hidden="true">â€¢</span>
+                <span className="text-[#E3E1DB]" aria-hidden="true">/</span>
                 <span className="text-[#6E7F5C] font-semibold">{product.brand}</span>
               </>
             )}

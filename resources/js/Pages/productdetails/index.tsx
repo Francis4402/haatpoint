@@ -490,9 +490,9 @@ const ProductDetailsPage = ({
                       </div>
                     </div>
                     <div className="flex items-center text-xs bg-paper-dim px-3 py-1.5 rounded-lg">
-                      <span className="text-amber-500 mr-1">â­</span>
+                      <span className="text-amber-500 mr-1">Rated</span>
                       <span className="font-medium text-ink">{displayStoreRating.toFixed(1)}</span>
-                      <span className="text-text-soft mx-1">â€¢</span>
+                      <span className="text-text-soft mx-1">/</span>
                       <span className="text-text-soft">{displayStoreReviewCount} reviews</span>
                     </div>
                   </div>
@@ -506,7 +506,7 @@ const ProductDetailsPage = ({
                       </span>
                     </div>
                     <span className="text-text-soft text-sm">
-                      ({totalReviews} rating{totalReviews !== 1 ? 's' : ''} â€¢ {totalComments} comment{totalComments !== 1 ? 's' : ''})
+                      ({totalReviews} rating{totalReviews !== 1 ? 's' : ''} / {totalComments} comment{totalComments !== 1 ? 's' : ''})
                     </span>
                   </div>
                 </div>
@@ -657,7 +657,7 @@ const ProductDetailsPage = ({
                   <div className="flex flex-col items-center text-center p-3 bg-marigold/5 rounded-xl hover:bg-marigold/10 transition-colors border border-line">
                     <FaTruck className="w-6 h-6 text-marigold mb-2" />
                     <div className="text-sm font-medium text-ink">Free Delivery</div>
-                    <div className="text-xs text-text-soft">On orders over à§³1000</div>
+                      <div className="text-xs text-text-soft">On orders over Tk 1000</div>
                   </div>
                   <div className="flex flex-col items-center text-center p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors border border-green-200">
                     <FaUndo className="w-6 h-6 text-green-600 mb-2" />
@@ -863,7 +863,7 @@ const ProductDetailsPage = ({
 
                               return (
                                 <div key={star} className="flex items-center gap-2 mb-2">
-                                  <span className="text-sm font-medium w-8">{star} â˜…</span>
+                                  <span className="text-sm font-medium w-8">{star} star</span>
                                   <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                                     <div
                                       className="h-full bg-amber-400 rounded-full"
@@ -927,17 +927,17 @@ const ProductDetailsPage = ({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <div className="text-text-soft">
-                      <span className="font-medium text-ink">ðŸ“ Address:</span><br />
+                      <span className="font-medium text-ink">Seller address:</span><br />
                       {store.address}
                     </div>
                     <div className="text-text-soft">
-                      <span className="font-medium text-ink">ðŸ“ž Contact:</span><br />
+                      <span className="font-medium text-ink">Seller phone:</span><br />
                       {store.mobile}
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div className="text-text-soft">
-                      <span className="font-medium text-ink">â­ Store Rating:</span><br />
+                      <span className="font-medium text-ink">Store rating:</span><br />
                       <div className="flex items-center gap-2 mt-1">
                         <div className="flex items-center gap-0.5">
                           {renderStars(displayStoreRating)}
@@ -949,7 +949,7 @@ const ProductDetailsPage = ({
                       </div>
                     </div>
                     <div className="text-text-soft">
-                      <span className="font-medium text-ink">ðŸ“§ Email:</span><br />
+                      <span className="font-medium text-ink">Seller email:</span><br />
                       {store.email || 'N/A'}
                     </div>
                   </div>
