@@ -69,7 +69,7 @@ export default function Hero() {
               Start shopping <FaArrowRight size={14} />
             </Link>
             <Link
-              href="/dashboard"
+              href="/agent/register"
               className="inline-flex items-center gap-2 rounded-sm px-[22px] sm:px-[26px] py-[13px] sm:py-[15px] font-bold text-sm shadow-hard border border-ink transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
             >
               Become a vendor
