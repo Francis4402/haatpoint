@@ -1,4 +1,4 @@
-﻿import { useRef } from "react";
+﻿import { PropsWithChildren, useRef } from "react";
 import { FaArrowRight, FaTruck, FaShieldAlt } from "react-icons/fa";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -11,7 +11,7 @@ const collage = [
   { label: "Wear", c1: "#1B1B1B", c2: "#1B1B1B" },
 ];
 
-export default function Hero() {
+export default function Hero(user: PropsWithChildren<{user: any}>) {
   const scope = useRef(null);
 
   useGSAP(
@@ -68,12 +68,19 @@ export default function Hero() {
             >
               Start shopping <FaArrowRight size={14} />
             </Link>
-            <Link
+            {
+                user ? <Link
               href="/agent/register"
               className="inline-flex items-center gap-2 rounded-sm px-[22px] sm:px-[26px] py-[13px] sm:py-[15px] font-bold text-sm shadow-hard border border-ink transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
             >
               Become a vendor
+            </Link> : <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 rounded-sm px-[22px] sm:px-[26px] py-[13px] sm:py-[15px] font-bold text-sm shadow-hard border border-ink transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
+            >
+              Become a vendor
             </Link>
+            }
           </div>
 
           {/* Shopping Benefits */}

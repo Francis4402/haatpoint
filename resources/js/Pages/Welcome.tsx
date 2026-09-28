@@ -143,7 +143,7 @@ export default function Welcome({
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
             </SeoHead>
             <div className='max-w-[1240px] mx-auto px-8 space-y-20'>
-                <HeroSection />
+                <HeroSection user={auth.user} />
 
                 {/* Only render Categories if categories exists and has data */}
                 {categories && categories.length > 0 && (
