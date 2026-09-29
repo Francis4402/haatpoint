@@ -106,7 +106,17 @@ class SocialiteController extends Controller
                     throw new \RuntimeException('A superadmin already exists. Registration is closed.');
                 }
 
-                $identity = $model::create([
+                // Each table's `role` column is NOT NULL, so only set it when the
+                // destination actually needs a specific value and let the column
+                // default supply 'user' / 'agent' / 'admin' otherwise. Writing an
+                // explicit null here fails with a 1048 integrity error.
+                $role = match ($destination) {
+                    'superadmin' => 'superadmin',
+                    'admin' => 'admin',
+                    default => null,
+                };
+
+                $attributes = [
                     'name' => $socialUser->getName() ?? $email,
                     'email' => $email,
                     'password' => Hash::make(Str::random(24)),
@@ -114,9 +124,22 @@ class SocialiteController extends Controller
                     'google_id' => $provider === 'google' ? $providerId : null,
                     'provider' => $provider,
                     'provider_id' => $providerId,
-                    'role' => $destination === 'superadmin' ? 'superadmin' : ($destination === 'admin' ? 'admin' : null),
                     'email_verified_at' => now(),
-                ]);
+                ];
+
+                if ($role !== null) {
+                    $attributes['role'] = $role;
+                }
+
+                $identity = $model::create($attributes);
+
+                // An agent is a single identity. The email registration flow
+                // (AgentAuthController::afterRegistration) drops a customer
+                // account that used the same email, so the Socialite flow must
+                // do the same instead of leaving the address in both tables.
+                if ($destination === 'agent') {
+                    User::where('email', $email)->delete();
+                }
             } else {
                 throw new \RuntimeException(
                     "No {$destination} account exists for {$email}. Ask a superadmin to promote you."
