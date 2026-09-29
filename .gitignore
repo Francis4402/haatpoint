@@ -15,10 +15,7 @@
 /node_modules
 /public/build
 /public/hot
-/public/storage/product_images
-/public/storage/store_logos
-/storage/*.key
-/storage/pail
+/storage
 /vendor
 Homestead.json
 Homestead.yaml
