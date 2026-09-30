@@ -33,7 +33,12 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                // $request->user() only reads the default `web` guard, so a
+                // vendor or staff member saw the signed-out state everywhere in
+                // the SPA even though their session was valid.
+                'user' => $request->user()
+                    ?? auth('agent')->user()
+                    ?? auth('admin')->user(),
             ],
             // Without this, redirect()->back()->with('success'|'error', ...) is
             // invisible to the SPA and actions appear to do nothing.

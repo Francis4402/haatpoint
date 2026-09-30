@@ -5,13 +5,35 @@ namespace App\Http\Controllers;
 use App\Models\Comments;
 use Illuminate\Http\Request;
 use App\Models\Products;
-use App\Models\Store;
-use App\Models\Wishlist;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 
 class CommentsController extends Controller
 {
+    /**
+     * A comment may only be edited or removed by the account that wrote it.
+     * The author lives in `users`, `agents` or `admins` depending on the guard
+     * the session authenticated through, so a single Auth::id() comparison
+     * would reject every agent and admin and would let a matching id from a
+     * different table pass.
+     */
+    private function ownsComment(Comments $comment): bool
+    {
+        $owner = Comments::currentOwner();
+
+        if ($owner['user_id'] !== null && $comment->user_id === $owner['user_id']) {
+            return true;
+        }
+
+        if ($owner['agent_id'] !== null && $comment->agent_id === $owner['agent_id']) {
+            return true;
+        }
+
+        if ($owner['admin_id'] !== null && $comment->admin_id === $owner['admin_id']) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -48,7 +70,13 @@ class CommentsController extends Controller
         $storeId = $product->store_id ?? $product->store?->id;
 
 
-        $existingComment = Comments::where('user_id', Auth::id())
+        $owner = Comments::currentOwner();
+
+        if ($owner['user_id'] === null && $owner['agent_id'] === null && $owner['admin_id'] === null) {
+            return redirect()->back()->withErrors(['error' => 'Please sign in to leave a review']);
+        }
+
+        $existingComment = Comments::forOwner($owner)
             ->where('product_id', $request->product_id)
             ->first();
 
@@ -63,19 +91,18 @@ class CommentsController extends Controller
             $message = 'Your review has been updated!';
         } else {
             // Create new comment
-            $comment = Comments::create([
-                'user_id' => Auth::id(),
+            $comment = Comments::create(array_merge($owner, [
                 'product_id' => $request->product_id,
                 'store_id' => $storeId,
                 'comment' => $request->comment,
                 'rating' => $request->rating,
-            ]);
+            ]));
 
             $message = 'Your review has been added successfully!';
         }
 
 
-        $comment->load('user');
+        $comment->load('user', 'agent', 'admin');
 
         if ($request->wantsJson() || $request->inertia()) {
             return redirect()->back()->with('success', $message);
@@ -105,7 +132,7 @@ class CommentsController extends Controller
      */
     public function update(Request $request, Comments $comment)
     {
-        if ($comment->user_id !== Auth::id()) {
+        if (!$this->ownsComment($comment)) {
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
@@ -119,7 +146,7 @@ class CommentsController extends Controller
             'rating' => $request->rating,
         ]);
 
-        $comment->load('user');
+        $comment->load('user', 'agent', 'admin');
 
         return redirect()->back();
     }
@@ -129,7 +156,7 @@ class CommentsController extends Controller
      */
     public function destroy(Comments $comment)
     {
-        if ($comment->user_id !== Auth::id()) {
+        if (!$this->ownsComment($comment)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -138,30 +165,35 @@ class CommentsController extends Controller
         return redirect()->back();
     }
 
-    public function getProductComments(Products $productId)
+    public function getProductComments(Products $product)
     {
-        $product = Products::findOrFail($productId);
+        // The parameter name has to match the {product} route placeholder,
+        // otherwise implicit binding hands over an empty model and every
+        // lookup silently returns nothing.
+        $product->loadMissing('store');
 
-        // Get all comments with user data
-        $comments = Comments::with('user')
+        // Get all comments with the author's account data
+        $comments = Comments::with(['user', 'agent', 'admin'])
             ->where('product_id', $product->id)
             ->latest()
             ->get()
             ->map(function ($comment) {
+                $author = $comment->author();
+
                 return [
                     'id' => (string) $comment->id,
-                    'user_id' => (string) $comment->user_id,
+                    'user_id' => (string) ($comment->user_id ?? $comment->agent_id ?? $comment->admin_id),
                     'product_id' => (string) $comment->product_id,
                     'store_id' => (string) $comment->store_id,
                     'comment' => $comment->comment,
                     'rating' => $comment->rating,
                     'created_at' => $comment->created_at,
                     'updated_at' => $comment->updated_at,
-                    'user' => $comment->user ? [
-                        'id' => $comment->user->id,
-                        'name' => $comment->user->name,
-                        'images' => $comment->user->images ?? '',
-                        'email' => $comment->user->email,
+                    'user' => $author ? [
+                        'id' => $author->id,
+                        'name' => $author->name,
+                        'images' => $author->images ?? '',
+                        'email' => $author->email,
                     ] : null,
                 ];
             });
@@ -175,13 +207,10 @@ class CommentsController extends Controller
         $average = $count > 0 ? $ratings->avg('rating') : 0;
 
 
-        $userReviewed = false;
-        if (Auth::check()) {
-            $userReviewed = Comments::where('user_id', Auth::id())
-                ->where('product_id', $product->id)
-                ->whereNotNull('rating')
-                ->exists();
-        }
+        $userReviewed = Comments::forOwner()
+            ->where('product_id', $product->id)
+            ->whereNotNull('rating')
+            ->exists();
 
         return response()->json([
             'success' => true,

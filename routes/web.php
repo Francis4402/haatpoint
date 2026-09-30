@@ -243,7 +243,7 @@ Route::get('/products/{slug}', [ProductsController::class, 'show'])->name('produ
 
 Route::get('/cart', [PageController::class, 'cartpage'])->name('cart.index');
 
-Route::get('/products/{product}/comments', [CommentsController::class, 'getProductComments']);
+Route::get('/products/{product}/comments', [CommentsController::class, 'getProductComments'])->name('comments.product');
 
 Route::get('/hotdeals', [ProductsController::class, 'hotdeals'])->name('products.hotdeals');
 
