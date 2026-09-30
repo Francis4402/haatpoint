@@ -77,7 +77,6 @@ export default function Footer() {
 
         <div className="flex flex-col sm:flex-row justify-between flex-wrap gap-2.5 pt-5 border-t border-line font-mono text-xs text-text-soft">
           <span>© {new Date().getFullYear()} Haatpoint. All rights reserved.</span>
-          <span>Website is in development</span>
           <div className="flex gap-4 flex-wrap">
             <Link href="/privacy-policy" className="hover:text-marigold transition-colors">
               Privacy Policy

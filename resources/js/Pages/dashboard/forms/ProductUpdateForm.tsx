@@ -919,6 +919,7 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
                           type="number"
                           step="0.01"
                           min="0"
+                          max="1000000"
                           value={data.regular_price}
                           onChange={(e) => handleNumberInput(e, 'regular_price')}
                           placeholder="99.99"
@@ -965,7 +966,7 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
                               type="number"
                               step="0.01"
                               min="0"
-                              max={parseFloat(data.regular_price) || undefined}
+                              max="1000000"
                               value={data.sale_price}
                               onChange={(e) => handleNumberInput(e, 'sale_price')}
                               placeholder="79.99"

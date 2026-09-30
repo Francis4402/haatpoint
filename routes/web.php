@@ -40,7 +40,7 @@ Route::get('/', function () {
     $products = Products::with('store')
             ->visible()
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(2);
     $reviews = Reviews::all();
     $wishlist = Wishlist::forOwner()->paginate(12);
 

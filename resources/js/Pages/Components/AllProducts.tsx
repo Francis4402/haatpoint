@@ -1,14 +1,24 @@
-import { useMemo, useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { useMemo, useRef, useState } from 'react';
+import { Link, router } from '@inertiajs/react';
 import { CiImageOn } from "react-icons/ci";
 import { Product } from '@/types';
 import Eyebrow from './Eyebrow';
 import ProductCard from '@/Components/ProductCard';
 
 
+interface PaginatedLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
 interface allproductsprops {
     product: Product[];
     user: any;
+    links?: PaginatedLink[];
+    from?: number;
+    to?: number;
+    total?: number;
 }
 
 
@@ -40,11 +50,42 @@ const HEADER_VARIANTS = [
     },
 ];
 
-const AllProducts = ({ product, user }: allproductsprops) => {
+const AllProducts = ({ product, user, links, from, to, total }: allproductsprops) => {
 
     const [headerCopy] = useState(
         () => HEADER_VARIANTS[Math.floor(Math.random() * HEADER_VARIANTS.length)]
     );
+
+    const restoreY = useRef<number | null>(null);
+
+    // `preserveScroll` restores the offset as soon as the new props land, but
+    // the GSAP ScrollTriggers on this page recalculate their start/end about
+    // 100ms later (DailyDiscover), which moves the content under the viewport
+    // and drags the scroll position with it. Remember where we were and put it
+    // back once the reflow has settled.
+    const keepScrollPosition = (url: string) => {
+        restoreY.current = window.scrollY;
+
+        router.get(url, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => {
+                const y = restoreY.current;
+                if (y === null) return;
+
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, y);
+                    // Second pass: outlast ScrollTrigger.refresh() and any image
+                    // decoding that shifts the sections above this one.
+                    setTimeout(() => {
+                        if (restoreY.current !== null) {
+                            window.scrollTo(0, restoreY.current);
+                        }
+                    }, 180);
+                });
+            },
+        });
+    };
 
     const allproducts = useMemo(() => {
         if (!product || product.length === 0) return [];
@@ -105,6 +146,38 @@ const AllProducts = ({ product, user }: allproductsprops) => {
                         />
                     ))}
                 </div>
+
+                {/* Pagination */}
+                {links && links.length > 0 && (
+                    <div className="mt-8 pt-6 border-t border-[#E3E1DB]">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="text-sm text-[#767470]">
+                                Showing {from || 0}-{to || 0} of {total ?? allproducts.length} products
+                            </div>
+                            <div className="flex items-center gap-1 flex-wrap">
+                                {links.map((link, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => {
+                                            if (link.url) {
+                                                keepScrollPosition(link.url);
+                                            }
+                                        }}
+                                        disabled={!link.url}
+                                        className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                                            link.active
+                                                ? 'bg-gray-900 text-white font-medium'
+                                                : link.url
+                                                    ? 'border border-[#E3E1DB] text-[#767470] hover:bg-[#F2F2EE] hover:text-[#1B1B1B]'
+                                                    : 'border border-[#E3E1DB] text-[#E3E1DB] cursor-not-allowed'
+                                        }`}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </section>
     );

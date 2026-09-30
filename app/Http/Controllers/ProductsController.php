@@ -79,8 +79,8 @@ class ProductsController extends Controller
             'subcategory' => 'nullable|string',                          // ✅ nullable
             'brand' => 'nullable|string',                                // ✅ nullable
             'quantity' => 'required|integer|min:0',
-            'regular_price' => 'required|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0',
+            'regular_price' => 'required|numeric|min:0|max:1000000',
+            'sale_price' => 'nullable|numeric|min:0|max:1000000|lt:regular_price',
             'description' => 'required|string',
             'inStock' => 'nullable',
             'color' => 'nullable|max:1000',
@@ -265,8 +265,8 @@ class ProductsController extends Controller
             'subcategory' => 'nullable|string',
             'brand' => 'nullable|string',
             'quantity' => 'required|integer|min:0',
-            'regular_price' => 'required|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0',
+            'regular_price' => 'required|numeric|min:0|max:1000000',
+            'sale_price' => 'nullable|numeric|min:0|max:1000000|lt:regular_price',
             'description' => 'required|string',
             'inStock' => 'nullable',
             'color' => 'nullable|string|max:1000',

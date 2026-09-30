@@ -172,7 +172,14 @@ export default function Welcome({
 
                 {/* Only render AllProducts if productsWithRatings has data */}
                 {productsWithRatings.length > 0 && (
-                    <AllProducts product={productsWithRatings} user={auth.user} />
+                    <AllProducts
+                    product={productsWithRatings}
+                    user={auth.user}
+                    links={products.links}
+                    from={products.from}
+                    to={products.to}
+                    total={products.total}
+                />
                 )}
             </div>
             <VendorCTA />
