@@ -168,13 +168,16 @@ class StoreController extends Controller
 
         abort_if(!$store->is_active, 404);
 
-        $products = Products::where('store_id', $store->id)
+        // Every product that belongs to this store, paginated so a store with a
+        // large catalogue does not send the whole table to the browser.
+        $products = $store->products()
+            ->visible()
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(12);
 
-        $wishlist = Wishlist::where('user_id', Auth::id())->paginate(12);
+        $wishlist = Wishlist::forOwner()->paginate(12);
 
-        // Get store ratings
+        // Get store ratings from every reviewer, not just the current user.
         $storeRatings = Comments::where('store_id', $store->id)
             ->whereNull('product_id')
             ->whereNotNull('rating')
@@ -205,8 +208,8 @@ class StoreController extends Controller
 
         $userStoreRating = null;
 
-        if (Auth::check()) {
-            $userRating = Comments::where('user_id', Auth::id())
+        if (Comments::isSignedIn()) {
+            $userRating = Comments::forOwner()
                 ->where('store_id', $store->id)
                 ->whereNull('product_id')
                 ->first();
@@ -221,7 +224,7 @@ class StoreController extends Controller
         }
 
         return Inertia::render('storeproducts/index', [
-            'store' => $store,
+            'store' => $store->loadCount('products'),
             'products' => $products,
             'wishlist' => $wishlist,
             'storeRating' => [

@@ -22,6 +22,7 @@ use App\Models\Categories;
 use App\Models\Comments;
 use App\Models\Products;
 use App\Models\Reviews;
+use App\Models\Store;
 use App\Models\Wishlist;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -64,6 +65,49 @@ Route::get('/', function () {
         ];
     }
 
+    // Each showcase rail runs its own query instead of filtering the paginated
+    // list above, because that list only carries 2 items and every rail would
+    // end up empty. Six per rail, picked at random so a repeat visit is not
+    // identical. inRandomOrder() is applied last and paired with a seeded
+    // fallback order so MySQL and SQLite both return a usable set.
+    //
+    // A rail tops itself up from the rest of the visible catalogue when its own
+    // product type cannot fill six slots, so a section is never left short just
+    // because the shop has few products of that type.
+    $showcase = function (?string $productType, int $limit = 6) {
+        $random = fn ($query) => $query
+            ->inRandomOrder()
+            ->orderBy('id')
+            ->limit($limit)
+            ->get();
+
+        $base = fn () => Products::with('store')->visible();
+
+        if ($productType === null) {
+            return $random($base());
+        }
+
+        $rail = $random($base()->where('product_type', $productType));
+
+        if ($rail->count() >= $limit) {
+            return $rail;
+        }
+
+        $topUp = Products::with('store')->visible()
+            ->where('product_type', '!=', $productType)
+            ->whereNotIn('id', $rail->pluck('id'))
+            ->inRandomOrder()
+            ->orderBy('id')
+            ->limit($limit - $rail->count())
+            ->get();
+
+        return $rail->concat($topUp)->values();
+    };
+
+    $offeredProducts = $showcase('featured');
+    $trendingProducts = $showcase('trending');
+    $dailyDiscoverProducts = $showcase('regular');
+
     // Top Selling is derived from real orders. products.quantity is the stock
     // level, so using it as a sold count would be fabricated data. Cancelled
     // orders do not count as a sale; every other status does.
@@ -80,7 +124,7 @@ Route::get('/', function () {
             ->groupBy('order_items.product_id')
             ->havingRaw('SUM(order_items.quantity) > ?', [$topSellingMinSold])
             ->orderByDesc(DB::raw('SUM(order_items.quantity)'))
-            ->limit(10)
+            ->limit(6)
             ->get(['order_items.product_id', DB::raw('SUM(order_items.quantity) as sold_count')]);
 
     $topSelling = Products::with('store')
@@ -95,6 +139,49 @@ Route::get('/', function () {
             ->sortByDesc('sold_count')
             ->values();
 
+    // Stores are only shown when they have something to sell, so the rail never
+    // leads to a page with an empty product grid. The count is computed as a
+    // correlated subquery and filtered through whereExists rather than
+    // withCount()+having(): a HAVING clause over a non-aggregate select is
+    // rejected by SQLite, and MySQL cannot reference a select alias in WHERE.
+    $stores = Store::where('is_active', true)
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('products')
+                    ->whereColumn('products.store_id', 'stores.id');
+            })
+            ->addSelect(['products_count' => Products::selectRaw('count(*)')
+                ->whereColumn('products.store_id', 'stores.id')])
+            ->orderByDesc('products_count')
+            ->orderBy('name')
+            ->limit(12)
+            ->get();
+
+    // Ratings for every product shown in any rail, computed in one query.
+    $showcaseIds = collect([
+        ...$offeredProducts->pluck('id'),
+        ...$trendingProducts->pluck('id'),
+        ...$dailyDiscoverProducts->pluck('id'),
+        ...$topSelling->pluck('id'),
+        ...$products->pluck('id'),
+    ])->unique()->values();
+
+    $showcaseRatings = Comments::whereIn('product_id', $showcaseIds)
+            ->whereNotNull('rating')
+            ->select('product_id', 'rating')
+            ->get()
+            ->groupBy('product_id')
+            ->map(fn ($rows) => [
+                'average' => round((float) $rows->avg('rating'), 1),
+                'count' => $rows->count(),
+            ]);
+
+    $withRatings = fn ($item) => [
+        ...$item->toArray(),
+        'rating' => $showcaseRatings[$item->id]['average'] ?? 0,
+        'review' => $showcaseRatings[$item->id]['count'] ?? 0,
+    ];
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
@@ -102,8 +189,12 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
         'categories' => $categories,
         'products' => $products,
-        'topSelling' => $topSelling,
+        'topSelling' => $topSelling->map($withRatings)->values(),
         'topSellingMinSold' => $topSellingMinSold,
+        'offeredProducts' => $offeredProducts->map($withRatings)->values(),
+        'trendingProducts' => $trendingProducts->map($withRatings)->values(),
+        'dailyDiscoverProducts' => $dailyDiscoverProducts->map($withRatings)->values(),
+        'stores' => $stores,
         'wishlist' => $wishlist,
         'productRatings' => $productRatings,
         'reviews' => $reviews,
@@ -220,14 +311,18 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
 
     Route::post('/wishlist/toggle/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 
-    Route::get('/wishlist/check/{product}', [WishlistController::class, 'check'])->name('wishlist.check');
-
     Route::post('/comments', [CommentsController::class, 'store'])->name('comments.store');
     Route::put('/comments/{comment}', [CommentsController::class, 'update'])->name('comments.update');
     Route::delete('/comments/{comment}', [CommentsController::class, 'destroy'])->name('comments.destroy');
 });
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// The wishlist check is a read that the controller already guards with
+// Wishlist::isSignedIn(). It sits outside the auth group on purpose: the heart
+// buttons render for guests too, and behind auth the endpoint answered with an
+// HTML login redirect that the component then failed to parse as JSON.
+Route::get('/wishlist/check/{product}', [WishlistController::class, 'check'])->name('wishlist.check');
 
 Route::get('/stores', [StoreController::class, 'storeroute'])->name('stores.index');
 Route::get('/stores/{store}', [StoreController::class, 'show'])->name('stores.show');

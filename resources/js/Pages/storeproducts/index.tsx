@@ -36,8 +36,17 @@ interface StorePageProps {
   auth: {
     user: any;
   };
-  store: storeType;
-  products: Product[];
+  store: storeType & { products_count?: number };
+  products: {
+    data: Product[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    links: any[];
+  };
   wishlist: any;
   storeRating?: {
     average: number;
@@ -65,10 +74,10 @@ export default function StoreShow({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const categories = Array.from(
-    new Set(products.map(p => p.category).filter(Boolean))
+    new Set(products.data.map(p => p.category).filter(Boolean))
   );
 
-  const productsWithRatings = products.map(product => {
+  const productsWithRatings = products.data.map(product => {
     const ratingData = productRatings[product.id];
     return {
       ...product,
@@ -229,7 +238,7 @@ export default function StoreShow({
                 {/* Store Stats */}
                 <div className="flex gap-6">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-ink">{products.length}</div>
+                    <div className="text-2xl font-bold text-ink">{store.products_count ?? products.total}</div>
                     <div className="text-sm text-text-soft">Products</div>
                   </div>
                   <div className="text-center">
@@ -601,6 +610,35 @@ export default function StoreShow({
                     <p className="text-text-soft">
                       Try adjusting your search or filter to find what you're looking for.
                     </p>
+                  </div>
+                )}
+
+                {/* Pagination */}
+                {products.last_page > 1 && (
+                  <div className="mt-8 flex justify-center">
+                    <nav className="flex flex-wrap items-center gap-1">
+                      {products.links.map((link: any, index: number) => (
+                        link.url === null ? (
+                          <span
+                            key={index}
+                            className="px-3 py-2 text-sm text-text-soft opacity-50"
+                            dangerouslySetInnerHTML={{ __html: link.label }}
+                          />
+                        ) : (
+                          <Link
+                            key={index}
+                            href={link.url}
+                            preserveScroll
+                            className={`px-3.5 py-2 text-sm rounded-xl border transition-all duration-200 ${
+                              link.active
+                                ? 'bg-marigold text-white border-marigold'
+                                : 'bg-white text-ink border-line hover:border-marigold'
+                            }`}
+                            dangerouslySetInnerHTML={{ __html: link.label }}
+                          />
+                        )
+                      ))}
+                    </nav>
                   </div>
                 )}
               </div>

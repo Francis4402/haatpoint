@@ -1,4 +1,4 @@
-import { categoryType, PageProps, Product, ReviewType } from '@/types';
+import { categoryType, PageProps, Product, ReviewType, storeType } from '@/types';
 import AppLayout from '@/Layouts/AppLayout';
 import HeroSection from './Components/HeroSection';
 import Categories from './Components/Categories';
@@ -7,6 +7,7 @@ import TrendingProducts from './Components/TrandingProducts';
 import DailyDiscover from './Components/DailyDiscover';
 import OfferedProducts from './Components/OfferedProducts';
 import TopSellingProduct from './Components/TopSellingProduct';
+import StoresSlider from './Components/StoresSlider';
 import VendorCTA from './Components/VendorCTA';
 import AllProducts from './Components/AllProducts';
 import SeoHead from '@/Components/SeoHead';
@@ -33,6 +34,10 @@ export default function Welcome({
     products,
     topSelling,
     topSellingMinSold,
+    offeredProducts,
+    trendingProducts,
+    dailyDiscoverProducts,
+    stores,
     wishlist,
     productRatings,
 }: PageProps<{
@@ -42,6 +47,10 @@ export default function Welcome({
     products: PaginatedProducts,
     topSelling?: (Product & { sold_count: number })[],
     topSellingMinSold?: number,
+    offeredProducts: Product[],
+    trendingProducts: Product[],
+    dailyDiscoverProducts: Product[],
+    stores: (storeType & { products_count?: number })[],
     wishlist: any,
     reviews: ReviewType[],
     productRatings: Record<string, ProductRating>
@@ -59,19 +68,14 @@ export default function Welcome({
     });
 
 
+    // The showcase rails are queried separately on the server. Filtering the
+    // paginated list above used to leave them empty, because that list only
+    // carries two items.
     const topSellingProduct = topSelling ?? [];
-
-    const dailyDiscoverProduct = productsWithRatings.filter(product =>
-        product.product_type?.toLowerCase() === 'regular'
-    );
-
-    const featuredProducts = productsWithRatings.filter(product =>
-        product.product_type?.toLowerCase() === 'featured'
-    );
-
-    const trandingProducts = productsWithRatings.filter(product =>
-        product.product_type?.toLowerCase() === 'trending'
-    );
+    const offered = offeredProducts ?? [];
+    const trending = trendingProducts ?? [];
+    const dailyDiscover = dailyDiscoverProducts ?? [];
+    const featuredStores = stores ?? [];
 
     const pageTitle = 'HaatPoint - Bangladesh&apos;s Premier Marketplace';
     const pageDescription = 'Shop thousands of products from trusted vendors across Bangladesh. Find electronics, fashion, home goods & more at HaatPoint.';
@@ -150,12 +154,12 @@ export default function Welcome({
                     <Categories categories={categories} />
                 )}
 
-                {featuredProducts.length > 0 && (
-                    <OfferedProducts product={featuredProducts} user={auth.user} />
+                {offered.length > 0 && (
+                    <OfferedProducts product={offered} user={auth.user} />
                 )}
 
-                {trandingProducts.length > 0 && (
-                    <TrendingProducts trandingproduct={trandingProducts} user={auth.user} />
+                {trending.length > 0 && (
+                    <TrendingProducts trandingproduct={trending} user={auth.user} />
                 )}
 
                 {topSellingProduct.length > 0 && (
@@ -166,8 +170,12 @@ export default function Welcome({
                     />
                 )}
 
-                {dailyDiscoverProduct.length > 0 && (
-                    <DailyDiscover discoverProduct={dailyDiscoverProduct} user={auth.user} />
+                {dailyDiscover.length > 0 && (
+                    <DailyDiscover discoverProduct={dailyDiscover} user={auth.user} />
+                )}
+
+                {featuredStores.length > 0 && (
+                    <StoresSlider stores={featuredStores} />
                 )}
 
                 {/* Only render AllProducts if productsWithRatings has data */}

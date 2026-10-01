@@ -173,4 +173,20 @@ class WishlistTest extends TestCase
 
         $this->assertDatabaseCount('wishlists', 0);
     }
+
+    /**
+     * The heart buttons render for guests, so the check endpoint has to answer
+     * with JSON. Behind the auth middleware it returned the HTML login page and
+     * the component threw while parsing it.
+     */
+    public function test_a_guest_gets_a_json_answer_from_the_wishlist_check(): void
+    {
+        $product = $this->makeProduct();
+
+        $this->getJson(route('wishlist.check', $product->id))
+            ->assertOk()
+            ->assertJson(['success' => true, 'isInWishlist' => false]);
+
+        $this->assertDatabaseCount('wishlists', 0);
+    }
 }

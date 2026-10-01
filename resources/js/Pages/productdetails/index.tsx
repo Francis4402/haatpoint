@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   FaStar,
   FaRegStar,
@@ -481,7 +481,7 @@ const ProductDetailsPage = ({
                       </div>
                       <div>
                         <Link
-                          href={`/store/${store.id}`}
+                          href={`/stores/${store.id}`}
                           className="text-base font-semibold text-ink hover:text-marigold transition-colors"
                         >
                           {store.name}
@@ -957,7 +957,7 @@ const ProductDetailsPage = ({
               </div>
               <div className="flex items-center justify-center md:justify-end">
                 <Link
-                  href={`/store/${store.id}`}
+                  href={`/stores/${store.id}`}
                   className="px-8 py-3 bg-gray-900 hover:bg-marigold text-white font-medium rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105"
                 >
                   Visit Store
