@@ -149,7 +149,6 @@ export default function Welcome({
             <div className='max-w-[1240px] mx-auto px-8 space-y-20'>
                 <HeroSection user={auth.user} />
 
-                {/* Only render Categories if categories exists and has data */}
                 {categories && categories.length > 0 && (
                     <Categories categories={categories} />
                 )}

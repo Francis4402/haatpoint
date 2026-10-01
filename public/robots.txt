@@ -19,8 +19,9 @@ Disallow: /orders/
 Allow: /products/
 Allow: /stores/
 
-# Sitemap location
-Sitemap: https://haatpoint.com/sitemap.xml
+# Sitemap location. Must use the same host as the <loc> entries inside the
+# sitemap and as the canonical URLs, otherwise crawlers follow a redirect first.
+Sitemap: https://www.haatpoint.com/sitemap.xml
 
 # Crawl delay (optional, helps with server load)
 Crawl-delay: 1
