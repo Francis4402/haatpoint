@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comments;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use App\Models\Products;
 
@@ -32,6 +33,62 @@ class CommentsController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * Rate and review the store itself (route: stores.review).
+     *
+     * Product reviews go through store() above, which insists on a product_id,
+     * so a store review is a separate entry point. The row it writes is the
+     * same shape as a product review - store_id set, product_id null - which
+     * is exactly what Store::reviews() filters for.
+     */
+    public function storeReview(Request $request, Store $store)
+    {
+        abort_if(!$store->is_active, 404);
+
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|min:3|max:1000',
+        ]);
+
+        $owner = Comments::currentOwner();
+
+        if ($owner['user_id'] === null && $owner['agent_id'] === null && $owner['admin_id'] === null) {
+            return redirect()->back()->withErrors(['rating' => 'Please sign in to rate this store']);
+        }
+
+        // One rating per account per store, and it is final. Letting the same
+        // account submit again would let anyone nudge the average by rating a
+        // store badly and then correcting it, which is exactly what a locked
+        // score is meant to prevent.
+        $alreadyRated = Comments::forOwner($owner)
+            ->where('store_id', $store->id)
+            ->whereNull('product_id')
+            ->exists();
+
+        if ($alreadyRated) {
+            return redirect()->back()->withErrors([
+                'rating' => 'You have already rated this store. Each store can only be rated once per account.',
+            ]);
+        }
+
+        Comments::create(array_merge($owner, [
+            'store_id' => $store->id,
+            'product_id' => null,
+            'comment' => $request->comment,
+            'rating' => $request->rating,
+        ]));
+
+        // Refresh the cached average and count so the header, the store
+        // directory and the structured data all reflect the new review.
+        $store->syncRatingSummary();
+
+        if ($request->wantsJson() || $request->inertia()) {
+            return redirect()->back()->with('success', 'Thanks for rating this store!');
+        }
+
+        return redirect()->back();
     }
 
     /**
@@ -136,6 +193,13 @@ class CommentsController extends Controller
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
+        // A store rating is final once submitted, so the generic comment edit
+        // route must not be able to rewrite it behind the store review form's
+        // back. Product reviews stay editable.
+        if ($comment->product_id === null && $comment->store_id !== null) {
+            return redirect()->back()->with('error', 'A store rating cannot be changed once submitted.');
+        }
+
         $request->validate([
             'comment' => 'nullable|string|min:3|max:1000',
             'rating' => 'nullable|integer|min:1|max:5',
@@ -147,6 +211,9 @@ class CommentsController extends Controller
         ]);
 
         $comment->load('user', 'agent', 'admin');
+
+        // Editing a store review changes the score that everyone else sees.
+        $this->resyncStoreRating($comment);
 
         return redirect()->back();
     }
@@ -162,7 +229,27 @@ class CommentsController extends Controller
 
         $comment->delete();
 
+        // The deleted review no longer counts towards the cached average, so
+        // the store has to be recalculated or its header keeps advertising a
+        // rating nobody left any more.
+        $this->resyncStoreRating($comment);
+
         return redirect()->back();
+    }
+
+    /**
+     * Rewrites the cached rating and review_count after a store review changes.
+     *
+     * A product review has no bearing on the store score, and the row is read
+     * before it is deleted, so both cases are handled from the same argument.
+     */
+    private function resyncStoreRating(Comments $comment): void
+    {
+        if ($comment->product_id !== null || $comment->store_id === null) {
+            return;
+        }
+
+        Store::find($comment->store_id)?->syncRatingSummary();
     }
 
     public function getProductComments(Products $product)

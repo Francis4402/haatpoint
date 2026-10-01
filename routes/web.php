@@ -314,6 +314,9 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
     Route::post('/comments', [CommentsController::class, 'store'])->name('comments.store');
     Route::put('/comments/{comment}', [CommentsController::class, 'update'])->name('comments.update');
     Route::delete('/comments/{comment}', [CommentsController::class, 'destroy'])->name('comments.destroy');
+
+    // Rating the store itself rather than one of its products.
+    Route::post('/stores/{store}/review', [CommentsController::class, 'storeReview'])->name('stores.review');
 });
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');

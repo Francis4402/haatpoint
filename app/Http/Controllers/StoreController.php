@@ -223,6 +223,17 @@ class StoreController extends Controller
             }
         }
 
+        // National ID and licence are vendor identity documents. They belong on
+        // the dashboard forms, not on a public page, and hiding them only in
+        // the markup would still leave them readable in view-source because the
+        // whole model is serialised into the Inertia payload.
+        //
+        // The owner relations go too: getAuthorNameAttribute() touches ->agent,
+        // which loads the relation, and a loaded relation is serialised in full.
+        // That put the owning agent's national_id on the public page for every
+        // anonymous visitor even though nothing renders it.
+        $store->makeHidden(['national_id', 'license', 'agent', 'admin', 'user']);
+
         return Inertia::render('storeproducts/index', [
             'store' => $store->loadCount('products'),
             'products' => $products,
@@ -233,6 +244,11 @@ class StoreController extends Controller
             ],
             'productRatings' => $productRatingsData, // Add this
             'userStoreRating' => $userStoreRating,
+            // Matches the guard set CommentsController::storeReview accepts.
+            // auth.user only reflects the web guard, so a vendor browsing
+            // through the agent guard would otherwise be told to log in even
+            // though their rating would be accepted.
+            'canReview' => Comments::isSignedIn(),
         ]);
     }
 

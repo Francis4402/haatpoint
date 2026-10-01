@@ -17,19 +17,13 @@ import {
   FaShieldAlt,
   FaUndo,
   FaHeadset,
-  FaIdCard,
-  FaFileAlt,
-  FaEye,
-  FaTh,
-  FaList,
 } from "react-icons/fa";
 import AppLayout from "@/Layouts/AppLayout";
 import { Product, storeType } from "@/types";
-import AddtoCartButton from "../buttons/AddtoCartButton";
-import FormatPrice from "../utils/FormatePrice";
+import ProductCard from "@/Components/ProductCard";
 import Eyebrow from "../Components/Eyebrow";
+import StoreReviewForm from "../Components/StoreReviewForm";
 import SeoHead from "@/Components/SeoHead";
-import WishlistButton from "../buttons/WishListButton";
 
 
 interface StorePageProps {
@@ -58,6 +52,7 @@ interface StorePageProps {
     rating: number;
     comment: string;
   } | null;
+  canReview?: boolean;
 }
 
 export default function StoreShow({
@@ -67,11 +62,18 @@ export default function StoreShow({
   wishlist,
   storeRating = { average: 0, count: 0 },
   productRatings = {},
+  userStoreRating = null,
+  canReview = false,
 }: StorePageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("featured");
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // storeRating is averaged live from the store's reviews, so it is the fresher
+  // of the two sources. The columns on the store row are only a cache and are
+  // used as a fallback when nothing has been rated yet, hence || not ??.
+  const ratingAverage = Number(storeRating?.average) || Number(store.rating) || 0;
+  const ratingCount = Number(storeRating?.count) || Number(store.review_count) || 0;
 
   const categories = Array.from(
     new Set(products.data.map(p => p.category).filter(Boolean))
@@ -125,27 +127,6 @@ export default function StoreShow({
         })}
       </div>
     );
-  };
-
-  const stripHtml = (html: string) => {
-    if (!html) return '';
-    return html.replace(/<[^>]*>/g, '');
-  };
-
-  const getImageSrc = (images: string): string => {
-    if (!images) return '/placeholder-image.jpg';
-
-    try {
-      const parsedImages = JSON.parse(images);
-      if (Array.isArray(parsedImages) && parsedImages.length > 0 && parsedImages[0]) {
-        return parsedImages[0];
-      }
-    } catch (error) {
-      if (images.trim().startsWith('http') || images.trim().startsWith('/')) {
-        return images.trim();
-      }
-    }
-    return '/placeholder-image.jpg';
   };
 
   return (
@@ -227,9 +208,9 @@ export default function StoreShow({
                     </span>
 
                     <div className="flex items-center gap-1">
-                      {renderStars(parseFloat(store.rating as any) || 0)}
+                      {renderStars(ratingAverage)}
                       <span className="text-sm text-text-soft ml-1">
-                        ({parseInt(store.review_count as any) || 0} {parseInt(store.review_count as any) === 1 ? 'review' : 'reviews'})
+                        ({ratingCount} {ratingCount === 1 ? 'review' : 'reviews'})
                       </span>
                     </div>
                   </div>
@@ -242,7 +223,7 @@ export default function StoreShow({
                     <div className="text-sm text-text-soft">Products</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-ink">{parseInt(store.review_count as any) || 0}</div>
+                    <div className="text-2xl font-bold text-ink">{ratingCount}</div>
                     <div className="text-sm text-text-soft">Reviews</div>
                   </div>
                 </div>
@@ -268,18 +249,9 @@ export default function StoreShow({
                     <span>{store.email}</span>
                   </div>
                 )}
-                {store.license && (
-                  <div className="flex items-center gap-3 text-text-soft">
-                    <FaFileAlt className="h-5 w-5 text-marigold" />
-                    <span>License: {store.license}</span>
-                  </div>
-                )}
-                {store.national_id && (
-                  <div className="flex items-center gap-3 text-text-soft">
-                    <FaIdCard className="h-5 w-5 text-marigold" />
-                    <span>National ID: {store.national_id}</span>
-                  </div>
-                )}
+                {/* National ID and licence are deliberately not shown here.
+                    They are vendor identity documents, not shopper-facing
+                    information, and this page is public. */}
               </div>
 
               {/* Member Since */}
@@ -315,6 +287,16 @@ export default function StoreShow({
               <p className="font-medium text-ink text-sm">24/7 Support</p>
               <p className="text-xs text-text-soft">Live chat</p>
             </div>
+          </div>
+
+          {/* Rate this store */}
+          <div className="mb-8">
+            <StoreReviewForm
+              storeId={store.id}
+              storeName={store.name}
+              isAuthenticated={canReview}
+              existingReview={userStoreRating}
+            />
           </div>
 
           {/* Products Section */}
@@ -381,7 +363,7 @@ export default function StoreShow({
 
               {/* Products Grid */}
               <div className="lg:w-3/4">
-                {/* Search and View Toggle */}
+                {/* Search */}
                 <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 mb-6">
                   <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1 relative">
@@ -394,28 +376,6 @@ export default function StoreShow({
                         className="w-full pl-10 pr-4 py-2.5 border border-line rounded-xl focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft"
                       />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setViewMode('grid')}
-                        className={`p-2 rounded-xl border transition-all duration-200 ${
-                          viewMode === 'grid'
-                            ? 'bg-marigold/10 border-marigold text-marigold'
-                            : 'border-line text-text-soft hover:bg-paper-dim'
-                        }`}
-                      >
-                        <FaTh className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => setViewMode('list')}
-                        className={`p-2 rounded-xl border transition-all duration-200 ${
-                          viewMode === 'list'
-                            ? 'bg-marigold/10 border-marigold text-marigold'
-                            : 'border-line text-text-soft hover:bg-paper-dim'
-                        }`}
-                      >
-                        <FaList className="w-5 h-5" />
-                      </button>
-                    </div>
                   </div>
                   <div className="mt-4 text-sm text-text-soft">
                     <span className="font-semibold text-ink">{filteredProducts.length}</span> products found
@@ -424,184 +384,15 @@ export default function StoreShow({
 
                 {/* Products Display */}
                 {filteredProducts.length > 0 ? (
-                  <div className={viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6'
-                    : 'space-y-4'
-                  }>
-                    {filteredProducts.map((product) => {
-                      const imageSrc = getImageSrc(product.images);
-                      const hasDiscount = product.sale_price && product.sale_price < product.regular_price;
-                      const discountPercentage = hasDiscount
-                        ? Math.round(((product.regular_price - product.sale_price) / product.regular_price) * 100)
-                        : 0;
-
-                      if (viewMode === 'grid') {
-                        return (
-                          <div key={product.id} className="group bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                            {/* Product Image Container */}
-                            <div className="relative aspect-square overflow-hidden bg-paper-dim">
-                              <Link href={`/products/${product.slug}`}>
-                                <img
-                                  src={`/storage/${imageSrc}`}
-                                  alt={product.name}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
-                                  }}
-                                />
-                              </Link>
-
-                              {hasDiscount && (
-                                <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-hard-sm z-10">
-                                  -{discountPercentage}%
-                                </span>
-                              )}
-
-                              <div className="absolute top-3 right-3 z-10">
-                                <WishlistButton productId={product.id.toString()} />
-                              </div>
-
-                              {/* Quick View Overlay */}
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <div className="quick-view opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                                  <Link href={`/products/${product.slug}`}>
-                                    <button className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-marigold hover:text-white text-ink rounded-xl font-medium transition-all duration-300 shadow-lg hover:scale-105">
-                                      <FaEye className="w-4 h-4" />
-                                      Quick View
-                                    </button>
-                                  </Link>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Product Info */}
-                            <div className="p-4">
-                              <Link href={`/products/${product.slug}`} className="block">
-                                <h3 className="font-medium text-ink mb-1 line-clamp-1 group-hover:text-marigold transition-colors">
-                                  {product.name}
-                                </h3>
-                              </Link>
-
-                              <div className="flex items-center gap-1 mb-2">
-                                {renderStars(product.calculatedRating)}
-                                {product.reviewCount > 0 ? (
-                                  <span className="text-xs text-text-soft ml-1">
-                                    ({product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'})
-                                  </span>
-                                ) : (
-                                  <span className="text-xs text-text-soft ml-1">(No reviews)</span>
-                                )}
-                              </div>
-
-                              <div className="flex items-center justify-between mb-3">
-                                <div>
-                                  <span className="font-bold text-ink">
-                                    <FormatPrice price={product.sale_price || product.regular_price} />
-                                  </span>
-                                  {hasDiscount && (
-                                    <span className="ml-2 text-sm text-text-soft line-through">
-                                      <FormatPrice price={product.regular_price} />
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-
-                              <AddtoCartButton product={product} />
-                            </div>
-                          </div>
-                        );
-                      } else {
-                        // List View
-                        return (
-                          <div key={product.id} className="group bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden hover:shadow-xl transition-all duration-300">
-                            <div className="flex flex-col md:flex-row">
-                              {/* Image Container */}
-                              <div className="md:w-1/4 relative overflow-hidden bg-paper-dim">
-                                <Link href={`/products/${product.slug}`}>
-                                  <div className="aspect-square md:h-full">
-                                    <img
-                                      src={`/storage/${imageSrc}`}
-                                      alt={product.name}
-                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                      onError={(e) => {
-                                        (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
-                                      }}
-                                    />
-                                  </div>
-                                </Link>
-
-                                {hasDiscount && (
-                                  <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-hard-sm z-10">
-                                    -{discountPercentage}%
-                                  </span>
-                                )}
-
-                                <div className="absolute top-3 right-3 z-10">
-                                  <WishlistButton productId={product.id.toString()} />
-                                </div>
-
-                                {/* Quick View Overlay */}
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                  <div className="quick-view opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                                    <Link href={`/products/${product.slug}`}>
-                                      <button className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-marigold hover:text-white text-ink rounded-xl font-medium transition-all duration-300 shadow-lg hover:scale-105">
-                                        <FaEye className="w-4 h-4" />
-                                        Quick View
-                                      </button>
-                                    </Link>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Product Details */}
-                              <div className="md:w-3/4 p-6">
-                                <div className="flex flex-col md:flex-row justify-between gap-4">
-                                  <div>
-                                    <Link href={`/products/${product.slug}`}>
-                                      <h3 className="text-lg font-semibold text-ink mb-2 group-hover:text-marigold transition-colors">
-                                        {product.name}
-                                      </h3>
-                                    </Link>
-                                    <p className="text-text-soft text-sm mb-4 line-clamp-2">
-                                      {stripHtml(product.description)}
-                                    </p>
-                                    <div className="flex items-center gap-4 mb-4">
-                                      <div className="flex items-center">
-                                        {renderStars(product.calculatedRating)}
-                                        {product.reviewCount > 0 ? (
-                                          <span className="text-xs text-text-soft ml-2">
-                                            ({product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'})
-                                          </span>
-                                        ) : (
-                                          <span className="text-xs text-text-soft ml-2">(No reviews)</span>
-                                        )}
-                                      </div>
-                                      <span className={`text-sm ${product.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                                        {product.inStock ? 'In Stock' : 'Out of Stock'}
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  <div className="md:w-48">
-                                    <div className="mb-4">
-                                      <div className="text-2xl font-bold text-ink">
-                                        <FormatPrice price={product.sale_price || product.regular_price} />
-                                      </div>
-                                      {hasDiscount && (
-                                        <div className="text-sm text-text-soft line-through">
-                                          <FormatPrice price={product.regular_price} />
-                                        </div>
-                                      )}
-                                    </div>
-                                    <AddtoCartButton product={product} />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      }
-                    })}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                    {filteredProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        user={auth.user}
+                        initialAverageRating={product.calculatedRating}
+                      />
+                    ))}
                   </div>
                 ) : (
                   <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-12 text-center">

@@ -124,7 +124,7 @@ export default function Hero(user: PropsWithChildren<{user: any}>) {
             </div>
 
             {/* Free Delivery Badge */}
-          <div className="float-card absolute top-2 left-2 bg-white/90 backdrop-blur-sm border border-line rounded-full px-3 py-1.5 shadow-hard-sm">
+          <div className="float-card absolute top-1 left-2 bg-white/90 backdrop-blur-sm border border-line rounded-full px-3 py-1.5 shadow-hard-sm">
             <span className="text-[10px] font-bold uppercase">Secure delivery</span>
           </div>
           </div>
