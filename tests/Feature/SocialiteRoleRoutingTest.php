@@ -299,4 +299,92 @@ class SocialiteRoleRoutingTest extends TestCase
 
         $this->assertFalse(auth('web')->check());
     }
+
+    public function test_an_existing_agent_using_the_shared_login_signs_in_as_an_agent(): void
+    {
+        Agent::create([
+            'name' => 'Vendor',
+            'email' => 'vendor@example.test',
+            'password' => bcrypt('secret1234'),
+            'role' => 'agent',
+            'address' => 'House 1, Road 1, Dhaka',
+            'mobile' => '01812345678',
+            'national_id' => '1987654321',
+        ]);
+
+        $this->fakeGoogleUser('vendor@example.test', 'Vendor', 'g-agent-1');
+
+        // The shared /login page asks for the `user` destination, which is what
+        // used to create a second, customer identity for an agent.
+        $this->completeCallback('user')->assertRedirect();
+
+        $this->assertTrue(auth('agent')->check());
+        $this->assertFalse(auth('web')->check());
+        $this->assertDatabaseMissing('users', ['email' => 'vendor@example.test']);
+        $this->assertDatabaseCount('users', 0);
+    }
+
+    public function test_the_agent_role_wins_when_an_email_exists_in_both_tables(): void
+    {
+        Agent::create([
+            'name' => 'Vendor',
+            'email' => 'both@example.test',
+            'password' => bcrypt('secret1234'),
+            'role' => 'agent',
+            'address' => 'House 1, Road 1, Dhaka',
+            'mobile' => '01812345678',
+            'national_id' => '1987654321',
+        ]);
+
+        User::create([
+            'name' => 'Shopper',
+            'email' => 'both@example.test',
+            'password' => bcrypt('secret1234'),
+        ]);
+
+        $this->fakeGoogleUser('both@example.test', 'Vendor', 'g-both-1');
+
+        $this->completeCallback('user')->assertRedirect();
+
+        $this->assertTrue(auth('agent')->check());
+        $this->assertFalse(auth('web')->check());
+        $this->assertDatabaseCount('users', 1);
+    }
+
+    public function test_a_customer_using_the_shared_login_still_signs_in_as_a_user(): void
+    {
+        User::create([
+            'name' => 'Shopper',
+            'email' => 'shopper@example.test',
+            'password' => bcrypt('secret1234'),
+        ]);
+
+        $this->fakeGoogleUser('shopper@example.test', 'Shopper', 'g-shop-1');
+
+        $this->completeCallback('user')->assertRedirect();
+
+        $this->assertTrue(auth('web')->check());
+        $this->assertFalse(auth('agent')->check());
+        $this->assertDatabaseCount('agents', 0);
+    }
+
+    public function test_the_shared_login_page_points_google_at_the_resolving_destination(): void
+    {
+        // Guards the wiring, not just the callback. If the login page stops
+        // asking for `user`, none of the resolution above is ever reached.
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Auth/Login')
+                ->where('canResetPassword', true)
+            );
+
+        $source = file_get_contents(resource_path('js/Pages/Auth/Login.tsx'));
+
+        $this->assertStringContainsString(
+            'destination="user"',
+            $source,
+            'The shared login page must send Google to the `user` destination, which resolves agent vs user server-side.'
+        );
+    }
 }

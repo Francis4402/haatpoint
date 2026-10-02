@@ -53,7 +53,7 @@ class StoreController extends Controller
     {
         // Catch this on the way in, so an unverified vendor is sent to the
         // verification screen before filling in a form they cannot submit.
-        if (Auth::check() && Auth::user()->email_verified_at === null) {
+        if (Auth::check() && $this->requiresVerifiedEmail(Auth::user()) && Auth::user()->email_verified_at === null) {
             return redirect()
                 ->route('verification.notice')
                 ->with('error', 'Verify your email address before creating a store.');
@@ -93,14 +93,15 @@ class StoreController extends Controller
 
         // A vendor with an unconfirmed address may not open a store. Google
         // sign-ups arrive verified, so this only catches vendors who registered
-        // through the form.
+        // through the form. Staff (admin/superadmin) never have to verify, so
+        // they are not checked at all -- see requiresVerifiedEmail().
         //
         // This redirects to the verification page rather than bouncing back to
         // this same form. A plain redirect()->back() answers the Inertia POST
         // with a 302 and an HTML body, which the client turns into a full page
         // reload: no toast, no message, and it just looks like the button did
         // nothing.
-        if ($user->email_verified_at === null) {
+        if ($this->requiresVerifiedEmail($user) && $user->email_verified_at === null) {
             return redirect()
                 ->route('verification.notice')
                 ->with('error', 'Verify your email address before creating a store.');

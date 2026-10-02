@@ -111,8 +111,9 @@ class OrdersController extends Controller
 
             // An unconfirmed address is not allowed to place an order. The cart
             // button checks this too, but the endpoint has to refuse it as well
-            // or the check is only cosmetic.
-            if ($user->email_verified_at === null) {
+            // or the check is only cosmetic. Staff never verify, so they are
+            // exempt -- see Controller::requiresVerifiedEmail().
+            if ($this->requiresVerifiedEmail($user) && $user->email_verified_at === null) {
                 return redirect()
                     ->route('verification.notice')
                     ->with('error', 'Verify your email address before placing an order.');

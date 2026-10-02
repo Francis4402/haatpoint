@@ -26,14 +26,45 @@ class SocialiteController extends Controller
      * "create" allows the flow to register a brand new account, "exclusive"
      * means only a single account may ever exist for that destination.
      *
-     * @var array<string, array{model: class-string, guard: string, create: bool, exclusive: bool}>
+     * "resolves" lists the destinations to probe, in priority order, before
+     * falling back to creating a new account for this one. It exists because a
+     * single page (/login) is shared by customers and agents, so the callback
+     * cannot assume which role the visitor holds.
+     *
+     * Agent is probed first so an agent is never shadowed by a customer row for
+     * the same address. Without this, "Continue with Google" on the shared login
+     * looked only in the users table, found no row (agent registration deletes
+     * it on purpose) and created a brand new customer account -- signing the
+     * agent in as a user and leaving the two rows behind.
+     *
+     * @var array<string, array{model: class-string, guard: string, create: bool, exclusive: bool, resolves?: array<int, string>}>
      */
     public const DESTINATIONS = [
-        'user' => ['model' => User::class, 'guard' => 'web', 'create' => true, 'exclusive' => false],
+        'user' => [
+            'model' => User::class,
+            'guard' => 'web',
+            'create' => true,
+            'exclusive' => false,
+            'resolves' => ['agent', 'user'],
+        ],
         'superadmin' => ['model' => Admin::class, 'guard' => 'admin', 'create' => true, 'exclusive' => true],
         'admin' => ['model' => Admin::class, 'guard' => 'admin', 'create' => false, 'exclusive' => false],
         'agent' => ['model' => Agent::class, 'guard' => 'agent', 'create' => true, 'exclusive' => false],
     ];
+
+    /**
+     * Whether an account already exists for this provider identity.
+     *
+     * Mirrors the lookup the callback performs, so a resolved destination and a
+     * directly requested one agree on what "already exists" means.
+     */
+    private function identityExists(string $model, string $email, string $provider, string $providerId): bool
+    {
+        return $model::query()
+            ->where('email', $email)
+            ->orWhere(fn ($q) => $q->where('provider', $provider)->where('provider_id', $providerId))
+            ->exists();
+    }
 
     /**
      * Redirect the user to the chosen OAuth provider, remembering where the
@@ -92,6 +123,21 @@ class SocialiteController extends Controller
             $model = $config['model'];
             $providerId = (string) $socialUser->getId();
 
+            // A surface shared by more than one role cannot assume which table
+            // holds the visitor, so the role is resolved from the email before
+            // anything is looked up or created. See DESTINATIONS['user'].
+            $resolved = $destination;
+
+            foreach ($config['resolves'] ?? [] as $candidate) {
+                if ($this->identityExists(self::DESTINATIONS[$candidate]['model'], $email, $provider, $providerId)) {
+                    $resolved = $candidate;
+                    break;
+                }
+            }
+
+            $config = self::DESTINATIONS[$resolved];
+            $model = $config['model'];
+
             $identity = $model::query()
                 ->where('email', $email)
                 ->orWhere(fn ($q) => $q->where('provider', $provider)->where('provider_id', $providerId))
@@ -142,7 +188,7 @@ class SocialiteController extends Controller
                 // destination actually needs a specific value and let the column
                 // default supply 'user' / 'agent' / 'admin' otherwise. Writing an
                 // explicit null here fails with a 1048 integrity error.
-                $role = match ($destination) {
+                $role = match ($resolved) {
                     'superadmin' => 'superadmin',
                     'admin' => 'admin',
                     default => null,
@@ -169,7 +215,7 @@ class SocialiteController extends Controller
                 // (AgentAuthController::afterRegistration) drops a customer
                 // account that used the same email, so the Socialite flow must
                 // do the same instead of leaving the address in both tables.
-                if ($destination === 'agent') {
+                if ($resolved === 'agent') {
                     User::where('email', $email)->delete();
                 }
             } else {
@@ -184,10 +230,13 @@ class SocialiteController extends Controller
             // Logged on success too. Only failures were ever recorded, so a
             // working flow and a visitor who never got as far as clicking were
             // indistinguishable in the log.
-            Log::info("Social login succeeded ({$provider} -> {$destination})", [
+            // Records the role that was actually used, not the one the page asked
+            // for, so a sign-in that resolved from user to agent is traceable.
+            Log::info("Social login succeeded ({$provider} -> {$resolved})", [
                 'account_id' => $identity->getKey(),
                 'role' => $identity->role ?? null,
                 'guard' => $config['guard'],
+                'requested' => $destination,
             ]);
 
             return redirect()->intended(route('dashboard', absolute: false));
