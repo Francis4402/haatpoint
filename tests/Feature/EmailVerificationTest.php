@@ -38,6 +38,12 @@ class EmailVerificationTest extends TestCase
             'password' => bcrypt(self::PASSWORD),
             'role' => 'agent',
             'email_verified_at' => $verified ? now() : null,
+            // Complete KYC so these tests isolate the verification rule. Vendor
+            // KYC is enforced ahead of it, so a bare fixture would be turned away
+            // for an unrelated reason.
+            'mobile' => '01712345678',
+            'national_id' => '1234567890',
+            'address' => 'House 1, Road 1, Dhaka',
         ]);
     }
 

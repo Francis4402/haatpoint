@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Agent;
 use App\Models\Contact;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
@@ -52,6 +53,13 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
                 'isVerified' => $requiresVerification ? false : true,
                 'requiresVerification' => $requiresVerification,
+                // Vendor KYC, resolved from the model rather than recomputed in
+                // the banner so the banner and the store guard cannot disagree.
+                'incompleteVendorProfile' => $user instanceof Agent
+                    && ! $user->hasCompleteVendorProfile(),
+                'missingVendorProfileFields' => $user instanceof Agent
+                    ? $user->missingVendorProfileFields()
+                    : [],
             ],
             // Without this, redirect()->back()->with('success'|'error', ...) is
             // invisible to the SPA and actions appear to do nothing.

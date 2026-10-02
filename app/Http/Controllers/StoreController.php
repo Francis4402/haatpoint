@@ -59,6 +59,15 @@ class StoreController extends Controller
                 ->with('error', 'Verify your email address before creating a store.');
         }
 
+        // Same reasoning for KYC: an incomplete vendor is sent straight to the
+        // form that can actually fix it rather than to the store form, which
+        // would accept the submission and refuse it on POST.
+        if (Auth::user() instanceof Agent && !Auth::user()->hasCompleteVendorProfile()) {
+            return redirect()
+                ->route('vendor.profile.edit')
+                ->with('error', 'Complete your vendor details before creating a store.');
+        }
+
         return Inertia::render('dashboard/forms/CreateStoreForm');
     }
 
@@ -97,14 +106,14 @@ class StoreController extends Controller
                 ->with('error', 'Verify your email address before creating a store.');
         }
 
-        // An agent may only operate stores while their registered National
-        // ID is valid, otherwise the store is considered closed to them.
-        if ($user instanceof Agent
-            && $user->national_id !== null
-            && !preg_match('/^\d{10}$|^\d{17}$/', (string) $user->national_id)) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['error' => 'You must provide a valid National ID to create a store. Without a valid National ID your store will be closed.']);
+        // An agent may only operate stores while their KYC is complete. This
+        // checks every field, not just National ID: a vendor with a valid ID
+        // but no address previously reached the form and was then closed
+        // against, with nothing on screen saying why.
+        if ($user instanceof Agent && !$user->hasCompleteVendorProfile()) {
+            return redirect()
+                ->route('vendor.profile.edit')
+                ->with('error', 'Complete your vendor details before creating a store.');
         }
 
         if ($user instanceof Agent && Store::where('agent_id', $user->id)->count() >= 3) {

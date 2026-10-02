@@ -28,6 +28,7 @@ import { FaStore } from 'react-icons/fa';
 import logoutUrl from '@/Components/logoutUrl';
 import SearchBox from '@/Components/SearchBox';
 import UnverifiedEmailBanner from '@/Components/UnverifiedEmailBanner';
+import IncompleteVendorProfileBanner from '@/Components/IncompleteVendorProfileBanner';
 import { useTranslation } from '@/state/languageStore';
 
 interface DashboardLayoutProps {
@@ -534,6 +535,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                 dashboard screen, not just the landing page. Renders nothing once
                 the address is confirmed. */}
             <UnverifiedEmailBanner />
+            <IncompleteVendorProfileBanner />
             {children}
           </div>
         </main>

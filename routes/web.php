@@ -17,6 +17,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\VendorProfileController;
 use App\Http\Controllers\WishlistController;
 use App\Models\Categories;
 use App\Models\Comments;
@@ -372,6 +373,14 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
     Route::get('/dashboard/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Vendor KYC. Separate from the generic profile because an agent's store
+    // eligibility depends on these specific fields, so the page has to state
+    // what is still missing and why it matters.
+    Route::get('/dashboard/vendor/profile', [VendorProfileController::class, 'edit'])
+        ->name('vendor.profile.edit');
+    Route::post('/dashboard/vendor/profile', [VendorProfileController::class, 'update'])
+        ->name('vendor.profile.update');
 });
 
 require __DIR__.'/auth.php';
