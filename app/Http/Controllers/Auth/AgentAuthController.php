@@ -29,6 +29,15 @@ class AgentAuthController extends StaffAuthController
     }
 
     /**
+     * Agents may always register. The role does not bootstrap the system, so
+     * there is nothing to lock down once one account exists.
+     */
+    public function canRegister(Request $request): bool
+    {
+        return true;
+    }
+
+    /**
      * An agent is a single identity: if this email already had a customer
      * account, drop it so the person exists only as an agent.
      */

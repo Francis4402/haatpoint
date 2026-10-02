@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\Admin;
+use Illuminate\Http\Request;
 
 class AdminAuthController extends StaffAuthController
 {
@@ -31,7 +32,7 @@ class AdminAuthController extends StaffAuthController
      * Once a superadmin is registered, this route is locked so nobody can
      * create further admin accounts by hand — only the superadmin can promote.
      */
-    public function canRegister(): bool
+    public function canRegister(Request $request): bool
     {
         return ! Admin::where('role', 'superadmin')->exists();
     }

@@ -91,13 +91,14 @@ abstract class StaffAuthController extends Controller
         return [];
     }
 
-    /**
+/**
      * Whether self-registration is allowed for this role.
+     *
+     * Takes the request because the answer can depend on who is asking: a role
+     * that bootstraps the system is closed to anonymous visitors once it
+     * exists, but still has to be reachable by the holder of that role.
      */
-    protected function canRegister(): bool
-    {
-        return true;
-    }
+    abstract public function canRegister(Request $request): bool;
 
     /**
      * The message shown when registration is closed for this role.
@@ -110,9 +111,9 @@ abstract class StaffAuthController extends Controller
     /**
      * Display the registration view.
      */
-    public function showRegister(): Response|RedirectResponse
+    public function showRegister(Request $request): Response|RedirectResponse
     {
-        if (! $this->canRegister()) {
+        if (! $this->canRegister($request)) {
             return redirect()->route($this->guard() . '.login')
                 ->with('error', $this->registrationClosedMessage());
         }
@@ -130,7 +131,7 @@ abstract class StaffAuthController extends Controller
      */
     public function register(Request $request): RedirectResponse
     {
-        if (! $this->canRegister()) {
+        if (! $this->canRegister($request)) {
             throw ValidationException::withMessages([
                 'email' => $this->registrationClosedMessage(),
             ]);
@@ -178,12 +179,12 @@ abstract class StaffAuthController extends Controller
     /**
      * Display the login view.
      */
-    public function showLogin(): Response
+    public function showLogin(Request $request): Response
     {
         return Inertia::render('Auth/StaffLogin', [
             'type' => $this->roleKey(),
             'status' => session('status'),
-            'canRegister' => $this->canRegister(),
+            'canRegister' => $this->canRegister($request),
         ]);
     }
 

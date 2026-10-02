@@ -120,8 +120,22 @@ class SocialiteController extends Controller
                     $identity->save();
                 }
             } elseif ($config['create']) {
+                // An exclusive destination may bootstrap only once. The register
+                // page is the first gate, but a caller can reach this callback
+                // directly with a hand-set session, so the same rule has to be
+                // enforced here as well.
+                //
+                // A signed-in superadmin is exempt: they are already the holder of
+                // the role, so letting them add another is not an escalation, and
+                // it is the only way an existing superadmin can bring in a second
+                // one through Google. Everyone else is refused, which keeps the
+                // public register URL from being an open invitation.
                 if ($config['exclusive'] && $model::where('role', 'superadmin')->exists()) {
-                    throw new \RuntimeException('A superadmin already exists. Registration is closed.');
+                    $actor = $request->user() ?? auth('admin')->user();
+
+                    if (! $actor instanceof Admin || $actor->role !== 'superadmin' || $actor->blocked) {
+                        throw new \RuntimeException('A superadmin already exists. Registration is closed.');
+                    }
                 }
 
                 // Each table's `role` column is NOT NULL, so only set it when the

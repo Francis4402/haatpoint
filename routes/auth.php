@@ -70,7 +70,12 @@ Route::middleware('auth:web,agent')->group(function () {
 });
 
 // Superadmin bootstrap registration (its login shares the admin login below)
-Route::middleware('guest:admin')->prefix('superadmin')->name('superadmin.')->group(function () {
+Route::prefix('superadmin')->name('superadmin.')->group(function () {
+    // No guest:admin middleware here, unlike the admin group below. A signed-in
+    // superadmin has to be able to reach this page to register another one, and
+    // guest:admin would bounce them straight off it. Access is decided by
+    // SuperadminAuthController::canRegister() instead, which keeps the page
+    // closed to anonymous visitors once a superadmin exists.
     Route::get('register', [SuperadminAuthController::class, 'showRegister'])->name('register');
     Route::post('register', [SuperadminAuthController::class, 'register']);
     Route::get('login', fn () => redirect()->route('admin.login'))->name('login');
