@@ -49,10 +49,20 @@ class SocialiteController extends Controller
         /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
         $driver = Socialite::driver($provider);
 
-        // Always send the callback URL for the host the request came in on.
-        // Using route() keeps redirect_uri in sync with the current scheme,
-        // host and port instead of locking it to a hardcoded .env value.
-        $driver->redirectUrl(route('auth.callback', ['provider' => $provider]));
+        // Google rejects a redirect_uri that is not byte-identical to one of the
+        // ones registered in the console. The configured value must win,
+        // because the request host is not trustworthy here: reaching the app as
+        // http://localhost:8000 instead of http://127.0.0.1:8000, or via a LAN
+        // IP, builds a different URL and Google answers Error 400
+        // redirect_uri_mismatch with nothing logged on our side. Fall back to
+        // route() only when nothing is configured.
+        $configured = config("services.{$provider}.redirect");
+
+        if ($configured) {
+            $driver->redirectUrl($configured);
+        } else {
+            $driver->redirectUrl(route('auth.callback', ['provider' => $provider]));
+        }
 
         return $driver->redirect();
     }
@@ -88,6 +98,14 @@ class SocialiteController extends Controller
                 ->first();
 
             if ($identity) {
+                // A blocked account must stay blocked. The password login path
+                // checks this, and the `blocked` middleware checks it again on
+                // every request, but Google had no check of its own, so a blocked
+                // admin could still be signed straight in through OAuth.
+                if ($identity->blocked) {
+                    throw new \RuntimeException('This account has been blocked. Please contact support for assistance.');
+                }
+
                 $identity->forceFill([
                     'email_verified_at' => $identity->email_verified_at ?? now(),
                 ]);
@@ -148,6 +166,15 @@ class SocialiteController extends Controller
 
             Auth::guard($config['guard'])->login($identity);
             $request->session()->regenerate();
+
+            // Logged on success too. Only failures were ever recorded, so a
+            // working flow and a visitor who never got as far as clicking were
+            // indistinguishable in the log.
+            Log::info("Social login succeeded ({$provider} -> {$destination})", [
+                'account_id' => $identity->getKey(),
+                'role' => $identity->role ?? null,
+                'guard' => $config['guard'],
+            ]);
 
             return redirect()->intended(route('dashboard', absolute: false));
         } catch (\Throwable $e) {

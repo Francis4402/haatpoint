@@ -24,7 +24,14 @@ const LABELS: Record<StaffType, string> = {
   agent: 'Agent',
 };
 
-export default function StaffRegister({ type }: { type: StaffType }) {
+export default function StaffRegister({
+  type,
+  socialDestination,
+}: {
+  type: StaffType;
+  /** Which Socialite destination "Continue with Google" should use. */
+  socialDestination?: StaffType;
+}) {
   const { data, setData, post, processing, errors, reset } = useForm({
     name: '',
     email: '',
@@ -401,7 +408,7 @@ export default function StaffRegister({ type }: { type: StaffType }) {
             </button>
           </form>
 
-          <SocialButtons destination={type} />
+          <SocialButtons destination={socialDestination ?? type} />
 
           {/* Login Link */}
           <p className="mt-6 text-center text-sm font-body text-ink/60">

@@ -113,6 +113,35 @@ class SocialiteRoleRoutingTest extends TestCase
         $this->assertFalse(auth('admin')->check());
     }
 
+    public function test_an_existing_superadmin_can_sign_in_with_google(): void
+    {
+        // The live situation: a superadmin already exists, so /admin/register is
+        // closed and the only Google entry point is the login page, which sends
+        // destination=admin. That destination refuses to CREATE an account but
+        // must still sign in a row that already exists.
+        Admin::create([
+            'name' => 'Boss',
+            'email' => 'boss@example.test',
+            'password' => bcrypt('secret1234'),
+            'role' => 'superadmin',
+        ]);
+
+        $this->fakeGoogleUser('boss@example.test', 'Boss', 'g-google-id');
+
+        $this->completeCallback('admin')->assertRedirect(route('dashboard'));
+
+        $this->assertTrue(auth('admin')->check());
+        $this->assertSame('boss@example.test', auth('admin')->user()->email);
+
+        // The Google identity gets linked to the row so later logins match on
+        // provider id too.
+        $this->assertDatabaseHas('admins', [
+            'email' => 'boss@example.test',
+            'provider' => 'google',
+            'provider_id' => 'g-google-id',
+        ]);
+    }
+
     public function test_admin_destination_does_not_self_register(): void
     {
         $this->fakeGoogleUser('staff@example.test', 'Staff One', 'g-staff-1');
@@ -123,6 +152,89 @@ class SocialiteRoleRoutingTest extends TestCase
 
         $this->assertDatabaseMissing('admins', ['email' => 'staff@example.test']);
         $this->assertFalse(auth('admin')->check());
+    }
+
+    public function test_the_admin_register_page_points_google_at_the_superadmin_destination(): void
+    {
+        // The regression: /admin/register rendered type="admin", so the Google
+        // button requested destination=admin. That destination is create=false,
+        // so every brand-new admin click died with "No admin account exists for
+        // ...". The password form on the very same page bootstraps a superadmin,
+        // so the two submit paths disagreed about what registering means.
+        $this->get(route('admin.register'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Auth/StaffRegister')
+                ->where('type', 'admin')
+                ->where('socialDestination', 'superadmin')
+            );
+    }
+
+    public function test_the_agent_register_page_still_uses_the_agent_destination(): void
+    {
+        // Guard against the override leaking to the other staff roles.
+        $this->get(route('agent.register'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('socialDestination', 'agent'));
+    }
+
+    public function test_google_signup_on_the_admin_register_page_creates_the_first_superadmin(): void
+    {
+        $this->fakeGoogleUser('boss@example.test', 'The Boss', 'g-boss-1');
+
+        $this->completeCallback('superadmin')->assertRedirect();
+
+        $this->assertDatabaseHas('admins', [
+            'email' => 'boss@example.test',
+            'role' => 'superadmin',
+            'provider' => 'google',
+        ]);
+
+        $this->assertTrue(auth('admin')->check());
+        $this->assertSame('superadmin', auth('admin')->user()->role);
+    }
+
+    public function test_a_blocked_admin_cannot_sign_in_through_google(): void
+    {
+        // Google had no blocked check of its own, so a suspended admin could be
+        // signed straight back in through OAuth.
+        Admin::create([
+            'name' => 'Suspended',
+            'email' => 'suspended@example.test',
+            'password' => bcrypt('secret1234'),
+            'role' => 'admin',
+            'blocked' => true,
+            'google_id' => 'g-susp-1',
+            'provider' => 'google',
+            'provider_id' => 'g-susp-1',
+            'email_verified_at' => now(),
+        ]);
+
+        $this->fakeGoogleUser('suspended@example.test', 'Suspended', 'g-susp-1');
+
+        $this->completeCallback('admin')
+            ->assertRedirect(route('admin.login'))
+            ->assertSessionHas('error');
+
+        $this->assertFalse(auth('admin')->check());
+    }
+
+    public function test_the_google_redirect_uses_the_configured_callback_url(): void
+    {
+        // route() built the callback from the live request host, so arriving at
+        // http://localhost:8000 instead of http://127.0.0.1:8000 produced a
+        // redirect_uri Google rejected with Error 400 and nothing logged here.
+        config()->set('services.google.redirect', 'http://127.0.0.1:8000/auth/google/callback');
+
+        $response = $this->get('/auth/google/redirect/admin');
+
+        $response->assertRedirect();
+
+        $location = $response->headers->get('Location');
+        $this->assertStringContainsString(
+            urlencode('http://127.0.0.1:8000/auth/google/callback'),
+            $location
+        );
     }
 
     public function test_unknown_destination_is_rejected(): void

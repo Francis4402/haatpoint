@@ -26,7 +26,10 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+                // Gmail only: registration and profile updates both enforce it, so a
+        // factory-produced account has to satisfy the same rule or tests that
+        // legitimately touch those forms fail for the wrong reason.
+        'email' => fake()->unique()->bothify('user###.####@gmail.com'),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

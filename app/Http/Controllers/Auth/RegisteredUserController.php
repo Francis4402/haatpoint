@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\User;
+use App\Rules\GmailAddress;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,7 +35,7 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class, function ($attribute, $value, $fail) {
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class, new GmailAddress, function ($attribute, $value, $fail) {
                 if (Agent::where('email', $value)->exists()) {
                     $fail('This email is already registered as an agent and cannot be used to create a customer account.');
                 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Rules\GmailAddress;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,6 +48,23 @@ abstract class StaffAuthController extends Controller
     protected function registrationRole(): ?string
     {
         return null;
+    }
+
+    /**
+     * The Socialite destination this register page should send the visitor to.
+     *
+     * It cannot just be the role key. `SocialiteController::DESTINATIONS`
+     * decides whether Google may CREATE a brand-new account for a destination,
+     * and `admin` is create=false because staff are normally promoted by an
+     * existing superadmin. So the register page was asking Google for
+     * `destination=admin`, every callback found no row, and the visitor was
+     * always told to "ask a superadmin to promote you" -- on the very page
+     * whose password form bootstraps the first superadmin. Roles that register
+     * a new identity through Google override this.
+     */
+    protected function socialDestination(): string
+    {
+        return $this->roleKey();
     }
 
     /**
@@ -101,6 +119,7 @@ abstract class StaffAuthController extends Controller
 
         return Inertia::render('Auth/StaffRegister', [
             'type' => $this->roleKey(),
+            'socialDestination' => $this->socialDestination(),
         ]);
     }
 
@@ -121,7 +140,7 @@ abstract class StaffAuthController extends Controller
 
         $request->validate(array_merge([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:' . $model,
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . $model, new GmailAddress],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], $this->registrationRules()));
 
