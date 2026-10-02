@@ -7,7 +7,6 @@ import {
   FaImage,
   FaBox,
   FaTag,
-  FaDollarSign,
   FaHashtag,
   FaBookOpen,
   FaUpload,
@@ -902,7 +901,9 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
               {/* Pricing Card */}
               <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
                 <div className="flex items-center gap-2 mb-6 pb-4 border-b border-line">
-                  <FaDollarSign className="h-5 w-5 text-marigold" />
+                  <span className="inline-flex items-center rounded-md border border-line bg-paper-dim px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-marigold">
+                    BDT
+                  </span>
                   <h2 className="text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Pricing</h2>
                 </div>
 
@@ -914,7 +915,9 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
                         Regular Price <span className="text-red-500 ml-1">*</span>
                       </label>
                       <div className="relative">
-                        <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-soft h-4 w-4" />
+                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-text-soft">
+                          BDT
+                        </span>
                         <input
                           type="number"
                           step="0.01"
@@ -923,7 +926,7 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
                           value={data.regular_price}
                           onChange={(e) => handleNumberInput(e, 'regular_price')}
                           placeholder="99.99"
-                          className="w-full rounded-xl border border-line px-10 py-3 focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft"
+                          className="w-full rounded-xl border border-line py-3 pl-14 pr-4 focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft"
                         />
                       </div>
                       {errors.regular_price && (
@@ -961,7 +964,9 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
                       {showSalePrice && (
                         <div>
                           <div className="relative">
-                            <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-soft h-4 w-4" />
+                            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-text-soft">
+                              BDT
+                            </span>
                             <input
                               type="number"
                               step="0.01"
@@ -970,7 +975,7 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
                               value={data.sale_price}
                               onChange={(e) => handleNumberInput(e, 'sale_price')}
                               placeholder="79.99"
-                              className="w-full rounded-xl border border-line px-10 py-3 focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft"
+                              className="w-full rounded-xl border border-line py-3 pl-14 pr-4 focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft"
                             />
                           </div>
                           {data.regular_price && data.sale_price && discountPercentage > 0 && (
@@ -980,7 +985,7 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
                                 Save {discountPercentage}%
                               </span>
                               <span className="text-sm text-text-soft">
-                                Save ${(parseFloat(data.regular_price) - parseFloat(data.sale_price)).toFixed(2)}
+                                Save BDT {(parseFloat(data.regular_price) - parseFloat(data.sale_price)).toFixed(2)}
                               </span>
                             </div>
                           )}
@@ -1261,19 +1266,19 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
                         {data.sale_price ? (
                           <div className="flex items-center gap-2">
                             <span className="text-xl font-bold text-marigold">
-                              ${parseFloat(data.sale_price).toFixed(2)}
+                              BDT {parseFloat(data.sale_price).toFixed(2)}
                             </span>
                             <span className="text-sm text-text-soft line-through">
-                              ${parseFloat(data.regular_price).toFixed(2)}
+                              BDT {parseFloat(data.regular_price).toFixed(2)}
                             </span>
                           </div>
                         ) : data.regular_price ? (
                           <span className="text-xl font-bold text-ink">
-                            ${parseFloat(data.regular_price).toFixed(2)}
+                            BDT {parseFloat(data.regular_price).toFixed(2)}
                           </span>
                         ) : (
                           <span className="text-xl font-bold text-text-soft">
-                            $0.00
+                            BDT 0.00
                           </span>
                         )}
                       </div>
