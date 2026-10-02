@@ -53,6 +53,13 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        // The account exists and is signed in either way. Only the email failed,
+        // so say so plainly instead of implying the link is already on its way.
+        if ($user->verificationMailFailed) {
+            return redirect(route('dashboard', absolute: false))
+                ->with('error', $user->verificationMailFailureMessage());
+        }
+
         return redirect(route('dashboard', absolute: false));
     }
 }

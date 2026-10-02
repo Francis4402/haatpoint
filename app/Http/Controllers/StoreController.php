@@ -51,6 +51,14 @@ class StoreController extends Controller
      */
     public function create()
     {
+        // Catch this on the way in, so an unverified vendor is sent to the
+        // verification screen before filling in a form they cannot submit.
+        if (Auth::check() && Auth::user()->email_verified_at === null) {
+            return redirect()
+                ->route('verification.notice')
+                ->with('error', 'Verify your email address before creating a store.');
+        }
+
         return Inertia::render('dashboard/forms/CreateStoreForm');
     }
 
@@ -59,6 +67,52 @@ class StoreController extends Controller
      */
     public function store(Request $request)
     {
+        // Every guard below refuses the request with a plain redirect, so they
+        // run before BOTH the transaction and $request->validate().
+        //
+        // Validation used to come first, which made the guards unreachable for
+        // any payload that failed validation, and returning from inside the
+        // transaction left it open -- which then broke the next request on the
+        // same connection with "There is already an active transaction".
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Please log in before creating a store.']);
+        }
+
+        // A vendor with an unconfirmed address may not open a store. Google
+        // sign-ups arrive verified, so this only catches vendors who registered
+        // through the form.
+        //
+        // This redirects to the verification page rather than bouncing back to
+        // this same form. A plain redirect()->back() answers the Inertia POST
+        // with a 302 and an HTML body, which the client turns into a full page
+        // reload: no toast, no message, and it just looks like the button did
+        // nothing.
+        if ($user->email_verified_at === null) {
+            return redirect()
+                ->route('verification.notice')
+                ->with('error', 'Verify your email address before creating a store.');
+        }
+
+        // An agent may only operate stores while their registered National
+        // ID is valid, otherwise the store is considered closed to them.
+        if ($user instanceof Agent
+            && $user->national_id !== null
+            && !preg_match('/^\d{10}$|^\d{17}$/', (string) $user->national_id)) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'You must provide a valid National ID to create a store. Without a valid National ID your store will be closed.']);
+        }
+
+        if ($user instanceof Agent && Store::where('agent_id', $user->id)->count() >= 3) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'You can create at most 3 stores.']);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|unique:stores,name',
             'storetype' => 'required|string',
@@ -76,30 +130,6 @@ class StoreController extends Controller
 
         try {
             DB::beginTransaction();
-
-            $user = Auth::user();
-
-            if (!$user) {
-                throw new \Exception('User not authenticated');
-            }
-
-            // An agent may only operate stores while their registered National
-            // ID is valid, otherwise the store is considered closed to them.
-            // (New agents always register with a valid NID; legacy agents with
-            // no NID on file still pass the store form's own NID validation.)
-            if ($user instanceof Agent
-                && $user->national_id !== null
-                && !preg_match('/^\d{10}$|^\d{17}$/', (string) $user->national_id)) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['error' => 'You must provide a valid National ID to create a store. Without a valid National ID your store will be closed.']);
-            }
-
-            if ($user instanceof Agent && Store::where('agent_id', $user->id)->count() >= 3) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['error' => 'You can create at most 3 stores.']);
-            }
 
             // Create store first
             $store = Store::create([

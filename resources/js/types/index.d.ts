@@ -223,5 +223,15 @@ export type PageProps<
 > = T & {
     auth: {
         user: User;
+        /** False when the signed-in account still has to confirm its address. */
+        requiresVerification?: boolean;
+        isVerified?: boolean;
+        incompleteVendorProfile?: boolean;
+        missingVendorProfileFields?: string[];
+    };
+    /** Shared by HandleInertiaRequests so redirect()->back()->with() is visible. */
+    flash?: {
+        success?: string | null;
+        error?: string | null;
     };
 };

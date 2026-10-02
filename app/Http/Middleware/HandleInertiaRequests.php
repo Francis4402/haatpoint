@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Contact;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -30,15 +31,27 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        // Resolved once and reused: the default `web` guard does not know about
+        // the agent or admin sessions, so a vendor would otherwise read as
+        // signed out everywhere in the SPA.
+        $user = $request->user()
+            ?? auth('agent')->user()
+            ?? auth('admin')->user();
+
+        // Only User and Agent implement the MustVerifyEmail contract, so that
+        // is the discriminator. method_exists() does not work here: every model
+        // extending Illuminate\Foundation\Auth\User inherits hasVerifiedEmail()
+        // from the framework trait, including Admin, which has no verification
+        // step and must never be warned about one.
+        $requiresVerification = $user instanceof MustVerifyEmail
+            && ! $user->hasVerifiedEmail();
+
         return [
             ...parent::share($request),
             'auth' => [
-                // $request->user() only reads the default `web` guard, so a
-                // vendor or staff member saw the signed-out state everywhere in
-                // the SPA even though their session was valid.
-                'user' => $request->user()
-                    ?? auth('agent')->user()
-                    ?? auth('admin')->user(),
+                'user' => $user,
+                'isVerified' => $requiresVerification ? false : true,
+                'requiresVerification' => $requiresVerification,
             ],
             // Without this, redirect()->back()->with('success'|'error', ...) is
             // invisible to the SPA and actions appear to do nothing.
