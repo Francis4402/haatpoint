@@ -65,6 +65,11 @@ export default function CreateStoreForm({auth}: PageProps) {
     mobile: ''
   });
 
+  // useForm types `errors` from the field list above, so the controller's
+  // generic `error` key is not on the inferred type. Read it through a widened
+  // view rather than casting at each use site.
+  const formErrors = errors as Record<string, string | undefined>;
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -149,6 +154,20 @@ export default function CreateStoreForm({auth}: PageProps) {
 
         {/* Main Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* The controller's business-rule guards (unverified address, invalid
+              National ID on the account, store limit) answer with a generic
+              `error` key rather than a field name, so they used to land in the
+              error bag where no input renders them: the submit looked ignored. */}
+          {formErrors.error && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+            >
+              <HiOutlineExclamationCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
+              <span>{formErrors.error}</span>
+            </div>
+          )}
+
           {/* Store Information Card */}
           <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
             <div className="flex items-center gap-2 mb-6 pb-4 border-b border-line">
