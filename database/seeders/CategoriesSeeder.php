@@ -70,14 +70,9 @@ class CategoriesSeeder extends Seeder
                 'subcategories' => ['Vitamins & Supplements', 'First Aid', 'Pain Relief', 'Cough & Cold', 'Digestive Health', 'Baby Care', 'Medical Devices', 'Thermometers', 'Blood Pressure Monitors'],
             ],
             [
-                'name' => 'Groceries & Food',
-                'brands' => ['Pran', 'Radhuni', 'Nestle', 'ACI', 'Fresh', 'Sajeeb', 'Chittol', 'Unilever', 'Olympic', 'Premier'],
-                'subcategories' => ['Rice & Lentils', 'Cooking Oil', 'Spices', 'Snacks', 'Biscuits', 'Chocolates', 'Beverages', 'Tea & Coffee', 'Cereal & Breakfast', 'Sauces & Pickles', 'Dairy Products', 'Flour & Atta'],
-            ],
-            [
                 'name' => 'Baby & Maternity',
                 'brands' => ['Pampers', 'Huggies', 'Molfix', 'Little Angel', 'MamyPoko', 'Baby Dove', 'Chicco', 'Philips Avent', 'Goodbaby'],
-                'subcategories' => ['Diapers', 'Baby Wipes', 'Baby Formula', 'Baby Food', 'Baby Clothing', 'Nursery Furniture', 'Strollers', 'Car Seats', 'Baby Toys', 'Maternity Care'],
+                'subcategories' => ['Diapers', 'Baby Wipes', 'Baby Formula', 'Baby Clothing', 'Nursery Furniture', 'Strollers', 'Car Seats', 'Baby Toys', 'Maternity Care'],
             ],
             [
                 'name' => 'Toys & Games',
@@ -112,7 +107,7 @@ class CategoriesSeeder extends Seeder
             [
                 'name' => 'Pet Supplies',
                 'brands' => ['Pedigree', 'Royal Canin', 'Whiskas', 'Drools', 'Me-O', 'Hartz', 'PetMaster', 'Cricket'],
-                'subcategories' => ['Dog Food', 'Cat Food', 'Pet Toys', 'Pet Grooming', 'Aquarium & Fish', 'Bird Supplies', 'Pet Beds', 'Leashes & Collars', 'Pet Health'],
+                'subcategories' => ['Pet Toys', 'Pet Grooming', 'Aquarium & Fish', 'Bird Supplies', 'Pet Beds', 'Leashes & Collars', 'Pet Health'],
             ],
             [
                 'name' => 'Tools & Hardware',
@@ -248,7 +243,6 @@ class CategoriesSeeder extends Seeder
             'watches_jewelry'       => '13646797',
             'beauty_personal_care'  => '7290627',
             'health_wellness'       => '13013778',
-            'groceries_food'        => '28670062',
             'baby_maternity'        => '6849259',
             'toys_games'            => '8289844',
             'sports_fitness'        => '31759373',

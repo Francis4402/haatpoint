@@ -75,7 +75,6 @@ class ProductsSeeder extends Seeder
         'Watches & Jewelry' => [900, 250000],
         'Beauty & Personal Care' => [250, 6500],
         'Health & Wellness' => [180, 4800],
-        'Groceries & Food' => [120, 3200],
         'Baby & Maternity' => [400, 22000],
         'Toys & Games' => [300, 9000],
         'Sports & Fitness' => [600, 60000],
@@ -100,7 +99,7 @@ class ProductsSeeder extends Seeder
     private const FALLBACK_CATEGORIES = [
         'Electronics', 'TV & Audio', 'Home Appliances', "Men's Fashion", "Women's Fashion",
         "Kids' Fashion", 'Shoes & Footwear', 'Bags & Luggage', 'Watches & Jewelry',
-        'Beauty & Personal Care', 'Health & Wellness', 'Groceries & Food', 'Baby & Maternity',
+        'Beauty & Personal Care', 'Health & Wellness', 'Baby & Maternity',
         'Toys & Games', 'Sports & Fitness', 'Automotive & Motorcycle', 'Books & Stationery',
         'Home & Living', 'Kitchen & Dining', 'Pet Supplies', 'Tools & Hardware',
         'Garden & Outdoor', 'Office & Business', 'Travel & Luggage', 'Musical Instruments',

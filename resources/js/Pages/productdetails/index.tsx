@@ -23,7 +23,7 @@ import {
 } from "react-icons/fa";
 import { Product, storeType, Comments } from "@/types";
 import AppLayout from "@/Layouts/AppLayout";
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import { toast } from "sonner";
 import { useStore } from "../state/cartStore";
 import CommentsList from "../dashboard/forms/CommentsList";
@@ -189,18 +189,20 @@ const ProductDetailsPage = ({
   const currentImage = productImages[selectedImageIndex] || '/otherplaceholder.jpg';
   const currentImageUrl = getImageUrl(currentImage);
 
-  const handleAddToCart = (): void => {
+  const handleAddToCart = (): boolean => {
     if (!product.inStock || product.quantity === 0) {
       toast.error('Product is out of stock');
-      return;
+      return false;
     }
 
     if (currentCartQuantity + quantity > (product.quantity || 0)) {
       toast.error(`Only ${product.quantity} items available in stock`);
-      return;
+      return false;
     }
 
     addToCart(product, store, quantity);
+
+    return true;
   };
 
   const incrementQuantity = (): void => {
@@ -598,12 +600,12 @@ const ProductDetailsPage = ({
 
                   <button
                     onClick={() => {
-                      if (!product.inStock || product.quantity === 0) {
-                        toast.error('Product is out of stock');
-                        return;
+                      // Only navigate once the item is really in the cart,
+                      // otherwise the toast explaining the refusal disappears
+                      // with the navigation and the button looks broken.
+                      if (handleAddToCart()) {
+                        router.visit(route('cart.index'));
                       }
-                      handleAddToCart();
-                      window.location.href = '/checkout';
                     }}
                     disabled={!product.inStock || product.quantity === 0}
                     className="w-full py-4 bg-marigold hover:bg-marigold-dark text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"

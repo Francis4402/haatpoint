@@ -239,7 +239,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
         }
 
         toast.success(
-          `Delivery charge: ৳${totalDeliveryCharge.toFixed(2)} (Pathao: ৳${pathaoDeliveryCharge.toFixed(2)} + ${weightMessage} + 20 service fee)`,
+          `Delivery charge: ৳${totalDeliveryCharge.toFixed(2)} (Pathao: ৳${pathaoDeliveryCharge.toFixed(2)} + ${weightMessage})`,
           { duration: 6000 }
         );
       }
