@@ -60,8 +60,8 @@ export default function UnverifiedEmailBanner() {
             <div className="min-w-0 flex-1">
                 <p className="font-semibold">Your email address is not verified.</p>
                 <p className="text-red-700">
-                    Confirm it to add products to your cart, place orders and, if you are a vendor,
-                    open your store.
+                    Confirming it is optional and nothing is blocked until you do. It does help us
+                    reach you about your orders and store.
                 </p>
             </div>
 

@@ -51,17 +51,13 @@ class StoreController extends Controller
      */
     public function create()
     {
-        // Catch this on the way in, so an unverified vendor is sent to the
-        // verification screen before filling in a form they cannot submit.
-        if (Auth::check() && $this->requiresVerifiedEmail(Auth::user()) && Auth::user()->email_verified_at === null) {
-            return redirect()
-                ->route('verification.notice')
-                ->with('error', 'Verify your email address before creating a store.');
-        }
+        // Email verification is no longer enforced here. Verification pages,
+        // routes and mail still exist, so anyone who wants to confirm their
+        // address still can, but it no longer gates selling.
 
-        // Same reasoning for KYC: an incomplete vendor is sent straight to the
-        // form that can actually fix it rather than to the store form, which
-        // would accept the submission and refuse it on POST.
+        // An incomplete vendor is still sent straight to the form that can fix
+        // it rather than to the store form, which would accept the submission
+        // and refuse it on POST.
         if (Auth::user() instanceof Agent && !Auth::user()->hasCompleteVendorProfile()) {
             return redirect()
                 ->route('vendor.profile.edit')
@@ -91,21 +87,9 @@ class StoreController extends Controller
                 ->withErrors(['error' => 'Please log in before creating a store.']);
         }
 
-        // A vendor with an unconfirmed address may not open a store. Google
-        // sign-ups arrive verified, so this only catches vendors who registered
-        // through the form. Staff (admin/superadmin) never have to verify, so
-        // they are not checked at all -- see requiresVerifiedEmail().
-        //
-        // This redirects to the verification page rather than bouncing back to
-        // this same form. A plain redirect()->back() answers the Inertia POST
-        // with a 302 and an HTML body, which the client turns into a full page
-        // reload: no toast, no message, and it just looks like the button did
-        // nothing.
-        if ($this->requiresVerifiedEmail($user) && $user->email_verified_at === null) {
-            return redirect()
-                ->route('verification.notice')
-                ->with('error', 'Verify your email address before creating a store.');
-        }
+        // Email verification is no longer required to open a store. The
+        // verification feature itself is untouched, it simply no longer gates
+        // this action.
 
         // An agent may only operate stores while their KYC is complete. This
         // checks every field, not just National ID: a vendor with a valid ID
@@ -307,7 +291,7 @@ class StoreController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $store)
+    public function update(Request $request, Store $store)
     {
         $validated = $request->validate([
             'name' => [
@@ -388,7 +372,7 @@ class StoreController extends Controller
             'name' => $validated['name'],
             'storetype' => $validated['storetype'],
             'address' => $validated['address'],
-            'license' => $validated['license'],
+            'license' => $validated['license'] ?? null,
             'mobile' => $validated['mobile'],
             'national_id' => $validated['national_id'],
         ]);
@@ -398,6 +382,8 @@ class StoreController extends Controller
             $store->logo = $validated['logo'];
             $store->save();
         }
+
+        return redirect()->route('dashboard.store');
     }
 
     /**

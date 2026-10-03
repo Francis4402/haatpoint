@@ -13,6 +13,7 @@ use App\Models\Wishlist;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -50,11 +51,19 @@ class ProductsController extends Controller
      */
     public function create()
     {
-        $store = $this->roleStore(Auth::user());
-        $categories = Categories::all();
+        $stores = $this->roleStores(Auth::user());
+
+        // The form reads store.id, so handing it a null crashed the page. Send
+        // the seller to the store list instead of rendering a broken form.
+        if ($stores->isEmpty()) {
+            return redirect()->route('dashboard.store')
+                ->with('error', 'Create a store before adding products.');
+        }
+
         return Inertia::render('dashboard/forms/CreateProductForm', [
-            'store' => $store,
-            'categories' => $categories
+            'stores' => $stores,
+            'store' => $stores->first(),
+            'categories' => Categories::all(),
         ]);
     }
 
@@ -64,17 +73,31 @@ class ProductsController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        $store = $this->roleStore($user);
+        $stores = $this->roleStores($user);
 
-        if (!$store) {
+        if ($stores->isEmpty()) {
             return redirect()->back()->withErrors([
                 'store_id' => 'You need to create a store first before adding products.'
             ]);
         }
 
+        // An agent may own up to three stores, so the form now offers a picker.
+        // store_id stays optional: a request without one falls back to the
+        // first store rather than failing.
+        $requestedStore = $request->input('store_id');
+
+        if ($requestedStore && ! $this->canUseStore($user, $requestedStore)) {
+            return redirect()->back()->withInput()->withErrors([
+                'store_id' => 'You can only add products to one of your own stores.',
+            ]);
+        }
+
+        $store = ($requestedStore ? $stores->firstWhere('id', $requestedStore) : null) ?? $stores->first();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:products,slug',   // ✅ validate slug
+            'store_id' => ['nullable', Rule::exists('stores', 'id')],
             'category' => 'required|string|max:255',
             'subcategory' => 'nullable|string',                          // ✅ nullable
             'brand' => 'nullable|string',                                // ✅ nullable
@@ -221,13 +244,17 @@ class ProductsController extends Controller
      */
     public function edit($slug)
     {
-        $categories = Categories::all();
-        $products = Products::where('slug', $slug)->with('store')->first();
-        $store = $products ? $products->store : $this->roleStore(Auth::user());
+        $product = Products::where('slug', $slug)->with('store')->firstOrFail();
+
+        $this->abortUnlessOwnsProduct($product);
+
+        $stores = $this->roleStores(Auth::user());
+
         return Inertia::render('dashboard/forms/ProductUpdateForm', [
-            'product' => $products,
-            'store' => $store,
-            'categories' => $categories
+            'product' => $product,
+            'store' => $product->store,
+            'stores' => $stores,
+            'categories' => Categories::all(),
         ]);
     }
 
@@ -237,18 +264,59 @@ class ProductsController extends Controller
      */
     private function roleStore($user)
     {
-        if ($user instanceof Agent) {
-            return Store::where('agent_id', $user->id)->first();
-        }
-        return Store::where('user_id', $user->id)->first();
+        return $this->roleStores($user)->first();
     }
 
     private function roleStores($user)
     {
-        if ($user instanceof Agent) {
-            return Store::where('agent_id', $user->id)->get();
+        $query = $user instanceof Agent
+            ? Store::where('agent_id', $user->id)
+            : Store::where('user_id', $user->id);
+
+        // Ordered so the fallback store is a predictable one rather than
+        // whichever row the database happens to return first.
+        return $query->orderBy('created_at')->get();
+    }
+
+    /**
+     * Whether the actor is allowed to write products into the given store.
+     *
+     * Agents own stores through stores.agent_id; every other identity uses
+     * stores.user_id. Admins and superadmins run the platform, and their
+     * product list already spans every store, so they keep that broad reach.
+     */
+    private function canUseStore($user, $storeId): bool
+    {
+        if ($user instanceof Admin) {
+            return Store::whereKey($storeId)->exists();
         }
-        return Store::where('user_id', $user->id)->get();
+
+        return $this->roleStores($user)->contains('id', $storeId);
+    }
+
+    /**
+     * Refuse the request unless the product sits in a store the actor owns.
+     *
+     * edit(), update() and destroy() used to look products up by slug/id with no
+     * ownership check at all, so any signed-in account could open, rewrite or
+     * delete another vendor's product, and update() could re-point it at any
+     * store in the system.
+     */
+    private function abortUnlessOwnsProduct(Products $product): void
+    {
+        $user = Auth::user();
+
+        if ($user instanceof Admin) {
+            return;
+        }
+
+        $store = $product->store;
+
+        $owns = $store && ($user instanceof Agent
+            ? $store->agent_id === $user->id
+            : $store->user_id === $user->id);
+
+        abort_unless($owns, 403, 'You do not have permission to manage this product.');
     }
 
     /**
@@ -256,7 +324,9 @@ class ProductsController extends Controller
      */
     public function update(Request $request, $slug)
     {
-        $product = Products::where('slug', $slug)->firstOrFail();
+        $product = Products::where('slug', $slug)->with('store')->firstOrFail();
+
+        $this->abortUnlessOwnsProduct($product);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -275,8 +345,14 @@ class ProductsController extends Controller
             'images_to_remove' => 'nullable|string',
             'item_weight' => 'required|numeric|min:0.1',
             'product_type' => 'required|in:regular,featured,trending,top-selling,new-arrival',
-            'store_id' => 'required|exists:stores,id',
+            'store_id' => ['required', Rule::exists('stores', 'id')],
         ]);
+
+        // store_id is mass-assignable (Products::$guarded is empty), so an
+        // unchecked value here would let anyone move a product into any store.
+        if (! $this->canUseStore($request->user(), $validated['store_id'])) {
+            abort(403, 'You can only move a product to one of your own stores.');
+        }
 
         // Normalize inStock ("1"/"0" from FormData → bool)
         $validated['inStock'] = $request->boolean('inStock');
@@ -348,7 +424,9 @@ class ProductsController extends Controller
      */
     public function destroy($id)
     {
-        $product = Products::findOrFail($id);
+        $product = Products::with('store')->findOrFail($id);
+
+        $this->abortUnlessOwnsProduct($product);
 
         if ($product->images) {
             $images = json_decode($product->images, true);
@@ -361,6 +439,9 @@ class ProductsController extends Controller
         }
 
         $product->delete();
+
+        return redirect()->route('dashboard.products')
+            ->with('success', 'Product deleted successfully!');
     }
 
     /**

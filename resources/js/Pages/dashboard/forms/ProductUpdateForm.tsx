@@ -44,6 +44,7 @@ interface EditProductFormProps {
     user: any;
   };
   store: storeType;
+  stores?: storeType[];
   categories: categoryType[];
   product: Product;
 }
@@ -74,7 +75,7 @@ const quillFormats = [
   'link', 'image', 'video'
 ];
 
-export default function EditProductForm({ auth, store, categories, product }: EditProductFormProps) {
+export default function EditProductForm({ auth, store, stores = [], categories, product }: EditProductFormProps) {
   const imagesInputRef = useRef<HTMLInputElement>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -116,6 +117,8 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
     store_id: store.id || '',
     product_type: (product.product_type as ProductType) || 'regular',
   });
+
+  const selectedStore = stores.find((s) => s.id === data.store_id) ?? store;
 
   const discountPercentage = data.regular_price && data.sale_price
     ? Math.round((1 - parseFloat(data.sale_price) / parseFloat(data.regular_price)) * 100) : 0;
@@ -397,7 +400,7 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
             <h1 className="text-[30px] sm:text-[36px] lg:text-[44px]">Edit Product</h1>
             <p className="text-text-soft mt-1 flex items-center gap-2">
               <FaStore className="h-4 w-4 text-marigold" />
-              Update product in <span className="font-medium text-ink">{store.name}</span>
+              Update product in <span className="font-medium text-ink">{selectedStore.name}</span>
             </p>
             <p className="text-xs text-text-soft mt-1">
               Product ID: <span className="font-mono">{product.id}</span>
@@ -422,7 +425,7 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
               <div>
                 <h3 className="font-display font-extrabold uppercase text-lg">Editing Product</h3>
                 <p className="opacity-90">
-                  Updating product in: <span className="font-semibold">{store.name}</span>
+                  Updating product in: <span className="font-semibold">{selectedStore.name}</span>
                 </p>
               </div>
             </div>
@@ -431,6 +434,35 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
               Edit Mode
             </span>
           </div>
+          {stores.length > 1 && (
+            <div className="mt-4 pt-4 border-t border-white/20">
+              <label
+                htmlFor="update_product_store"
+                className="block text-xs font-semibold uppercase tracking-wide opacity-90 mb-2"
+              >
+                Move to store
+              </label>
+              <select
+                id="update_product_store"
+                name="store_id"
+                value={data.store_id}
+                onChange={(e) => setData('store_id', e.target.value)}
+                className="w-full md:w-1/2 rounded-xl border border-line bg-paper-dim px-4 py-2.5 text-ink focus:ring-2 focus:ring-marigold focus:outline-none"
+              >
+                {stores.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              {errors.store_id && (
+                <p className="text-xs mt-2 flex items-center gap-1">
+                  <HiOutlineExclamationCircle className="h-4 w-4" />
+                  {errors.store_id}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -1310,7 +1342,7 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
                           <FaStore className="h-3 w-3 text-marigold" />
                           Store
                         </span>
-                        <span className="font-medium text-ink">{store.name}</span>
+                        <span className="font-medium text-ink">{selectedStore.name}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-text-soft flex items-center gap-2">
@@ -1356,7 +1388,7 @@ export default function EditProductForm({ auth, store, categories, product }: Ed
                   <div className="text-xs text-text-soft space-y-2">
                     <p className="flex items-center gap-2">
                       <FaInfoCircle className="h-3 w-3 text-marigold" />
-                      <span>Product will be updated in: <span className="font-medium text-ink">{store.name}</span></span>
+                      <span>Product will be updated in: <span className="font-medium text-ink">{selectedStore.name}</span></span>
                     </p>
                     <p className="flex items-center gap-2">
                       <HiOutlineExclamationCircle className="h-3 w-3" />

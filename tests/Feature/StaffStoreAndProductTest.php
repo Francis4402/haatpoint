@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Admin;
 use App\Models\Agent;
+use App\Models\Products;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -118,6 +119,63 @@ class StaffStoreAndProductTest extends TestCase
         ]);
     }
 
+    /**
+     * update() took an untyped $store, so Laravel never bound the model: the
+     * unique rules ignored a null id and rejected the store's own values, and
+     * the save then fataled on a string. A superadmin could create a store but
+     * not edit one.
+     */
+    public function test_a_superadmin_can_update_a_store_they_created(): void
+    {
+        $admin = $this->makeStaff();
+
+        $this->actingAs($admin)->post(route('stores.store'), $this->storePayload());
+
+        $store = Store::where('name', 'Boss Store')->firstOrFail();
+
+        $response = $this->actingAs($admin, 'admin')->put(route('dashboard.storeupdate', $store->id), $this->storePayload([
+            'name' => 'Boss Store Renamed',
+            'address' => 'House 9, Road 9, Dhaka',
+        ]));
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('dashboard.store'));
+
+        $this->assertDatabaseHas('stores', [
+            'id' => $store->id,
+            'name' => 'Boss Store Renamed',
+            'address' => 'House 9, Road 9, Dhaka',
+        ]);
+    }
+
+    /**
+     * The route only accepted PUT while ProductUpdateForm submits with
+     * router.post, so every save from the update form returned 405.
+     */
+    public function test_the_product_update_form_can_save_over_the_verb_it_submits(): void
+    {
+        $admin = $this->makeStaff();
+
+        $this->actingAs($admin)->post(route('stores.store'), $this->storePayload());
+        $this->actingAs($admin)->post(route('products.store'), $this->productPayload());
+
+        $store = Store::where('name', 'Boss Store')->firstOrFail();
+        $product = Products::where('name', 'Boss Product')->firstOrFail();
+
+        $response = $this->actingAs($admin)->post(route('dashboard.updateproduct', $product->slug), $this->productPayload([
+            'name' => 'Boss Product Renamed',
+            'slug' => 'boss-product',
+            'store_id' => $store->id,
+        ]));
+
+        $response->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'name' => 'Boss Product Renamed',
+        ]);
+    }
+
     public function test_staff_are_not_sent_to_the_verification_page_when_placing_an_order(): void
     {
         $admin = $this->makeStaff();
@@ -135,7 +193,11 @@ class StaffStoreAndProductTest extends TestCase
         );
     }
 
-    public function test_an_unverified_agent_is_still_kept_away_from_stores(): void
+    /**
+     * Email verification is no longer enforced. This agent still has complete
+     * KYC, so the vendor-profile gate does not apply and the store form opens.
+     */
+    public function test_an_unverified_agent_can_reach_the_store_form_and_create_a_store(): void
     {
         $agent = Agent::create([
             'name' => 'Vendor',
@@ -151,13 +213,13 @@ class StaffStoreAndProductTest extends TestCase
 
         $this->actingAs($agent)
             ->get(route('dashboard.createstore'))
-            ->assertRedirect(route('verification.notice'));
+            ->assertOk();
 
         $this->actingAs($agent)
             ->post(route('stores.store'), $this->storePayload())
-            ->assertRedirect(route('verification.notice'));
+            ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseCount('stores', 0);
+        $this->assertDatabaseCount('stores', 1);
     }
 
     public function test_a_verified_agent_can_create_a_store_and_upload_a_product(): void
@@ -189,7 +251,7 @@ class StaffStoreAndProductTest extends TestCase
         ]);
     }
 
-    public function test_a_customer_is_also_kept_away_from_stores_until_verified(): void
+    public function test_a_customer_is_not_blocked_from_stores_by_verification(): void
     {
         $user = User::create([
             'name' => 'Shopper',
@@ -201,8 +263,8 @@ class StaffStoreAndProductTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('stores.store'), $this->storePayload())
-            ->assertRedirect(route('verification.notice'));
+            ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseCount('stores', 0);
+        $this->assertDatabaseCount('stores', 1);
     }
 }

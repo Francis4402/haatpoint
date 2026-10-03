@@ -720,7 +720,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                         <div className="flex items-center justify-between font-mono text-xs" style={{ color: '#4B4B46' }}>
                           <span>© {new Date().getFullYear()} Haatpoint</span>
                           <Link
-                            href="/terms"
+                            href="/terms-and-conditions"
                             onClick={() => setIsMobileMenuOpen(false)}
                             className="hover:text-[#57654A] transition-colors"
                           >

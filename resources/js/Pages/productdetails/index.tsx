@@ -26,7 +26,6 @@ import AppLayout from "@/Layouts/AppLayout";
 import { Link } from "@inertiajs/react";
 import { toast } from "sonner";
 import { useStore } from "../state/cartStore";
-import { useVerificationGate, UNVERIFIED_CART_MESSAGE } from "../state/verification";
 import CommentsList from "../dashboard/forms/CommentsList";
 import FormatPrice from "../utils/FormatePrice";
 import axios from "axios";
@@ -82,7 +81,6 @@ const ProductDetailsPage = ({
   const [refreshKey, setRefreshKey] = useState<number>(0);
 
   const { addToCart, getItemById } = useStore();
-  const { requiresVerification } = useVerificationGate();
   const cartItem = getItemById(product.id.toString());
   const currentCartQuantity = cartItem?.cartQty || 0;
 
@@ -192,13 +190,6 @@ const ProductDetailsPage = ({
   const currentImageUrl = getImageUrl(currentImage);
 
   const handleAddToCart = (): void => {
-    // Checked before stock so an unverified account gets the address problem
-    // explained rather than a confusing out-of-stock message.
-    if (requiresVerification) {
-      toast.error(UNVERIFIED_CART_MESSAGE);
-      return;
-    }
-
     if (!product.inStock || product.quantity === 0) {
       toast.error('Product is out of stock');
       return;

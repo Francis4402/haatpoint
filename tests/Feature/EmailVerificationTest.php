@@ -321,15 +321,25 @@ class EmailVerificationTest extends TestCase
         );
     }
 
-    public function test_an_unverified_vendor_cannot_create_a_store(): void
+    /**
+     * Verification is no longer enforced, so an unconfirmed address does not
+     * stop a vendor selling. The verification feature itself still exists.
+     */
+    public function test_an_unverified_vendor_can_still_create_a_store(): void
     {
         $agent = $this->makeAgent(false);
 
+        $this->assertNull($agent->email_verified_at);
+
+        $this->actingAs($agent, 'agent')
+            ->get(route('dashboard.createstore'))
+            ->assertOk();
+
         $this->actingAs($agent, 'agent')
             ->post(route('stores.store'), $this->storePayload())
-            ->assertRedirect(route('verification.notice'));
+            ->assertSessionHasNoErrors();
 
-        $this->assertSame(0, Store::count());
+        $this->assertSame(1, Store::where('agent_id', $agent->id)->count());
     }
 
     public function test_a_verified_vendor_can_create_a_store(): void
@@ -396,16 +406,26 @@ class EmailVerificationTest extends TestCase
         ];
     }
 
-    public function test_an_unverified_customer_cannot_place_an_order(): void
+    /**
+     * Verification no longer blocks checkout. Scope is the gate, not the whole
+     * order: past this point the request goes on to the Pathao delivery API,
+     * which cannot run in tests.
+     */
+    public function test_an_unverified_customer_passes_the_order_verification_gate(): void
     {
         $user = $this->makeUser(false);
         $product = $this->makeProduct();
 
-        $this->actingAs($user)
-            ->post(route('orders.store'), $this->orderPayload($product))
-            ->assertRedirect(route('verification.notice'));
+        $this->assertNull($user->email_verified_at);
 
-        $this->assertDatabaseCount('orders', 0);
+        $response = $this->actingAs($user)
+            ->post(route('orders.store'), $this->orderPayload($product));
+
+        $this->assertNotSame(
+            route('verification.notice'),
+            $response->headers->get('Location'),
+            'An unverified customer was still sent to the verification screen.'
+        );
     }
 
     public function test_a_verified_customer_passes_the_order_verification_gate(): void

@@ -253,7 +253,7 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
     Route::get('/dashboard/stores', [StoreController::class, 'index'])->name('dashboard.store');
 
     Route::get('/dashboard/products/{slug}/edit', [ProductsController::class, 'edit'])->name('dashboard.productedit');
-    Route::put('/dashboard/products/update/{slug}', [ProductsController::class, 'update'])->name('dashboard.updateproduct');
+    Route::match(['put', 'post'], '/dashboard/products/update/{slug}', [ProductsController::class, 'update'])->name('dashboard.updateproduct');
 
     Route::get('/dashboard/stores/{id}/products', [StoreController::class, 'products'])
         ->name('dashboard.storeproducts');

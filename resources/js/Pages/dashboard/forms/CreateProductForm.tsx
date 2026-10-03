@@ -43,6 +43,7 @@ interface productFormType {
         user: any;
     };
     store: storeType;
+    stores?: storeType[];
     categories: categoryType[];
 }
 
@@ -70,7 +71,7 @@ const quillFormats = [
   'link', 'image', 'video'
 ];
 
-export default function CreateProductForm({auth, store, categories}: productFormType) {
+export default function CreateProductForm({auth, store, stores = [], categories}: productFormType) {
   const imagesInputRef = useRef<HTMLInputElement>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [showSalePrice, setShowSalePrice] = useState(false);
@@ -110,6 +111,8 @@ export default function CreateProductForm({auth, store, categories}: productForm
     store_id: store.id || '',
     product_type: 'regular',
   });
+
+  const selectedStore = stores.find((s) => s.id === data.store_id) ?? store;
 
   const discountPercentage = data.regular_price && data.sale_price
     ? Math.round((1 - parseFloat(data.sale_price) / parseFloat(data.regular_price)) * 100) : 0;
@@ -337,7 +340,7 @@ export default function CreateProductForm({auth, store, categories}: productForm
             <h1 className="text-[30px] sm:text-[36px] lg:text-[44px]">Create Product</h1>
             <p className="text-text-soft mt-1 flex items-center gap-2">
               <FaStore className="h-4 w-4 text-marigold" />
-              Add a new product to <span className="font-medium text-ink">{store.name}</span>
+              Add a new product to <span className="font-medium text-ink">{selectedStore.name}</span>
             </p>
           </div>
           <Link
@@ -359,7 +362,7 @@ export default function CreateProductForm({auth, store, categories}: productForm
               <div>
                 <h3 className="font-display font-extrabold uppercase text-lg">Store Ready!</h3>
                 <p className="opacity-90">
-                  Products will be added to: <span className="font-semibold">{store.name}</span>
+                  Products will be added to: <span className="font-semibold">{selectedStore.name}</span>
                 </p>
               </div>
             </div>
@@ -368,6 +371,35 @@ export default function CreateProductForm({auth, store, categories}: productForm
               Active Store
             </span>
           </div>
+          {stores.length > 1 && (
+            <div className="mt-4 pt-4 border-t border-white/20">
+              <label
+                htmlFor="create_product_store"
+                className="block text-xs font-semibold uppercase tracking-wide opacity-90 mb-2"
+              >
+                Choose a store
+              </label>
+              <select
+                id="create_product_store"
+                name="store_id"
+                value={data.store_id}
+                onChange={(e) => setData('store_id', e.target.value)}
+                className="w-full md:w-1/2 rounded-xl border border-line bg-paper-dim px-4 py-2.5 text-ink focus:ring-2 focus:ring-marigold focus:outline-none"
+              >
+                {stores.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              {errors.store_id && (
+                <p className="text-xs mt-2 flex items-center gap-1">
+                  <HiOutlineExclamationCircle className="h-4 w-4" />
+                  {errors.store_id}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -1213,7 +1245,7 @@ export default function CreateProductForm({auth, store, categories}: productForm
                           <FaStore className="h-3 w-3 text-marigold" />
                           Store
                         </span>
-                        <span className="font-medium text-ink">{store.name}</span>
+                        <span className="font-medium text-ink">{selectedStore.name}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-text-soft flex items-center gap-2">
@@ -1259,7 +1291,7 @@ export default function CreateProductForm({auth, store, categories}: productForm
                   <div className="text-xs text-text-soft space-y-2">
                     <p className="flex items-center gap-2">
                       <FaInfoCircle className="h-3 w-3 text-marigold" />
-                      <span>Product will be added to: <span className="font-medium text-ink">{store.name}</span></span>
+                      <span>Product will be added to: <span className="font-medium text-ink">{selectedStore.name}</span></span>
                     </p>
                     <p className="flex items-center gap-2">
                       <HiOutlineExclamationCircle className="h-3 w-3" />

@@ -3,7 +3,6 @@ import { FaShoppingCart } from 'react-icons/fa'
 import { toast } from 'sonner'
 import { useStore } from '../state/cartStore'
 import { useTranslation } from '@/state/languageStore'
-import { useVerificationGate, UNVERIFIED_CART_MESSAGE } from '../state/verification'
 
 interface AddtoCartButtonProps {
     product: CartItem,
@@ -18,20 +17,11 @@ const AddtoCartButton = ({
     variant = 'full',
     size = 'md'
 }: AddtoCartButtonProps) => {
-    const addtoCart = useStore((state) => state.addToCart)
-    const { t } = useTranslation()
-    const { requiresVerification } = useVerificationGate()
+const addtoCart = useStore((state) => state.addToCart)
+  const { t } = useTranslation()
 
-    const handleAddToCart = (e: React.MouseEvent) => {
-        e.stopPropagation();
-
-        // The cart is client-side, so this is the only thing standing between an
-        // unverified account and a full cart. Order placement refuses it again
-        // server-side.
-        if (requiresVerification) {
-            toast.error(UNVERIFIED_CART_MESSAGE);
-            return;
-        }
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
 
         const resolvedStore = product.store;
 
