@@ -593,8 +593,13 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                           />
                           <label htmlFor="terms" className="ml-2 text-xs text-text-soft">
                             I agree to the{' '}
-                            <a href="/terms" className="text-marigold hover:underline" target="_blank">
-                              Terms & Conditions
+                            <a
+                              href={route('terms.and.conditions')}
+                              className="text-marigold hover:underline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Terms &amp; Conditions
                             </a>{' '}
                             and confirm that the order information is correct
                           </label>
