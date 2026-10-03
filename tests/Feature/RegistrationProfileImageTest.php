@@ -121,7 +121,7 @@ class RegistrationProfileImageTest extends TestCase
 
         $this->assertSame(
             0,
-            count(Storage::disk('public')->files('user_images')),
+            count(Storage::disk('public')->files('profile_images')),
             'A rejected upload must not leave a file behind.'
         );
     }
@@ -153,7 +153,48 @@ class RegistrationProfileImageTest extends TestCase
         $images = User::where('email', 'person@gmail.com')->firstOrFail()->images;
 
         $this->assertIsString($images);
-        $this->assertStringStartsWith('user_images/', $images);
+        $this->assertStringStartsWith('profile_images/', $images);
         $this->assertNull(json_decode($images, true), 'The value decoded as JSON, so it is not a bare path.');
+    }
+
+    /**
+     * All three roles must land in the same folder.
+     *
+     * Splitting them per role would scatter the same kind of file across
+     * several directories and make a person's picture impossible to find
+     * without first knowing their role.
+     */
+    public function test_every_role_shares_the_one_profile_images_folder(): void
+    {
+        Storage::fake('public');
+
+        $this->post(route('register'), $this->payload([
+            'email' => 'shopper@gmail.com',
+            'image' => UploadedFile::fake()->image('a.jpg')->size(200),
+        ]))->assertSessionHasNoErrors();
+
+        $this->post(route('agent.register'), $this->payload([
+            'email' => 'vendor@gmail.com',
+            'image' => UploadedFile::fake()->image('b.jpg')->size(200),
+        ]))->assertSessionHasNoErrors();
+
+        $this->post(route('superadmin.register'), $this->payload([
+            'email' => 'boss@gmail.com',
+            'image' => UploadedFile::fake()->image('c.jpg')->size(200),
+        ]))->assertSessionHasNoErrors();
+
+        $paths = [
+            User::where('email', 'shopper@gmail.com')->firstOrFail()->images,
+            Agent::where('email', 'vendor@gmail.com')->firstOrFail()->images,
+            Admin::where('email', 'boss@gmail.com')->firstOrFail()->images,
+        ];
+
+        foreach ($paths as $path) {
+            $this->assertStringStartsWith('profile_images/', $path);
+        }
+
+        // Three distinct uploads, one folder, no per-role directories.
+        $this->assertCount(3, array_unique($paths));
+        $this->assertCount(3, Storage::disk('public')->files('profile_images'));
     }
 }

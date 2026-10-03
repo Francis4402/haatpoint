@@ -29,8 +29,16 @@ use Intervention\Image\Encoders\JpegEncoder;
  */
 trait StoresProfileImage
 {
-    /** Directory on the public disk that holds profile pictures. */
-    protected static string $profileImageDirectory = 'user_images';
+    /**
+     * Directory on the public disk that holds profile pictures.
+     *
+     * One directory for all three roles. users, agents and admins each have
+     * their own `images` column and each renders through the same dashboard
+     * avatar, so splitting them by role would mean three folders holding the
+     * same kind of file and no way to find a person's picture without knowing
+     * their role first.
+     */
+    protected static string $profileImageDirectory = 'profile_images';
 
     /** Validation rule for the profile picture field. */
     protected function profileImageRules(): array
