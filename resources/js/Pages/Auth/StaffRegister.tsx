@@ -1,4 +1,4 @@
-import { useEffect, FormEventHandler, useState } from 'react';
+import { useEffect, FormEventHandler, useState, useRef } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import WhatsAppChatButton from '@/Components/WhatsAppChatButton';
 import {
@@ -13,6 +13,8 @@ import {
   FaAddressBook,
   FaMobileAlt,
   FaIdCard,
+  FaCamera,
+  FaTimes,
 } from 'react-icons/fa';
 import { toast } from 'sonner';
 import SocialButtons from '@/Components/SocialButtons';
@@ -41,11 +43,14 @@ export default function StaffRegister({
     address: '',
     mobile: '',
     national_id: '',
+    image: null as File | null,
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
@@ -63,9 +68,46 @@ export default function StaffRegister({
     setPasswordStrength(strength);
   }, [data.password]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please select a valid image file (JPEG, PNG, JPG, GIF)');
+        return;
+      }
+
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Image size must be less than 2MB');
+        return;
+      }
+
+      setData('image', file);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setData('image', null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
     post(route(`${type}.register`), {
+      forceFormData: true,
       onSuccess: () => {
         toast.success('Registration Successful! Welcome aboard!');
       },
@@ -111,6 +153,70 @@ export default function StaffRegister({
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-lg border border-ink/10 p-8">
+          {/* Profile Image Upload */}
+          <div className="flex flex-col items-center mb-6">
+            <div className="relative group">
+              <div
+                className="w-24 h-24 rounded-full bg-paper border-4 border-ink/10 shadow-md cursor-pointer overflow-hidden hover:shadow-lg transition-shadow"
+                onClick={triggerFileInput}
+              >
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <FaUser className="h-12 w-12 text-ink/30" />
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={triggerFileInput}
+                className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-ink text-white flex items-center justify-center shadow-md hover:bg-ink/90 transition-colors"
+              >
+                <FaCamera className="h-4 w-4" />
+              </button>
+
+              {imagePreview && (
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-0 right-0 w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                >
+                  <FaTimes className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
+            />
+
+            <button
+              type="button"
+              onClick={triggerFileInput}
+              className="mt-2 text-sm font-body font-semibold text-marigold hover:text-marigold-dark transition-colors"
+            >
+              {imagePreview ? 'Change Photo' : 'Upload Profile Picture'}
+            </button>
+            <p className="text-xs font-body text-ink/40 mt-1">JPEG, PNG or GIF • Max 2MB</p>
+
+            {errors.image && (
+              <p className="mt-1 text-sm text-red-600 flex items-center">
+                <FaExclamationCircle className="h-3.5 w-3.5 mr-1" />
+                {errors.image}
+              </p>
+            )}
+          </div>
+
           <form onSubmit={submit} className="space-y-4">
             {/* Name */}
             <div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\User;
 use App\Rules\GmailAddress;
+use App\Traits\StoresProfileImage;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,8 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
+    use StoresProfileImage;
+
     /**
      * Display the registration view.
      */
@@ -41,12 +44,17 @@ class RegisteredUserController extends Controller
                 }
             }],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            // The form has always offered a picture, but the field was never
+            // read here, so the uploaded file was dropped on the floor and
+            // users.images stayed NULL for every self-registered account.
+            'image' => $this->profileImageRules(),
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'images' => $this->storeProfileImage($request->file('image')),
         ]);
 
         event(new Registered($user));

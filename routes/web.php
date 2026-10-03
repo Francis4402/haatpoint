@@ -26,7 +26,6 @@ use App\Models\Reviews;
 use App\Models\Store;
 use App\Models\Wishlist;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -66,15 +65,6 @@ Route::get('/', function () {
         ];
     }
 
-    // Each showcase rail runs its own query instead of filtering the paginated
-    // list above, because that list only carries 2 items and every rail would
-    // end up empty. Six per rail, picked at random so a repeat visit is not
-    // identical. inRandomOrder() is applied last and paired with a seeded
-    // fallback order so MySQL and SQLite both return a usable set.
-    //
-    // A rail tops itself up from the rest of the visible catalogue when its own
-    // product type cannot fill six slots, so a section is never left short just
-    // because the shop has few products of that type.
     $showcase = function (?string $productType, int $limit = 6) {
         $random = fn ($query) => $query
             ->inRandomOrder()
@@ -109,13 +99,6 @@ Route::get('/', function () {
     $trendingProducts = $showcase('trending');
     $dailyDiscoverProducts = $showcase('regular');
 
-    // Top Selling is derived from real orders. products.quantity is the stock
-    // level, so using it as a sold count would be fabricated data. Cancelled
-    // orders do not count as a sale; every other status does.
-    //
-    // The totals are aggregated in their own query and the products are then
-    // hydrated by id, because selecting products.* alongside a groupBy trips
-    // MariaDB's ONLY_FULL_GROUP_BY.
     $topSellingMinSold = 3;
 
     $soldTotals = DB::table('order_items')
@@ -140,11 +123,7 @@ Route::get('/', function () {
             ->sortByDesc('sold_count')
             ->values();
 
-    // Stores are only shown when they have something to sell, so the rail never
-    // leads to a page with an empty product grid. The count is computed as a
-    // correlated subquery and filtered through whereExists rather than
-    // withCount()+having(): a HAVING clause over a non-aggregate select is
-    // rejected by SQLite, and MySQL cannot reference a select alias in WHERE.
+
     $stores = Store::where('is_active', true)
             ->whereExists(function ($query) {
                 $query->selectRaw('1')
@@ -158,7 +137,6 @@ Route::get('/', function () {
             ->limit(12)
             ->get();
 
-    // Ratings for every product shown in any rail, computed in one query.
     $showcaseIds = collect([
         ...$offeredProducts->pluck('id'),
         ...$trendingProducts->pluck('id'),
@@ -316,16 +294,11 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
     Route::put('/comments/{comment}', [CommentsController::class, 'update'])->name('comments.update');
     Route::delete('/comments/{comment}', [CommentsController::class, 'destroy'])->name('comments.destroy');
 
-    // Rating the store itself rather than one of its products.
     Route::post('/stores/{store}/review', [CommentsController::class, 'storeReview'])->name('stores.review');
 });
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
-// The wishlist check is a read that the controller already guards with
-// Wishlist::isSignedIn(). It sits outside the auth group on purpose: the heart
-// buttons render for guests too, and behind auth the endpoint answered with an
-// HTML login redirect that the component then failed to parse as JSON.
 Route::get('/wishlist/check/{product}', [WishlistController::class, 'check'])->name('wishlist.check');
 
 Route::get('/stores', [StoreController::class, 'storeroute'])->name('stores.index');
@@ -348,10 +321,10 @@ Route::get('/hotdeals', [ProductsController::class, 'hotdeals'])->name('products
 
 Route::get('/new-arrivals', [ProductsController::class, 'newArrivals'])->name('products.newarrivals');
 
-// Live suggestions powering the navbar + dashboard search dropdown
+
 Route::get('/search/suggestions', [SearchController::class, 'suggest'])->name('search.suggest');
 
-// Socialite — one flow per provider, destination decides which identity is used
+
 Route::get('/auth/{provider}/redirect/{destination?}', [SocialiteController::class, 'redirect'])
     ->where('provider', 'google|facebook|github')
     ->name('auth.redirect');
@@ -374,9 +347,7 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Vendor KYC. Separate from the generic profile because an agent's store
-    // eligibility depends on these specific fields, so the page has to state
-    // what is still missing and why it matters.
+
     Route::get('/dashboard/vendor/profile', [VendorProfileController::class, 'edit'])
         ->name('vendor.profile.edit');
     Route::post('/dashboard/vendor/profile', [VendorProfileController::class, 'update'])

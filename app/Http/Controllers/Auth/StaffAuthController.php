@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Rules\GmailAddress;
+use App\Traits\StoresProfileImage;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,8 @@ use Inertia\Response;
 
 abstract class StaffAuthController extends Controller
 {
+    use StoresProfileImage;
+
     /**
      * The guard name used by this role.
      */
@@ -143,12 +146,18 @@ abstract class StaffAuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . $model, new GmailAddress],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            // Applies to every role that reaches this method: agent, admin and
+            // superadmin all share this controller, and admins and superadmins
+            // have no verification step, so this was the only chance to give
+            // them a picture.
+            'image' => $this->profileImageRules(),
         ], $this->registrationRules()));
 
         $data = array_merge([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'images' => $this->storeProfileImage($request->file('image')),
         ], $this->registrationData($request));
 
         if ($this->roleColumn()) {
