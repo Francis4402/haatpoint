@@ -1,6 +1,7 @@
 
 import { useEffect, FormEventHandler } from 'react';
 import { Head, useForm } from '@inertiajs/react';
+import WhatsAppChatButton from '@/Components/WhatsAppChatButton';
 import { FaLock, FaEnvelope, FaKey, FaArrowLeft } from 'react-icons/fa';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -181,6 +182,7 @@ export default function ResetPassword({ token, email }: { token: string, email: 
                         </p>
                     </div>
                 </div>
+                <WhatsAppChatButton />
             </div>
         </div>
     );

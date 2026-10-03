@@ -1,6 +1,7 @@
 
 import { FormEventHandler } from 'react';
 import { Head, useForm } from '@inertiajs/react';
+import WhatsAppChatButton from '@/Components/WhatsAppChatButton';
 import { FaEnvelope, FaArrowLeft, FaKey } from 'react-icons/fa';
 import InputError from '@/Components/InputError';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -121,6 +122,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                         </p>
                     </div>
                 </div>
+                <WhatsAppChatButton />
             </div>
         </div>
     );

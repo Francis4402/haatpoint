@@ -29,6 +29,7 @@ import logoutUrl from '@/Components/logoutUrl';
 import SearchBox from '@/Components/SearchBox';
 import UnverifiedEmailBanner from '@/Components/UnverifiedEmailBanner';
 import IncompleteVendorProfileBanner from '@/Components/IncompleteVendorProfileBanner';
+import WhatsAppChatButton from '@/Components/WhatsAppChatButton';
 import { useTranslation } from '@/state/languageStore';
 
 interface DashboardLayoutProps {
@@ -539,6 +540,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
             {children}
           </div>
         </main>
+
+        <WhatsAppChatButton />
       </div>
     </div>
   );
