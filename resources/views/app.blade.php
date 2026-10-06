@@ -12,7 +12,6 @@
         <meta name="description" content="{{ $seo['description'] ?? 'Shop thousands of products from trusted vendors across Bangladesh. Find electronics, fashion, home goods & more at HaatPoint.' }}">
         <meta name="keywords" content="online shopping Bangladesh, multivendor marketplace, buy online, electronics, fashion, home goods, HaatPoint">
         <meta name="robots" content="{{ $seo['robots'] ?? 'index, follow' }}">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
         <meta http-equiv="Content-Language" content="en">
 
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
