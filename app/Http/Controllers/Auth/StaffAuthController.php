@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Rules\GmailAddress;
+use App\Traits\ClearsOtherGuards;
 use App\Traits\StoresProfileImage;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +20,7 @@ use Inertia\Response;
 
 abstract class StaffAuthController extends Controller
 {
+    use ClearsOtherGuards;
     use StoresProfileImage;
 
     /**
@@ -170,7 +172,7 @@ abstract class StaffAuthController extends Controller
 
         event(new Registered($user));
 
-        Auth::guard($this->guard())->login($user);
+        $this->loginOnGuard($this->guard(), $user);
 
         // Agent verifies its address, so a Brevo outage here means no link was
         // ever sent. Admin and Superadmin have no verification step and do not
@@ -194,6 +196,9 @@ abstract class StaffAuthController extends Controller
             'type' => $this->roleKey(),
             'status' => session('status'),
             'canRegister' => $this->canRegister($request),
+            // Same value the register page sends, so the Google button on the
+            // login page cannot silently ask for a create=false destination.
+            'socialDestination' => $this->socialDestination(),
         ]);
     }
 
@@ -240,6 +245,11 @@ abstract class StaffAuthController extends Controller
         }
 
         RateLimiter::clear($key);
+
+        // attempt() only writes this guard's session key. A customer session
+        // left over from earlier in the visit would still win in
+        // ResolveAuthGuard and show the wrong account, so drop it here too.
+        $this->clearOtherGuards($this->guard());
 
         $request->session()->regenerate();
 

@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Admin;
 use App\Models\Agent;
 use App\Models\User;
+use App\Traits\ClearsOtherGuards;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -14,6 +14,8 @@ use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller
 {
+    use ClearsOtherGuards;
+
     /**
      * Allowed OAuth providers.
      *
@@ -224,7 +226,9 @@ class SocialiteController extends Controller
                 );
             }
 
-            Auth::guard($config['guard'])->login($identity);
+            // Any session the visitor already held -- most often the customer
+            // one -- has to go first, or ResolveAuthGuard keeps answering web.
+            $this->loginOnGuard($config['guard'], $identity);
             $request->session()->regenerate();
 
             // Logged on success too. Only failures were ever recorded, so a

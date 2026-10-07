@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fa';
 import { toast } from 'sonner';
 import SocialButtons from '@/Components/SocialButtons';
+import FlashBanner from '@/Components/FlashBanner';
 
 export default function Register() {
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -132,6 +133,8 @@ export default function Register() {
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-lg border border-ink/10 p-8">
+          <FlashBanner />
+
           {/* Profile Image Upload */}
           <div className="flex flex-col items-center mb-6">
             <div className="relative group">

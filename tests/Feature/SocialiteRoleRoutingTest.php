@@ -387,4 +387,153 @@ class SocialiteRoleRoutingTest extends TestCase
             'The shared login page must send Google to the `user` destination, which resolves agent vs user server-side.'
         );
     }
+
+    public function test_the_admin_login_page_points_google_at_the_superadmin_destination(): void
+    {
+        // The regression that closed the only entry point a first-time operator
+        // has. StaffLogin rendered destination={type}, and type on /admin/login
+        // is `admin` -- a create=false destination -- so a brand-new Google
+        // account was always answered "No admin account exists for ... . Ask a
+        // superadmin to promote you", on the page that is supposed to bootstrap
+        // the very first superadmin. showLogin() never sent socialDestination,
+        // so AdminAuthController::socialDestination() was dead code.
+        $this->get(route('admin.login'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Auth/StaffLogin')
+                ->where('type', 'admin')
+                ->where('socialDestination', 'superadmin')
+                ->where('canRegister', true)
+            );
+
+        $source = file_get_contents(resource_path('js/Pages/Auth/StaffLogin.tsx'));
+
+        $this->assertStringContainsString(
+            'destination={socialDestination ?? type}',
+            $source,
+            'The login page must send the destination the controller advertised, not fall back to `type` (admin = create=false).'
+        );
+    }
+
+    public function test_google_from_the_admin_login_page_bootstraps_the_first_superadmin(): void
+    {
+        // The whole path the login page's button takes: open the page, then
+        // arrive at the callback carrying the destination it advertised.
+        $this->fakeGoogleUser('boss@example.test', 'The Boss', 'g-boss-1');
+
+        $this->get(route('admin.login'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('socialDestination', 'superadmin'));
+
+        $this->completeCallback('superadmin')->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('admins', [
+            'email' => 'boss@example.test',
+            'role' => 'superadmin',
+            'provider' => 'google',
+        ]);
+        $this->assertTrue(auth('admin')->check());
+        $this->assertFalse(auth('web')->check());
+    }
+
+    public function test_google_from_the_admin_login_page_is_refused_once_a_superadmin_exists(): void
+    {
+        // The refusal has to be visible, not just thrown: the callback flashes
+        // `error`, and every auth page used to read only `status`, so the
+        // visitor was bounced back to /admin/login with no message at all and
+        // the whole flow read as "nothing happened".
+        Admin::create([
+            'name' => 'Existing Super',
+            'email' => 'boss@example.test',
+            'password' => bcrypt('secret1234'),
+            'role' => 'superadmin',
+        ]);
+
+        $this->fakeGoogleUser('stranger@example.test', 'Stranger', 'g-stranger-1');
+
+        $this->completeCallback('superadmin')
+            ->assertRedirect(route('superadmin.login'))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseMissing('admins', ['email' => 'stranger@example.test']);
+        $this->assertFalse(auth('admin')->check());
+    }
+
+    public function test_an_existing_superadmin_signs_in_from_the_admin_login_page(): void
+    {
+        Admin::create([
+            'name' => 'Boss',
+            'email' => 'boss@example.test',
+            'password' => bcrypt('secret1234'),
+            'role' => 'superadmin',
+            'google_id' => 'g-google-id',
+            'provider' => 'google',
+            'provider_id' => 'g-google-id',
+            'email_verified_at' => now(),
+        ]);
+
+        $this->fakeGoogleUser('boss@example.test', 'Boss', 'g-google-id');
+
+        // /admin/login now advertises superadmin, which is exclusive. An
+        // existing row must still be found by email and signed in rather than
+        // refused by the exclusivity rule -- that rule only gates creation.
+        $this->completeCallback('superadmin')->assertRedirect(route('dashboard'));
+
+        $this->assertTrue(auth('admin')->check());
+        $this->assertSame('boss@example.test', auth('admin')->user()->email);
+        $this->assertSame(1, Admin::count());
+    }
+
+    public function test_a_leftover_customer_session_does_not_shadow_a_new_superadmin(): void
+    {
+        // ResolveAuthGuard walks ['web', 'superadmin', 'admin', 'agent'] and
+        // stops at the first hit, while Auth::guard('admin')->login() only
+        // writes the admin key. A visitor who had already signed in as a
+        // customer and then registered a superadmin through Google therefore
+        // created the row successfully and still saw a customer dashboard --
+        // which is exactly "the superadmin did not register".
+        $customer = User::create([
+            'name' => 'Shopper',
+            'email' => 'boss@example.test',
+            'password' => bcrypt('secret1234'),
+        ]);
+
+        $this->actingAs($customer, 'web');
+        $this->assertTrue(auth('web')->check());
+
+        $this->fakeGoogleUser('boss@example.test', 'The Boss', 'g-boss-1');
+
+        $this->completeCallback('superadmin')->assertRedirect(route('dashboard'));
+
+        $this->assertFalse(auth('web')->check(), 'The customer session must not survive the switch.');
+        $this->assertTrue(auth('admin')->check());
+        $this->assertSame('superadmin', auth('admin')->user()->role);
+    }
+
+    public function test_password_login_drops_a_stale_customer_session(): void
+    {
+        User::create([
+            'name' => 'Shopper',
+            'email' => 'shopper@example.test',
+            'password' => bcrypt('secret1234'),
+        ]);
+
+        Admin::create([
+            'name' => 'Staff',
+            'email' => 'staff@example.test',
+            'password' => bcrypt('secret1234'),
+            'role' => 'admin',
+        ]);
+
+        $this->actingAs(User::where('email', 'shopper@example.test')->first(), 'web');
+
+        $this->post(route('admin.login'), [
+            'email' => 'staff@example.test',
+            'password' => 'secret1234',
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertFalse(auth('web')->check());
+        $this->assertTrue(auth('admin')->check());
+        $this->assertSame('staff@example.test', auth('admin')->user()->email);
+    }
 }

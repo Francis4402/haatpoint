@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 import { toast } from 'sonner';
 import SocialButtons from '@/Components/SocialButtons';
+import FlashBanner from '@/Components/FlashBanner';
 
 export default function Login({ status, canResetPassword }: { status?: string, canResetPassword: boolean }) {
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -69,6 +70,8 @@ export default function Login({ status, canResetPassword }: { status?: string, c
               <p className="text-sm text-ink text-center">{status}</p>
             </div>
           )}
+
+          <FlashBanner />
 
           <form onSubmit={submit} className="space-y-5">
             {/* Email */}

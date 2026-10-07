@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 import { toast } from 'sonner';
 import SocialButtons from '@/Components/SocialButtons';
+import FlashBanner from '@/Components/FlashBanner';
 
 type StaffType = 'superadmin' | 'admin' | 'agent';
 
@@ -22,7 +23,7 @@ const LABELS: Record<StaffType, string> = {
   agent: 'Agent',
 };
 
-export default function StaffLogin({ type, status, canRegister }: { type: StaffType, status?: string, canRegister?: boolean }) {
+export default function StaffLogin({ type, status, canRegister, socialDestination }: { type: StaffType, status?: string, canRegister?: boolean, socialDestination?: StaffType }) {
   const { data, setData, post, processing, errors, reset } = useForm({
     email: '',
     password: '',
@@ -79,6 +80,8 @@ export default function StaffLogin({ type, status, canRegister }: { type: StaffT
               <p className="text-sm text-ink text-center">{status}</p>
             </div>
           )}
+
+          <FlashBanner />
 
           <form onSubmit={submit} className="space-y-5">
             {/* Email */}
@@ -183,7 +186,7 @@ export default function StaffLogin({ type, status, canRegister }: { type: StaffT
             </button>
           </form>
 
-          <SocialButtons destination={type} />
+          <SocialButtons destination={socialDestination ?? type} />
 
           {/* Register Link */}
           {type === 'agent' || canRegister ? (

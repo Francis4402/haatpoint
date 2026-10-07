@@ -18,6 +18,7 @@ import {
 } from 'react-icons/fa';
 import { toast } from 'sonner';
 import SocialButtons from '@/Components/SocialButtons';
+import FlashBanner from '@/Components/FlashBanner';
 
 type StaffType = 'superadmin' | 'admin' | 'agent';
 
@@ -153,6 +154,8 @@ export default function StaffRegister({
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-lg border border-ink/10 p-8">
+          <FlashBanner />
+
           {/* Profile Image Upload */}
           <div className="flex flex-col items-center mb-6">
             <div className="relative group">
