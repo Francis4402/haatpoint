@@ -25,7 +25,7 @@ interface WishlistPageProps {
 export default function WishlistIndex({ wishlistProducts, auth }: WishlistPageProps) {
     return (
         <AppLayout user={auth.user} wishlist={wishlistProducts}>
-            <SeoHead title="My Wishlist" description="View and manage your saved products on HaatPoint." canonical="https://www.haatpoint.com/wishlist" robots="noindex, nofollow" ogTitle="My Wishlist | HaatPoint" ogUrl="https://www.haatpoint.com/wishlist" />
+            <SeoHead />
 
             <div className="min-h-screen bg-paper-dim py-20">
                 <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">

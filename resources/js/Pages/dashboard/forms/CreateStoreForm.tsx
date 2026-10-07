@@ -132,7 +132,6 @@ export default function CreateStoreForm({auth}: PageProps) {
       <Head title='Create Store'>
         <meta name="description" content="Create your online store to start selling products" />
         <meta name="keywords" content="store, ecommerce, create store, online business" />
-        <meta name="robots" content="noindex, nofollow" />
       </Head>
 
       <div className="max-w-4xl mx-auto p-4 md:p-6">

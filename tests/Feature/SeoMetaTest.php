@@ -7,6 +7,8 @@ use App\Models\Products;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 /**
@@ -205,6 +207,89 @@ class SeoMetaTest extends TestCase
                 ->assertOk()
                 ->assertSee('<meta name="robots" content="noindex, follow">', false);
         }
+    }
+
+    /**
+     * Checkout is a bare route name rather than an `orders.` child, and the
+     * settings screens are `profile.*` / `vendor.*` — none of them matched the
+     * old prefix list, so the shell told Google to index them even though the
+     * page itself asked not to be.
+     */
+    public function test_routes_that_must_never_be_indexed_are_noindex(): void
+    {
+        $seo = new SeoMeta;
+
+        $routes = [
+            'checkout' => '/checkout',
+            'profile.edit' => '/dashboard/profile',
+            'vendor.profile.edit' => '/dashboard/vendor/profile',
+            'cart.index' => '/cart',
+            'wishlist.index' => '/wishlist',
+            'dashboard.products' => '/dashboard/products',
+            'login' => '/login',
+            'register' => '/register',
+        ];
+
+        foreach ($routes as $name => $uri) {
+            $route = Route::getRoutes()->getByName($name);
+            $this->assertNotNull($route, 'missing route ' . $name);
+
+            $request = Request::create($uri);
+            $request->setRouteResolver(fn () => $route);
+
+            $computed = $seo->forRequest($request);
+
+            $this->assertSame('noindex, follow', $computed['robots'], $name . ' is indexable');
+            $this->assertNotSame('', $computed['title'], $name . ' has no title');
+            $this->assertNotSame('', $computed['description'], $name . ' has no description');
+        }
+    }
+
+    public function test_a_missing_page_is_noindex_and_does_not_claim_to_be_the_home_page(): void
+    {
+        $response = $this->get('/this-page-does-not-exist');
+
+        $response->assertNotFound();
+
+        $content = $response->getContent();
+
+        $this->assertStringContainsString(
+            '<meta name="robots" content="noindex, follow">',
+            $content
+        );
+
+        // A 404 that canonicalises to the home page tells Google every broken
+        // URL is a copy of the front page.
+        $this->assertStringNotContainsString('rel="canonical"', $content);
+        $this->assertStringContainsString('Page Not Found (404) | HaatPoint', $content);
+    }
+
+    public function test_a_page_prints_exactly_one_canonical_tag(): void
+    {
+        foreach (['/', '/aboutus', '/products', '/products?product_type=featured', '/stores'] as $path) {
+            $content = $this->get($path)->assertOk()->getContent();
+
+            $this->assertSame(
+                1,
+                substr_count($content, 'rel="canonical"'),
+                $path . ' should print exactly one canonical tag'
+            );
+        }
+    }
+
+    /**
+     * SeoHead only runs after JavaScript, so it has to mirror these values
+     * rather than compute its own — otherwise the head Google renders differs
+     * from the head a crawler sees before JS.
+     */
+    public function test_the_computed_seo_is_handed_to_the_react_head_too(): void
+    {
+        $this->get('/aboutus')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('seo.canonical', 'https://www.haatpoint.com/aboutus')
+                ->where('seo.robots', 'index, follow')
+                ->has('seo.title'));
     }
 
     public function test_the_sitemap_does_not_churn_its_lastmod_between_requests(): void

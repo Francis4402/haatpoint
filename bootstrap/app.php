@@ -39,6 +39,15 @@ $middleware->alias([
 
             $status = $e->getStatusCode();
 
+            // SeoMeta is web-route middleware, so it never ran for an unmatched
+            // URL, and for a matched route it was still describing the route and
+            // not the failure. Re-share both the view tags and the Inertia prop,
+            // otherwise a 404 advertises `index, follow` plus a canonical
+            // pointing at the home page.
+            $seo = \App\Http\Middleware\SeoMeta::errorFor($status);
+            \Illuminate\Support\Facades\View::share('seo', $seo);
+            Inertia::share('seo', $seo);
+
             return Inertia::render('Errors/NotFound', [
                 'status' => $status,
             ])->toResponse($request)->setStatusCode($status);

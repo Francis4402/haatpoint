@@ -270,18 +270,11 @@ const ProductDetailsPage = ({
 
   return (
     <AppLayout user={auth.user} wishlist={wishlist}>
-      <SeoHead title={product.name}
-        description={stripHtml(product.description).slice(0, 160)}
+      {/* The canonical used to be built from product.id while the server route
+          is a slug, so the two heads disagreed on every product URL. SeoMeta
+          owns title, description, canonical, robots and og tags now. */}
+      <SeoHead
         keywords={`${product.name}, ${product.category}, ${product.brand || ''}, buy online Bangladesh, HaatPoint`}
-        canonical={`https://www.haatpoint.com/products/${product.id}`}
-        ogType="product"
-        ogTitle={product.name}
-        ogDescription={stripHtml(product.description).slice(0, 200)}
-        ogUrl={`https://www.haatpoint.com/products/${product.id}`}
-        ogImage={currentImageUrl.startsWith('http') ? currentImageUrl : `https://www.haatpoint.com${currentImageUrl}`}
-        twitterTitle={product.name}
-        twitterDescription={stripHtml(product.description).slice(0, 200)}
-        twitterImage={currentImageUrl.startsWith('http') ? currentImageUrl : `https://www.haatpoint.com${currentImageUrl}`}
         jsonLd={[
           {
             '@context': 'https://schema.org',

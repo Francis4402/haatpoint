@@ -161,11 +161,8 @@ const AboutUs = ({ auth, wishlist, stats = {
 
     return (
         <AppLayout user={auth?.user} wishlist={wishlist}>
-            <SeoHead title="About Us | HaatPoint" description="Learn about HaatPoint, Bangladesh's premier online marketplace. Discover our mission, values, and how we connect customers with trusted vendors nationwide."
+            <SeoHead
                 keywords="about HaatPoint, online marketplace Bangladesh, about us, trusted online shopping"
-                canonical="https://www.haatpoint.com/aboutus" ogTitle="About Us | HaatPoint"
-                ogDescription="Learn about HaatPoint, Bangladesh's premier online marketplace. Discover our mission, values, and how we connect customers with trusted vendors nationwide."
-                ogUrl="https://www.haatpoint.com/aboutus"
                 jsonLd={{
                     '@context': 'https://schema.org',
                     '@type': 'AboutPage',

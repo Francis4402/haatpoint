@@ -101,13 +101,7 @@ const NewArrivals = ({
   return (
     <AppLayout user={auth?.user} wishlist={wishlist}>
       <SeoHead
-        title="New Arrivals | Fresh Products at HaatPoint"
-        description="Shop the newest products just added by verified vendors on HaatPoint. Fresh electronics, fashion, home goods and more, updated daily."
         keywords="new arrivals, newest products, latest products, fresh arrivals, just landed"
-        canonical="https://www.haatpoint.com/new-arrivals"
-        ogTitle="New Arrivals | Fresh Products at HaatPoint"
-        ogDescription="The newest products from verified vendors on HaatPoint, updated daily."
-        ogUrl="https://www.haatpoint.com/new-arrivals"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'CollectionPage',

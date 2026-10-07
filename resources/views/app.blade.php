@@ -21,14 +21,20 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        {{-- Canonical URL --}}
-        <link rel="canonical" href="{{ $seo['canonical'] ?? 'https://www.haatpoint.com/' }}">
+        {{-- Canonical URL. Omitted when SeoMeta deliberately left it empty (error
+             responses have nothing to consolidate into) — an empty or home-page
+             canonical on a 404 tells Google the broken URL is the homepage. --}}
+        @if(!empty($seo['canonical']))
+            <link rel="canonical" href="{{ $seo['canonical'] }}">
+        @endif
 
         {{-- Open Graph Meta Tags --}}
         <meta property="og:title" content="{{ $seo['ogTitle'] ?? 'HaatPoint - Bangladesh\'s Premier Marketplace' }}">
         <meta property="og:description" content="{{ $seo['ogDescription'] ?? 'Shop thousands of products from trusted vendors across Bangladesh. Find electronics, fashion, home goods & more at HaatPoint.' }}">
         <meta property="og:type" content="{{ $seo['ogType'] ?? 'website' }}">
-        <meta property="og:url" content="{{ $seo['ogUrl'] ?? 'https://www.haatpoint.com/' }}">
+        @if(!empty($seo['ogUrl']))
+            <meta property="og:url" content="{{ $seo['ogUrl'] }}">
+        @endif
         <meta property="og:site_name" content="HaatPoint">
         <meta property="og:image" content="{{ $seo['ogImage'] ?? 'https://www.haatpoint.com/og-image.png' }}">
         <meta property="og:image:width" content="1200">

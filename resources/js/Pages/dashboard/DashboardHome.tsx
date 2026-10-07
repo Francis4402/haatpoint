@@ -54,7 +54,6 @@ const DashboardHome = ({ auth, totalUsers, orders, stats }: dashboardhometypes) 
             <Head title='Dashboard'>
                 <meta name="description" content="Multivendor Store Dashboard" />
                 <meta name="keywords" content="dashboard, analytics, ecommerce" />
-                <meta name="robots" content="noindex, nofollow" />
             </Head>
 
             <div className="space-y-6">

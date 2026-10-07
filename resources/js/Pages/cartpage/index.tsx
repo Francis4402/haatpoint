@@ -464,7 +464,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
   if (!cartItems || cartItems.length === 0) {
     return (
       <AppLayout user={auth.user} wishlist={wishlist}>
-        <SeoHead title="Shopping Cart" description="Review your cart items and proceed to secure checkout at HaatPoint." canonical="https://www.haatpoint.com/cart" robots="noindex, nofollow" ogTitle="Shopping Cart | HaatPoint" ogUrl="https://www.haatpoint.com/cart" />
+        <SeoHead />
         <div className="min-h-screen bg-paper-dim py-20">
           <div className="max-w-[1240px] mx-auto px-8">
             <div className="bg-white rounded-2xl shadow-hard-sm p-12 text-center border border-line">
@@ -491,7 +491,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
 
   return (
     <AppLayout user={auth.user} wishlist={wishlist}>
-      <SeoHead title="Shopping Cart" description="Review your cart items and select your delivery location for fast shipping." canonical="https://www.haatpoint.com/cart" robots="noindex, nofollow" ogTitle="Shopping Cart | HaatPoint" ogUrl="https://www.haatpoint.com/cart" />
+      <SeoHead />
 
       <ClearCartDialog isOpen={isOpen} confirmClearCart={confirmClearCart} />
 

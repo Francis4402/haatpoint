@@ -389,7 +389,6 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
       <Head title='Edit Product'>
         <meta name="description" content="Edit product information" />
         <meta name="keywords" content="edit product, update product, product management" />
-        <meta name="robots" content="noindex, nofollow" />
       </Head>
 
       <div className="max-w-7xl mx-auto p-4 md:p-6">

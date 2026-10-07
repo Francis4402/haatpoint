@@ -98,12 +98,45 @@ class SeoMeta
      * Pages that must never appear in search results. Account screens and
      * transactional pages have nothing to offer a searcher, and indexing them
      * dilutes the pages that do.
+     *
+     * `checkout` is a bare route name rather than an `orders.` child, the vendor
+     * profile is `vendor.profile.*`, and the personal settings and inbox routes
+     * are `profile.*` / `contacts.*` — all of them used to miss this list and
+     * ship `index, follow` from the shell.
      */
-    private const NO_INDEX_PREFIXES = ['login', 'register', 'password.', 'dashboard.', 'cart.', 'wishlist.', 'orders.'];
+    private const NO_INDEX_PREFIXES = [
+        'login',
+        'register',
+        'password.',
+        'dashboard.',
+        'cart.',
+        'wishlist.',
+        'orders.',
+        'checkout',
+        'vendor.',
+        'profile.',
+        'contacts.',
+    ];
+
+    /** Titles for responses that never reached a normal page. */
+    private const ERROR_TITLES = [
+        403 => 'Access Denied',
+        404 => 'Page Not Found',
+        419 => 'Session Expired',
+        429 => 'Too Many Requests',
+        500 => 'Something Went Wrong',
+        503 => 'Service Unavailable',
+    ];
 
     public function handle(Request $request, Closure $next): Response
     {
-        View::share('seo', $this->forRequest($request));
+        $seo = $this->forRequest($request);
+
+        View::share('seo', $seo);
+        // Also on the request, because HandleInertiaRequests runs after this
+        // middleware and has to hand the same array to the client. Sharing it
+        // only to the view would leave SeoHead with nothing to mirror.
+        $request->attributes->set('seo', $seo);
 
         return $next($request);
     }
@@ -113,6 +146,9 @@ class SeoMeta
      */
     public function forRequest(Request $request): array
     {
+        // Note: an unnamed route is not necessarily an error page — the home
+        // route has no name. Error responses are handled by errorFor() in the
+        // exception renderer, which is the only place that knows the status.
         $routeName = $request->route()?->getName();
 
         [$title, $description, $ogType, $ogImage] = $this->contentFor($request, $routeName);
@@ -127,6 +163,35 @@ class SeoMeta
             'ogDescription' => $description,
             'ogImage' => $ogImage,
             'ogUrl' => $this->canonicalFor($request),
+        ];
+    }
+
+    /**
+     * Head values for a response that is not a real page.
+     *
+     * The web middleware group does not run for an unmatched URL, so nothing
+     * would share any head values at all and the shell would fall back to
+     * `index, follow` with a canonical pointing at the home page — telling
+     * Google every broken URL is a copy of the front page. The canonical is
+     * deliberately empty: a 404 has nothing to consolidate into.
+     *
+     * @return array<string, string>
+     */
+    public static function errorFor(int $status): array
+    {
+        $label = self::ERROR_TITLES[$status] ?? 'Error';
+        $title = $label . ' (' . $status . ') | ' . self::SITE_NAME;
+
+        return [
+            'title' => $title,
+            'description' => self::DEFAULT_DESCRIPTION,
+            'canonical' => '',
+            'robots' => 'noindex, follow',
+            'ogType' => 'website',
+            'ogTitle' => $title,
+            'ogDescription' => self::DEFAULT_DESCRIPTION,
+            'ogImage' => self::SITE_URL . '/og-image.png',
+            'ogUrl' => '',
         ];
     }
 

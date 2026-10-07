@@ -346,12 +346,9 @@ const StoreListPage = ({ auth, stores, wishlist }: StoreListPageProps) => {
 
   return (
     <AppLayout user={auth.user} wishlist={wishlist}>
-      <SeoHead title="Stores"
-        description="Explore hundreds of trusted stores on HaatPoint. Discover unique shops and quality products from vendors across Bangladesh."
+      <SeoHead
         keywords="online stores Bangladesh, multivendor marketplace, shop local, HaatPoint stores"
-        canonical="https://www.haatpoint.com/stores" ogTitle="Stores | Shop at HaatPoint"
-        ogDescription="Explore hundreds of trusted stores on HaatPoint. Discover unique shops and quality products from vendors across Bangladesh."
-        ogUrl="https://www.haatpoint.com/stores" />
+      />
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}

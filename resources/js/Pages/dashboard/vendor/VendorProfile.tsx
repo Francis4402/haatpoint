@@ -92,7 +92,6 @@ export default function VendorProfile({ vendor, missingFields, isComplete }: Ven
         <DashboardLayout user={auth.user}>
             <Head title='Vendor Details'>
                 <meta name='description' content='Complete your vendor details to open your store' />
-                <meta name='robots' content='noindex, nofollow' />
             </Head>
 
             <div className='max-w-4xl mx-auto p-4 md:p-6'>

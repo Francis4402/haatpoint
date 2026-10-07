@@ -131,14 +131,7 @@ export default function StoreShow({
 
   return (
     <AppLayout user={auth.user} wishlist={wishlist}>
-      <SeoHead title={store.name}
-        description={`${store.name} is a trusted ${store.storetype} store on HaatPoint. Shop quality products from ${store.name} in Bangladesh.`}
-        canonical={`https://www.haatpoint.com/stores/${store.id}`}
-        ogTitle={`${store.name} - Shop on HaatPoint`}
-        ogDescription={`${store.name} is a trusted ${store.storetype} store on HaatPoint. Shop quality products from ${store.name} in Bangladesh.`}
-        ogUrl={`https://www.haatpoint.com/stores/${store.id}`}
-        ogImage={store.logo ? `https://www.haatpoint.com/storage/${store.logo}` : 'https://www.haatpoint.com/og-image.png'}
-        twitterImage={store.logo ? `https://www.haatpoint.com/storage/${store.logo}` : 'https://www.haatpoint.com/og-image.png'}
+      <SeoHead
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Store',

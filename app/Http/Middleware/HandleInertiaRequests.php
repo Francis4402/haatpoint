@@ -49,6 +49,11 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
+            // Computed by SeoMeta (this middleware runs after it) so the client
+            // renders exactly the tags the server already printed in the shell.
+            // Without it SeoHead falls back to its own defaults, which
+            // canonicalised every page at the homepage.
+            'seo' => $request->attributes->get('seo', []),
             'auth' => [
                 'user' => $user,
                 'isVerified' => $requiresVerification ? false : true,

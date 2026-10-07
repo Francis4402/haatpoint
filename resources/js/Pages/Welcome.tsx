@@ -77,8 +77,6 @@ export default function Welcome({
     const dailyDiscover = dailyDiscoverProducts ?? [];
     const featuredStores = stores ?? [];
 
-    const pageTitle = 'HaatPoint - Bangladesh&apos;s Premier Marketplace';
-    const pageDescription = 'Shop thousands of products from trusted vendors across Bangladesh. Find electronics, fashion, home goods & more at HaatPoint.';
     const keyword = 'online shopping Bangladesh, multivendor marketplace, buy online, electronics, fashion, home goods, HaatPoint';
     const Url = 'https://www.haatpoint.com/';
     const currentYear = new Date().getFullYear();
@@ -93,13 +91,7 @@ export default function Welcome({
     return (
         <AppLayout user={auth.user} wishlist={wishlist}>
             <SeoHead
-                title={pageTitle}
-                description={pageDescription}
                 keywords={keyword}
-                canonical={Url}
-                ogTitle={pageTitle}
-                ogDescription={pageDescription}
-                ogUrl={Url}
                 jsonLd={[
                     {
                         '@context': 'https://schema.org',

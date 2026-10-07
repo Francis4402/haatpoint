@@ -341,9 +341,7 @@ const ContactUsPage = ({ auth, wishlist, flash }: Props) => {
 
   return (
     <AppLayout user={auth.user} wishlist={wishlist}>
-      <SeoHead title="Contact Us" description="Get in touch with our team. We're here to help you with any questions or concerns."
-        canonical="https://www.haatpoint.com/contactus" ogTitle="Contact Us | HaatPoint"
-        ogDescription="Get in touch with our team. We're here to help you with any questions or concerns." ogUrl="https://www.haatpoint.com/contactus" />
+      <SeoHead />
 
       <div className="min-h-screen bg-paper-dim py-20">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">

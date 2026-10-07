@@ -46,13 +46,10 @@ export default function NotFound({ status = 404 }: { status?: number }) {
 
   return (
     <AppLayout user={auth?.user} wishlist={undefined}>
-      <SeoHead
-        title={`${msg.label} | ${msg.title} - HaatPoint`}
-        description="The page you were looking for could not be found. Explore thousands of products from trusted vendors across Bangladesh at HaatPoint."
-        robots="noindex, nofollow"
-        canonical="https://www.haatpoint.com/"
-        ogUrl="https://www.haatpoint.com/"
-      />
+      {/* Nothing hardcoded: SeoMeta shares noindex plus an empty canonical for
+          error responses, and passing canonical="/" here used to tell Google
+          that every broken URL was a copy of the home page. */}
+      <SeoHead />
 
       <section className="relative bg-gradient-to-b from-marigold/10 via-transparent to-transparent overflow-hidden py-24 sm:py-32">
         <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-marigold/10 blur-3xl pointer-events-none" />

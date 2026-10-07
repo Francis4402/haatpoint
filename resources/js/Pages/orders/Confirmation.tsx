@@ -65,7 +65,12 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
 
   return (
     <AppLayout user={auth.user} wishlist={wishlist}>
-      <SeoHead title={`Order Confirmation - ${order.order_number}`} description="Your order has been placed successfully. Track your order status on HaatPoint." canonical={`https://www.haatpoint.com/orders/${order.id}/confirmation`} robots="noindex, nofollow" ogTitle={`Order Confirmation - ${order.order_number}`} ogUrl={`https://www.haatpoint.com/orders/${order.id}/confirmation`} />
+      {/* Title stays here — it carries the order number — while description,
+          robots and canonical come from SeoMeta, which noindexes `orders.*`. */}
+      <SeoHead
+        title={`Order Confirmation - ${order.order_number}`}
+        ogTitle={`Order Confirmation - ${order.order_number}`}
+      />
 
       {/* Print Styles */}
       <style type="text/css" media="print">{`

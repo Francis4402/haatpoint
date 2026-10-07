@@ -198,7 +198,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
   if (cartItems.length === 0) {
     return (
       <AppLayout user={auth.user} wishlist={wishlist}>
-        <SeoHead title="Checkout" description="Complete your secure checkout at HaatPoint." canonical="https://www.haatpoint.com/checkout" robots="noindex, nofollow" ogTitle="Checkout | HaatPoint" ogUrl="https://www.haatpoint.com/checkout" />
+        <SeoHead />
         <div className="min-h-screen bg-paper-dim py-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-12">
@@ -223,7 +223,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
 
   return (
     <AppLayout user={auth.user} wishlist={wishlist}>
-      <SeoHead title="Checkout - Secure Checkout" description="Complete your secure checkout at HaatPoint." canonical="https://www.haatpoint.com/checkout" robots="noindex, nofollow" ogTitle="Secure Checkout | HaatPoint" ogUrl="https://www.haatpoint.com/checkout" />
+      <SeoHead />
 
       <div className="min-h-screen bg-paper-dim py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

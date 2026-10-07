@@ -146,7 +146,7 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
 
     return (
         <AppLayout user={auth.user} wishlist={wishlist}>
-            <SeoHead title="Terms of Service" description="Read HaatPoint's terms and conditions governing your use of our marketplace, purchases, and interactions with vendors." canonical="https://www.haatpoint.com/terms-and-conditions" />
+            <SeoHead />
 
             <div className="min-h-screen bg-paper-dim py-20">
                 <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">

@@ -533,11 +533,7 @@ const Products = ({ products, auth, wishlist, productRatings = {}, filters }: Pr
 
     return (
         <AppLayout user={auth?.user} wishlist={wishlist}>
-            <SeoHead title="Products | Shop"
-                description="Browse our full collection of products on HaatPoint - electronics, fashion, home goods and more from trusted vendors across Bangladesh."
-                canonical="https://www.haatpoint.com/products" ogTitle="Products | Shop at HaatPoint"
-                ogDescription="Browse our full collection of products on HaatPoint - electronics, fashion, home goods and more from trusted vendors across Bangladesh."
-                ogUrl="https://www.haatpoint.com/products"
+            <SeoHead
                 jsonLd={{
                     '@context': 'https://schema.org',
                     '@type': 'ItemList',

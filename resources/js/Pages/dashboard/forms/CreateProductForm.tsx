@@ -329,7 +329,6 @@ export default function CreateProductForm({auth, store, stores = [], categories}
       <Head title='Create Product'>
         <meta name="description" content="Create a new product for your store" />
         <meta name="keywords" content="shop, products, create product, ecommerce" />
-        <meta name="robots" content="noindex, nofollow" />
       </Head>
 
       <div className="max-w-7xl mx-auto p-4 md:p-6">
