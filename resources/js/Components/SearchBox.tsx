@@ -68,6 +68,12 @@ interface SearchOption {
 
 interface SearchBoxProps {
   variant?: Variant;
+  /**
+   * Which suggestions endpoint scope to ask for. Defaults from the variant,
+   * but the dashboard's mobile panel is visually a `panel` while still wanting
+   * dashboard shortcuts, so the two have to be settable independently.
+   */
+  scope?: 'dashboard' | 'public';
   placeholder?: string;
   className?: string;
   inputClassName?: string;
@@ -96,6 +102,7 @@ function discountOf(regular: number, sale: number | null): number {
 
 const SearchBox = ({
   variant = 'header',
+  scope: scopeProp,
   placeholder = 'Search products, brands, vendors…',
   className = '',
   inputClassName = '',
@@ -115,7 +122,7 @@ const SearchBox = ({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const scope = variant === 'dashboard' ? 'dashboard' : 'public';
+  const scope = scopeProp ?? (variant === 'dashboard' ? 'dashboard' : 'public');
 
   const isPanel = variant === 'panel';
 

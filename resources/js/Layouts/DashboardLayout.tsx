@@ -21,6 +21,7 @@ import {
   FiUser,
   FiHelpCircle,
   FiGlobe,
+  FiSearch,
 } from 'react-icons/fi';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { User } from '@/types';
@@ -43,6 +44,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { url, props } = usePage();
   const unreadMessages = (props as unknown as { unreadMessages?: number }).unreadMessages ?? 0;
   const { post } = useForm();
@@ -365,11 +367,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
 
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="relative flex min-w-0 flex-1 items-center">
-              <SearchBox
-                variant="dashboard"
-                placeholder="Search products, vendors, dashboard…"
-                className="w-full"
-              />
+              {/* Below md the always-on input is swapped for a toggle, the same
+                  pattern the storefront Navbar uses, so the topbar keeps its
+                  room for the language, bell and avatar controls. */}
+              <button
+                type="button"
+                className="p-2.5 text-ink hover:bg-paper-dim rounded-lg transition-colors md:hidden"
+                onClick={() => setSearchOpen((prev) => !prev)}
+                aria-label={searchOpen ? 'Close search' : 'Open search'}
+                aria-expanded={searchOpen}
+              >
+                {searchOpen ? (
+                  <FiX className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <FiSearch className="h-5 w-5" aria-hidden="true" />
+                )}
+              </button>
+
+              <div className="hidden w-full md:block">
+                <SearchBox
+                  variant="dashboard"
+                  placeholder="Search products, vendors, dashboard…"
+                  className="w-full"
+                />
+              </div>
             </div>
             <div className="flex items-center gap-x-3 lg:gap-x-5">
               {/* Language Switcher */}
@@ -527,6 +548,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
               </div>
             </div>
           </div>
+          {/* Mobile search panel — drops from the topbar the way the
+              storefront Navbar's mobile search does. */}
+          {searchOpen && (
+            <div className="absolute left-0 right-0 top-full z-50 border-t border-line bg-paper px-4 py-4 shadow-hard-sm sm:px-6 md:hidden">
+              <SearchBox
+                variant="panel"
+                scope="dashboard"
+                autoFocus
+                placeholder="Search products, vendors, dashboard…"
+                onNavigate={() => setSearchOpen(false)}
+              />
+              <button
+                type="button"
+                onClick={() => setSearchOpen(false)}
+                className="mt-3 w-full rounded-md border border-line py-2.5 text-sm font-bold text-ink transition-colors hover:bg-paper-dim"
+              >
+                Close
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Main content area */}
