@@ -12,6 +12,14 @@ export interface User {
     email: string;
     role: 'superadmin'| 'admin' | 'agent' | 'deliveryman' | 'user';
     email_verified_at: string;
+    created_at?: string;
+    /**
+     * Only exist on an agent session: the KYC columns live on `agents`, and
+     * HandleInertiaRequests shares the signed-in model as-is.
+     */
+    mobile?: string | null;
+    national_id?: string | null;
+    address?: string | null;
 }
 
 export type CartItem = {

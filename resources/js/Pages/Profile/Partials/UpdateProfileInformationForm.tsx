@@ -19,10 +19,18 @@ export default function UpdateProfileInformation({ status, user }: Props) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Agents carry KYC columns the other roles do not have. One form serves all
+  // of them, so the extra block is rendered conditionally rather than split
+  // into a second profile page.
+  const isAgent = user.role === 'agent';
+
   const { data, setData, post, errors, processing, recentlySuccessful, reset } = useForm({
     _method: 'PATCH',
     name: user.name,
     email: user.email,
+    mobile: user.mobile ?? '',
+    national_id: user.national_id ?? '',
+    address: user.address ?? '',
     image: null as File | null,
   });
 
@@ -191,6 +199,79 @@ export default function UpdateProfileInformation({ status, user }: Props) {
             </p>
           )}
         </div>
+
+        {/* Seller details — agents only, written to the `agents` table */}
+        {isAgent && (
+          <div className="bg-gray-50 rounded-xl p-6 space-y-5">
+            <div>
+              <h4 className="text-sm font-medium text-gray-700">Seller details</h4>
+              <p className="text-xs text-gray-500 mt-1">
+                Required before a store can be opened. Saved here exactly as the verification check reads them.
+              </p>
+            </div>
+
+            <div className="group">
+              <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                Mobile number
+              </label>
+              <input
+                id="mobile"
+                type="tel"
+                value={data.mobile}
+                onChange={(e) => setData('mobile', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 group-hover:border-gray-400"
+                placeholder="01XXXXXXXXX"
+              />
+              {errors.mobile && (
+                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <FaExclamationTriangle className="h-4 w-4" />
+                  {errors.mobile}
+                </p>
+              )}
+            </div>
+
+            <div className="group">
+              <label htmlFor="national_id" className="block text-sm font-medium text-gray-700 mb-2">
+                National ID
+              </label>
+              <input
+                id="national_id"
+                type="text"
+                inputMode="numeric"
+                value={data.national_id}
+                onChange={(e) => setData('national_id', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 group-hover:border-gray-400"
+                placeholder="10 or 17 digit number"
+              />
+              {errors.national_id && (
+                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <FaExclamationTriangle className="h-4 w-4" />
+                  {errors.national_id}
+                </p>
+              )}
+            </div>
+
+            <div className="group">
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+                Address
+              </label>
+              <textarea
+                id="address"
+                rows={3}
+                value={data.address}
+                onChange={(e) => setData('address', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 group-hover:border-gray-400 resize-y"
+                placeholder="House, road, city"
+              />
+              {errors.address && (
+                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <FaExclamationTriangle className="h-4 w-4" />
+                  {errors.address}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Submit Button */}
         <div className="flex items-center justify-between pt-6 border-t border-gray-200">

@@ -3,35 +3,36 @@ import { Link } from '@inertiajs/react';
 
 type FooterLink = { label: string; href: string };
 
-const footerCols: { heading: string; links: FooterLink[] }[] = [
-  {
-    heading: "Shop",
-    links: [
-      { label: "Categories", href: "/products" },       // no dedicated /categories route — points to products for now
-      { label: "Featured", href: "#" },                  // TODO: no route yet
-      { label: "Trending", href: "/hotdeals" },           // products.hotdeals
-      { label: "Daily discover", href: "#" },             // TODO: no route yet
-    ]
-  },
-  {
-    heading: "Vendors",
-    links: [
-      { label: "Start selling", href: "/dashboard/stores/storeform" }, // dashboard.createstore (auth-protected)
-      { label: "Vendor dashboard", href: "/dashboard/stores" },        // dashboard.store (auth-protected)
-      { label: "Payout schedule", href: "#" },                        // TODO: no route yet
-    ]
-  },
-  {
-    heading: "Support",
-    links: [
-      { label: "Track an order", href: "/track-order" },  // trackorder.index
-      { label: "Returns", href: "#" },                     // TODO: no route yet
-      { label: "Contact us", href: "/contactus" },         // contact.index
-    ]
-  },
-];
-
 export default function Footer() {
+  // Built inside the component because every entry goes through Ziggy's
+  // route(), which is only guaranteed to be installed once @routes has run.
+  const footerCols: { heading: string; links: FooterLink[] }[] = [
+    {
+      heading: "Shop",
+      links: [
+        { label: "Categories", href: route('products.index') },
+        { label: "Featured", href: route('products.index', { product_type: 'featured' }) },
+        { label: "Trending", href: route('products.hotdeals') },
+        { label: "Daily discover", href: route('products.index', { product_type: 'regular' }) },
+      ]
+    },
+    {
+      heading: "Vendors",
+      links: [
+        { label: "Start selling", href: route('dashboard.createstore') },
+        { label: "Vendor dashboard", href: route('dashboard.store') },
+      ]
+    },
+    {
+      heading: "Support",
+      links: [
+        { label: "Track an order", href: route('trackorder.index') },
+        { label: "Returns", href: route('terms.and.conditions') },
+        { label: "Contact us", href: route('contact.index') },
+      ]
+    },
+  ];
+
   return (
     <footer className="pt-20 pb-7 border-t border-line">
       <div className="max-w-[1240px] mx-auto px-8">
@@ -78,10 +79,10 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row justify-between flex-wrap gap-2.5 pt-5 border-t border-line font-mono text-xs text-text-soft">
           <span>© {new Date().getFullYear()} Haatpoint. All rights reserved.</span>
           <div className="flex gap-4 flex-wrap">
-            <Link href="/privacy-policy" className="hover:text-marigold transition-colors">
+            <Link href={route('privacy.policy')} className="hover:text-marigold transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/terms-and-conditions" className="hover:text-marigold transition-colors">
+            <Link href={route('terms.and.conditions')} className="hover:text-marigold transition-colors">
               Terms of Service
             </Link>
             <span>Dhaka · Chattogram</span>
