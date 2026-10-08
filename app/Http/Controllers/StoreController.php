@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Admin;
 use App\Models\Agent;
-use App\Models\Store;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use App\Models\Comments;
 use App\Models\Orders;
 use App\Models\Products;
+use App\Models\Store;
 use App\Models\Wishlist;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -39,10 +39,11 @@ class StoreController extends Controller
 
         $products = Products::whereIn('store_id', $stores->pluck('id'))->get();
         $orders = Orders::whereIn('store_id', $stores->pluck('id'))->get();
+
         return Inertia::render('dashboard/store/index', [
             'stores' => $stores,
             'products' => $products,
-            'orders' => $orders
+            'orders' => $orders,
         ]);
     }
 
@@ -58,7 +59,7 @@ class StoreController extends Controller
         // An incomplete vendor is still sent straight to the form that can fix
         // it rather than to the store form, which would accept the submission
         // and refuse it on POST.
-        if (Auth::user() instanceof Agent && !Auth::user()->hasCompleteVendorProfile()) {
+        if (Auth::user() instanceof Agent && ! Auth::user()->hasCompleteVendorProfile()) {
             return redirect()
                 ->route('vendor.profile.edit')
                 ->with('error', 'Complete your vendor details before creating a store.');
@@ -81,7 +82,7 @@ class StoreController extends Controller
         // same connection with "There is already an active transaction".
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['error' => 'Please log in before creating a store.']);
@@ -95,7 +96,7 @@ class StoreController extends Controller
         // checks every field, not just National ID: a vendor with a valid ID
         // but no address previously reached the form and was then closed
         // against, with nothing on screen saying why.
-        if ($user instanceof Agent && !$user->hasCompleteVendorProfile()) {
+        if ($user instanceof Agent && ! $user->hasCompleteVendorProfile()) {
             return redirect()
                 ->route('vendor.profile.edit')
                 ->with('error', 'Complete your vendor details before creating a store.');
@@ -125,9 +126,11 @@ class StoreController extends Controller
         try {
             DB::beginTransaction();
 
-            // Create store first
+            // Agents have no row in `users`, so their UUID in stores.user_id would
+            // violate the FK -> users and 500. Agents own the store through
+            // stores.agent_id instead.
             $store = Store::create([
-                'user_id' => $user->id,
+                'user_id' => $user instanceof Agent ? null : $user->id,
                 'agent_id' => $user instanceof Agent ? $user->id : null,
                 'name' => $validated['name'],
                 'email' => $user->email,
@@ -136,7 +139,7 @@ class StoreController extends Controller
                 'address' => $validated['address'],
                 'national_id' => $validated['national_id'],
                 'mobile' => $validated['mobile'],
-                'logo' => null
+                'logo' => null,
             ]);
 
             if ($request->hasFile('logo')) {
@@ -144,12 +147,12 @@ class StoreController extends Controller
                 $logo = $request->file('logo');
 
                 // Always save as .jpg because the image is JPEG-encoded below
-                $filename = 'store_' . $store->id . '_' . time() . '_' . Str::random(8) . '.jpg';
+                $filename = 'store_'.$store->id.'_'.time().'_'.Str::random(8).'.jpg';
 
                 $directory = 'store_logos';
-                $filePath = $directory . '/' . $filename;
+                $filePath = $directory.'/'.$filename;
 
-                $manager = new ImageManager(new Driver());
+                $manager = new ImageManager(new Driver);
                 $img = $manager->read($logo->getRealPath());
 
                 $img->scaleDown(width: 800);
@@ -179,7 +182,7 @@ class StoreController extends Controller
 
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Failed to create store. ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Failed to create store. '.$e->getMessage()]);
         }
     }
 
@@ -190,7 +193,7 @@ class StoreController extends Controller
     {
         $store = Store::findOrFail($id);
 
-        abort_if(!$store->is_active, 404);
+        abort_if(! $store->is_active, 404);
 
         // Every product that belongs to this store, paginated so a store with a
         // large catalogue does not send the whole table to the browser.
@@ -226,7 +229,7 @@ class StoreController extends Controller
 
             $productRatingsData[$product->id] = [
                 'average' => round($averageProductRating, 1),
-                'count' => $productReviewCount
+                'count' => $productReviewCount,
             ];
         }
 
@@ -284,7 +287,7 @@ class StoreController extends Controller
         $store = Store::where('name', $name)->first();
 
         return Inertia::render('dashboard/forms/StoreUpdateForm', [
-            'store' => $store
+            'store' => $store,
         ]);
     }
 
@@ -298,7 +301,7 @@ class StoreController extends Controller
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('stores', 'name')->ignore($store->id)
+                Rule::unique('stores', 'name')->ignore($store->id),
             ],
             'storetype' => 'required|string',
             'address' => 'required|string|max:255',
@@ -306,24 +309,23 @@ class StoreController extends Controller
                 'nullable',
                 'string',
                 'max:24',
-                Rule::unique('stores', 'license')->ignore($store->id)
+                Rule::unique('stores', 'license')->ignore($store->id),
             ],
             'national_id' => [
                 'required',
                 'string',
                 'regex:/^\d{10}$|^\d{17}$/',
-                Rule::unique('stores', 'national_id')->ignore($store->id)
+                Rule::unique('stores', 'national_id')->ignore($store->id),
             ],
             'mobile' => [
                 'required',
                 'string',
                 'digits:11',
-                Rule::unique('stores', 'mobile')->ignore($store->id)
+                Rule::unique('stores', 'mobile')->ignore($store->id),
             ],
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'remove_logo' => 'nullable|in:true,false,0,1',
         ]);
-
 
         $removeLogo = in_array($validated['remove_logo'] ?? 'false', ['true', '1', 1, true], true);
 
@@ -332,28 +334,28 @@ class StoreController extends Controller
             $file = $request->file('logo');
 
             // Always save as .jpg because the image is JPEG-encoded below
-            $filename = 'store_' . $store->id . '_' . time() . '_' . Str::random(8) . '.jpg';
+            $filename = 'store_'.$store->id.'_'.time().'_'.Str::random(8).'.jpg';
 
             $directory = 'store_logos';
-            $filePath = $directory . '/' . $filename;
+            $filePath = $directory.'/'.$filename;
 
             // Delete old logo
             if ($store->logo) {
                 Storage::disk('public')->delete($store->logo);
             }
 
-            $manager = new ImageManager(new Driver());
+            $manager = new ImageManager(new Driver);
             $img = $manager->read($file->getRealPath());
 
-                $img->scaleDown(width: 800);
-                $img->resizeCanvas($img->width(), $img->height(), 'ffffff');
+            $img->scaleDown(width: 800);
+            $img->resizeCanvas($img->width(), $img->height(), 'ffffff');
 
-                Storage::disk('public')->put(
-                    $filePath,
-                    (string) $img->encode(new JpegEncoder(quality: 90))
-                );
+            Storage::disk('public')->put(
+                $filePath,
+                (string) $img->encode(new JpegEncoder(quality: 90))
+            );
 
-                $validated['logo'] = $filePath;
+            $validated['logo'] = $filePath;
 
         } elseif ($removeLogo) {
 
@@ -367,7 +369,6 @@ class StoreController extends Controller
             unset($validated['logo']);
         }
 
-
         $store->update([
             'name' => $validated['name'],
             'storetype' => $validated['storetype'],
@@ -376,7 +377,6 @@ class StoreController extends Controller
             'mobile' => $validated['mobile'],
             'national_id' => $validated['national_id'],
         ]);
-
 
         if (isset($validated['logo'])) {
             $store->logo = $validated['logo'];
@@ -417,10 +417,8 @@ class StoreController extends Controller
                 }
             }
 
-
             $product->delete();
         }
-
 
         $store->delete();
     }

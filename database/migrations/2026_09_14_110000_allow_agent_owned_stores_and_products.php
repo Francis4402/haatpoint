@@ -16,27 +16,13 @@ return new class extends Migration
     {
         Schema::table('stores', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
-        });
-
-        if (DB::getDriverName() !== 'sqlite') {
-            if (DB::getDriverName() !== 'sqlite') {
-                DB::statement('ALTER TABLE `stores` MODIFY `user_id` CHAR(36) NULL');
-            }
-        }
-
-        Schema::table('stores', function (Blueprint $table) {
+            $table->uuid('user_id')->nullable()->change();
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
         });
 
         Schema::table('products', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
-        });
-
-        if (DB::getDriverName() !== 'sqlite') {
-                DB::statement('ALTER TABLE `products` MODIFY `user_id` CHAR(36) NULL');
-            }
-
-        Schema::table('products', function (Blueprint $table) {
+            $table->uuid('user_id')->nullable()->change();
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }
@@ -47,7 +33,7 @@ return new class extends Migration
             $table->dropForeign(['user_id']);
         });
 
-        DB::statement("UPDATE `stores` SET `user_id` = NULL WHERE `user_id` IS NULL");
+        DB::statement('UPDATE `stores` SET `user_id` = NULL WHERE `user_id` IS NULL');
 
         Schema::table('stores', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
@@ -57,7 +43,7 @@ return new class extends Migration
             $table->dropForeign(['user_id']);
         });
 
-        DB::statement("UPDATE `products` SET `user_id` = NULL WHERE `user_id` IS NULL");
+        DB::statement('UPDATE `products` SET `user_id` = NULL WHERE `user_id` IS NULL');
 
         Schema::table('products', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();

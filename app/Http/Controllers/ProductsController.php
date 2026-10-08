@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Agent;
 use App\Models\Admin;
-use App\Models\Products;
-use Illuminate\Http\Request;
+use App\Models\Agent;
 use App\Models\Categories;
 use App\Models\Comments;
+use App\Models\Products;
 use App\Models\Store;
 use App\Models\Wishlist;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
-use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\JpegEncoder;
 use Intervention\Image\ImageManager;
@@ -77,7 +77,7 @@ class ProductsController extends Controller
 
         if ($stores->isEmpty()) {
             return redirect()->back()->withErrors([
-                'store_id' => 'You need to create a store first before adding products.'
+                'store_id' => 'You need to create a store first before adding products.',
             ]);
         }
 
@@ -113,11 +113,14 @@ class ProductsController extends Controller
             'product_type' => 'required|in:regular,featured,trending,top-selling,new-arrival',
         ]);
 
-        $product = new Products();
-        $product->user_id = $user->id;
+        $product = new Products;
+        // Agents have no row in the `users` table, so writing their UUID into
+        // products.user_id violates the FK -> users and 500s. They own the
+        // product through its store (stores.agent_id) instead.
+        $product->user_id = $user instanceof Agent ? null : $user->id;
         $product->store_id = $store->id;
         $product->name = $validated['name'];
-        $product->slug = Str::slug($validated['name']) . '-' . time();                             // ✅ USE AS-IS
+        $product->slug = Str::slug($validated['name']).'-'.time();                             // ✅ USE AS-IS
         $product->category = $validated['category'];
         $product->subcategory = $validated['subcategory'] ?? '';         // ✅ empty fallback
         $product->brand = $validated['brand'] ?? '';                     // ✅ empty fallback
@@ -137,14 +140,14 @@ class ProductsController extends Controller
             $directory = 'product_images';
 
             foreach ($request->file('images') as $index => $file) {
-                $filename = 'product_' . time() . '_' . $index . '_' . Str::random(10) . '.jpg';
-                $filePath = $directory . '/' . $filename;
+                $filename = 'product_'.time().'_'.$index.'_'.Str::random(10).'.jpg';
+                $filePath = $directory.'/'.$filename;
 
-                $manager = new ImageManager(new Driver());
+                $manager = new ImageManager(new Driver);
                 $img = $manager->read($file->getRealPath());
                 $img->scale(width: 800);
                 $encodedImage = (string) $img->encode(
-                    new \Intervention\Image\Encoders\JpegEncoder(quality: 85)
+                    new JpegEncoder(quality: 85)
                 );
 
                 Storage::disk('public')->put($filePath, $encodedImage);
@@ -158,7 +161,7 @@ class ProductsController extends Controller
 
         $product->save();
 
-        Cache::forget("user_products_" . Auth::id());
+        Cache::forget('user_products_'.Auth::id());
 
         return redirect()->route('dashboard.products')
             ->with('success', 'Product created successfully!');
@@ -179,34 +182,32 @@ class ProductsController extends Controller
         $wishlist = Wishlist::where('user_id', Auth::id())
             ->paginate(12);
 
-
         $comments = Comments::with('user')
             ->where('product_id', $product->id)
             ->latest()
             ->get()
-        ->map(function ($comment) {
-            return [
-                'id' => (string) $comment->id,
-                'user_id' => (string) $comment->user_id,
-                'product_id' => (string) $comment->product_id,
-                'store_id' => (string) $comment->store_id,
-                'comment' => $comment->comment,
-                'rating' => $comment->rating,
-                'created_at' => $comment->created_at,
-                'updated_at' => $comment->updated_at,
-                'user' => $comment->user ? [
-                    'id' => $comment->user->id,
-                    'name' => $comment->user->name,
-                    'images' => $comment->user->images ?? '',
-                    'email' => $comment->user->email,
-                    'role' => $comment->user->role ?? 'user',
-                    'email_verified_at' => $comment->user->email_verified_at ?? '',
-                ] : null,
-            ];
-        });
+            ->map(function ($comment) {
+                return [
+                    'id' => (string) $comment->id,
+                    'user_id' => (string) $comment->user_id,
+                    'product_id' => (string) $comment->product_id,
+                    'store_id' => (string) $comment->store_id,
+                    'comment' => $comment->comment,
+                    'rating' => $comment->rating,
+                    'created_at' => $comment->created_at,
+                    'updated_at' => $comment->updated_at,
+                    'user' => $comment->user ? [
+                        'id' => $comment->user->id,
+                        'name' => $comment->user->name,
+                        'images' => $comment->user->images ?? '',
+                        'email' => $comment->user->email,
+                        'role' => $comment->user->role ?? 'user',
+                        'email_verified_at' => $comment->user->email_verified_at ?? '',
+                    ] : null,
+                ];
+            });
 
-
-        $ratings = $comments->filter(function($comment) {
+        $ratings = $comments->filter(function ($comment) {
             return $comment['rating'] !== null;
         });
 
@@ -330,7 +331,7 @@ class ProductsController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:products,slug,' . $product->id,
+            'slug' => 'required|string|max:255|unique:products,slug,'.$product->id,
             'category' => 'required|string|max:255',
             'subcategory' => 'nullable|string',
             'brand' => 'nullable|string',
@@ -365,7 +366,7 @@ class ProductsController extends Controller
         ])->toArray());
 
         // ✅ Now set slug with timestamp (same as store)
-        $product->slug = Str::slug($validated['name']) . '-' . time();
+        $product->slug = Str::slug($validated['name']).'-'.time();
 
         $product->save();
 
@@ -373,7 +374,7 @@ class ProductsController extends Controller
         $existingImages = json_decode($product->images, true) ?? [];
         $imagesToRemove = json_decode($request->input('images_to_remove', '[]'), true) ?? [];
 
-        if (!empty($imagesToRemove) && is_array($imagesToRemove)) {
+        if (! empty($imagesToRemove) && is_array($imagesToRemove)) {
             foreach ($imagesToRemove as $imagePath) {
                 $cleanPath = ltrim(str_replace(['/storage/', storage_path('app/public/')], '', $imagePath), '/');
 
@@ -383,7 +384,7 @@ class ProductsController extends Controller
 
                 $existingImages = array_values(array_filter(
                     $existingImages,
-                    fn($img) => $img !== $imagePath && $img !== $cleanPath
+                    fn ($img) => $img !== $imagePath && $img !== $cleanPath
                 ));
             }
         }
@@ -393,13 +394,15 @@ class ProductsController extends Controller
             $directory = 'product_images';
 
             foreach ($request->file('images') as $index => $file) {
-                if (!$file->isValid()) continue;
+                if (! $file->isValid()) {
+                    continue;
+                }
 
                 $extension = $file->getClientOriginalExtension();
-                $filename = 'product_' . time() . '_' . $index . '_' . Str::random(10) . '.' . $extension;
-                $filePath = $directory . '/' . $filename;
+                $filename = 'product_'.time().'_'.$index.'_'.Str::random(10).'.'.$extension;
+                $filePath = $directory.'/'.$filename;
 
-                $manager = new ImageManager(new Driver());
+                $manager = new ImageManager(new Driver);
                 $img = $manager->read($file->getRealPath());
                 $img->scale(width: 800);
                 $encodedImage = (string) $img->encode(new JpegEncoder(quality: 85));
@@ -413,7 +416,7 @@ class ProductsController extends Controller
         $product->images = json_encode(array_values($existingImages));
         $product->save();
 
-        Cache::forget("user_products_" . Auth::id());
+        Cache::forget('user_products_'.Auth::id());
 
         return redirect()->route('dashboard.products')
             ->with('success', 'Product updated successfully!');

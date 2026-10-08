@@ -34,6 +34,25 @@ export default {
                 "hard-sm": "0 6px 20px -8px rgba(27,27,27,0.12)",
                 "hard-marigold": "0 6px 20px -8px rgba(110,127,92,0.35)",
             },
+            keyframes: {
+                marquee: {
+                    "0%": { transform: "translateX(0)" },
+                    "100%": { transform: "translateX(-50%)" },
+                },
+                floaty: {
+                    "0%, 100%": { transform: "translateY(0)" },
+                    "50%": { transform: "translateY(-12px)" },
+                },
+                "spin-slow": {
+                    from: { transform: "rotate(0deg)" },
+                    to: { transform: "rotate(360deg)" },
+                },
+            },
+            animation: {
+                marquee: "marquee 32s linear infinite",
+                floaty: "floaty 7s ease-in-out infinite",
+                "spin-slow": "spin-slow 20s linear infinite",
+            },
         },
     },
 
