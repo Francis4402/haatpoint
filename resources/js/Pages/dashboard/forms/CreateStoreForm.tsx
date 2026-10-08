@@ -17,7 +17,6 @@ import {
   FaBuilding,
   FaCertificate,
   FaCheck,
-  FaPlus,
   FaKey,
   FaIdCard,
   FaUser,
@@ -626,7 +625,7 @@ export default function CreateStoreForm({auth}: PageProps) {
             <button
               type="submit"
               disabled={processing}
-              className="w-full bg-gray-900 hover:bg-marigold text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {processing ? (
                 <>
@@ -635,7 +634,7 @@ export default function CreateStoreForm({auth}: PageProps) {
                 </>
               ) : (
                 <>
-                  <FaPlus className="h-4 w-4" />
+                  <FaCheck className="h-4 w-4" />
                   Create Store
                 </>
               )}

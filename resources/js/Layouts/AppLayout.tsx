@@ -2,7 +2,6 @@ import { PropsWithChildren, ReactNode } from 'react';
 
 import { User } from '@/types';
 import Navbar from '@/Pages/Components/Navbar';
-import WhatsAppChatButton from '@/Components/WhatsAppChatButton';
 
 
 export default function AppLayout({ user, children, wishlist }: PropsWithChildren<{ user?: User, header?: ReactNode, wishlist?: any }>) {
@@ -13,7 +12,6 @@ export default function AppLayout({ user, children, wishlist }: PropsWithChildre
       <main className="flex-1">
         {children}
       </main>
-      <WhatsAppChatButton />
     </div>
   );
 }

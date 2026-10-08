@@ -1,6 +1,5 @@
 import { useEffect, FormEventHandler, useState, useRef } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import WhatsAppChatButton from '@/Components/WhatsAppChatButton';
 import {
   FaEye,
   FaEyeSlash,
@@ -425,7 +424,6 @@ export default function Register() {
           Secure registration • Protected by SSL encryption
         </p>
       </div>
-      <WhatsAppChatButton />
     </div>
   );
 }

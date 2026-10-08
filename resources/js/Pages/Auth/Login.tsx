@@ -1,6 +1,5 @@
 import { useEffect, FormEventHandler, useState } from 'react';
 import { Link, useForm } from '@inertiajs/react';
-import WhatsAppChatButton from '@/Components/WhatsAppChatButton';
 import { Head } from '@inertiajs/react';
 import {
   FaEye,
@@ -212,7 +211,6 @@ export default function Login({ status, canResetPassword }: { status?: string, c
           Secure login • Protected by SSL encryption
         </p>
       </div>
-      <WhatsAppChatButton />
     </div>
   );
 }

@@ -45,18 +45,6 @@ class PageController extends Controller
         ]);
     }
 
-    public function adminorders()
-    {
-        $orders = Orders::with('orderItems')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return Inertia::render('dashboard/adminorders/index', [
-            'auth' => ['user' => Auth::user()],
-            'orders' => $orders,
-        ]);
-    }
-
     public function checkout()
     {
         $wishlist = Wishlist::where('user_id', Auth::id())->paginate(12);

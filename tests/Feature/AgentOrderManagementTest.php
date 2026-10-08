@@ -216,8 +216,9 @@ class AgentOrderManagementTest extends TestCase
     }
 
     /**
-     * The order status freezes once the order is finished (delivered/cancelled)
-     * or once the payment is settled (paid/refunded).
+     * The order status freezes once the order is delivered or once the payment
+     * is settled (paid/refunded). A cancelled order with an open payment may
+     * still be corrected by the agent.
      */
     #[DataProvider('orderStatusLockProvider')]
     public function test_order_status_is_locked_by_terminal_status_or_settled_payment(
@@ -271,10 +272,10 @@ class AgentOrderManagementTest extends TestCase
             'shipped / pending'   => ['shipped', 'pending', $all],
             'confirmed / failed'  => ['confirmed', 'failed', $all],
 
-            // finished: frozen
+            // delivered: frozen; cancelled with open money: still correctable
             'delivered / pending' => ['delivered', 'pending', ['delivered']],
             'delivered / paid'    => ['delivered', 'paid', ['delivered']],
-            'cancelled / pending' => ['cancelled', 'pending', ['cancelled']],
+            'cancelled / pending' => ['cancelled', 'pending', $all],
             'cancelled / refunded'=> ['cancelled', 'refunded', ['cancelled']],
 
             // money settled: frozen even mid-flow
@@ -579,5 +580,85 @@ class AgentOrderManagementTest extends TestCase
 
         $this->actingAsAgent($agent)->get(route('dashboard.orders'))
             ->assertInertia(fn ($page) => $page->where('flash.success', 'Order updated successfully'));
+    }
+
+    /** Only delivery is final for an agent: a cancelled order may be reopened. */
+    public function test_agent_can_reopen_a_cancelled_unpaid_order(): void
+    {
+        $buyer = $this->makeUser();
+        $agent = $this->makeAgent('a1@example.com');
+        $store = $this->makeStore($buyer, $agent, '01');
+        $order = $this->makeOrder($buyer, $store, 'cancelled', 'pending');
+
+        $this->actingAsAgent($agent)
+            ->from(route('dashboard.orders'))
+            ->patch(route('admin.orders.update', $order), ['order_status' => 'shipped'])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('shipped', $order->fresh()->order_status);
+    }
+
+    /** The index paginates for every role and echoes the filters back. */
+    public function test_orders_are_paginated_with_filters_echoed_back(): void
+    {
+        $buyer = $this->makeUser();
+        $agent = $this->makeAgent('a1@example.com');
+        $store = $this->makeStore($buyer, $agent, '01');
+
+        for ($i = 0; $i < 12; $i++) {
+            $this->makeOrder($buyer, $store, 'pending', 'pending');
+        }
+
+        $response = $this->actingAsAgent($agent)
+            ->get(route('dashboard.orders', ['status' => 'pending', 'search' => 'ORD']));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('dashboard/adminorders/index')
+            ->count('orders', 10)
+            ->where('pagination.total', 12)
+            ->where('pagination.lastPage', 2)
+            ->where('pagination.page', 1)
+            ->where('filters.status', 'pending')
+            ->where('filters.search', 'ORD')
+            ->where('statusCounts.pending', 12)
+        );
+
+        $this->actingAsAgent($agent)
+            ->get(route('dashboard.orders', ['page' => 2]))
+            ->assertInertia(fn ($page) => $page
+                ->count('orders', 2)
+                ->where('pagination.page', 2)
+                ->where('pagination.total', 12)
+            );
+
+        // Out-of-scope filter values are ignored rather than trusted.
+        $this->actingAsAgent($agent)
+            ->get(route('dashboard.orders', ['status' => 'nonsense']))
+            ->assertInertia(fn ($page) => $page->where('filters.status', 'all'));
+    }
+
+    public function test_confirmation_page_is_openable_by_whatever_the_listing_shows(): void
+    {
+        $buyer = $this->makeUser();
+        $agent = $this->makeAgent('a1@example.com');
+        $store = $this->makeStore($buyer, $agent, '01');
+        $order = $this->makeOrder($buyer, $store, 'pending', 'pending');
+
+        // The agent sees the order in their listing (via the store), so the
+        // confirmation page must open for them too.
+        $this->actingAsAgent($agent)
+            ->get(route('orders.confirmation', $order))
+            ->assertOk();
+
+        // The buyer always sees their own.
+        $this->actingAs($buyer)
+            ->get(route('orders.confirmation', $order))
+            ->assertOk();
+
+        // An agent with no connection to the order stays out.
+        $this->actingAsAgent($this->makeAgent('other@example.com'))
+            ->get(route('orders.confirmation', $order))
+            ->assertForbidden();
     }
 }

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { FormEventHandler } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import WhatsAppChatButton from '@/Components/WhatsAppChatButton';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Eyebrow from '@/Pages/Components/Eyebrow';
 import { FaCircleCheck, FaEnvelope, FaPaperPlane, FaTriangleExclamation } from 'react-icons/fa6';
@@ -151,7 +150,6 @@ export default function VerifyEmail({ status, flash, auth }: PageProps<VerifyEma
                         </Link>
                     </div>
                 </div>
-                <WhatsAppChatButton />
             </div>
         </div>
     );

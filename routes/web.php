@@ -210,7 +210,10 @@ Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])
     Route::delete('/orders/{order}', [OrdersController::class, 'destroy'])
         ->name('orders.destroy');
 
-    Route::get('/dashboard/admin/orders', [PageController::class, 'adminorders'])->name('dashboard.adminorders');
+    // OrdersController rather than PageController: the same component used to
+    // be rendered without `orderRules`, so the status dropdowns never appeared
+    // and the superadmin could not change payment or order status from here.
+    Route::get('/dashboard/admin/orders', [OrdersController::class, 'index'])->name('dashboard.adminorders');
 
     Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])
     ->name('contacts.destroy');

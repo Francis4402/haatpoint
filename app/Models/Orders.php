@@ -22,9 +22,10 @@ class Orders extends Model
 
     /**
      * Finished orders. Reaching one is final: the order status can no longer be
-     * touched, because there is nothing left to fulfil.
+     * touched, because there is nothing left to fulfil. A cancelled order is not
+     * terminal by itself and may still be corrected while the payment is open.
      */
-    public const TERMINAL_ORDER_STATUSES = ['delivered', 'cancelled'];
+    public const TERMINAL_ORDER_STATUSES = ['delivered'];
 
     /**
      * Money that is already settled. The goods lifecycle stops here too, so a

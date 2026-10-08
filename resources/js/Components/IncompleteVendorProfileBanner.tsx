@@ -11,11 +11,9 @@ const FIELD_LABELS: Record<string, string> = {
 /**
  * Notice for a vendor whose store eligibility is incomplete.
  *
- * Sits next to UnverifiedEmailBanner in DashboardLayout. The two are separate
- * because they are separate requirements with separate fixes: this one can
- * only be cleared by filling in the vendor form, so the notice names the exact
- * missing fields rather than sending the vendor to verify their email, which
- * is likely already done.
+ * Rendered from DashboardLayout so the notice follows the vendor onto every
+ * dashboard screen. It can only be cleared by filling in the vendor form, so
+ * it names the exact missing fields rather than sending the vendor elsewhere.
  */
 export default function IncompleteVendorProfileBanner() {
     const { auth } = usePage().props as unknown as {

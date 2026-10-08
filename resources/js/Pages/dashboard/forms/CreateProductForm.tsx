@@ -18,6 +18,7 @@ import {
   FaArrowLeft,
   FaEye,
   FaPlus,
+  FaCheck,
   FaInfoCircle,
   FaCheckCircle,
   FaShoppingCart,
@@ -1271,17 +1272,17 @@ export default function CreateProductForm({auth, store, stores = [], categories}
                 <button
                   type="submit"
                   disabled={processing || !data.name || !data.category || !data.regular_price || !data.description || !data.item_weight}
-                  className="w-full bg-gray-900 hover:bg-marigold text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {processing ? (
                     <>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                      Creating Product...
+                      Updating Product...
                     </>
                   ) : (
                     <>
-                      <FaPlus className="h-4 w-4" />
-                      Create Product
+                      <FaCheck className="h-4 w-4" />
+                      Update Product
                     </>
                   )}
                 </button>

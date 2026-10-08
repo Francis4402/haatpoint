@@ -11,6 +11,7 @@ import StoresSlider from './Components/StoresSlider';
 import VendorCTA from './Components/VendorCTA';
 import AllProducts from './Components/AllProducts';
 import SeoHead from '@/Components/SeoHead';
+import WhatsAppChatButton from '@/Components/WhatsAppChatButton';
 
 interface PaginatedProducts {
     data: Product[];
@@ -183,6 +184,7 @@ export default function Welcome({
             </div>
             <VendorCTA />
             <Footer/>
+            <WhatsAppChatButton />
         </AppLayout>
     );
 }

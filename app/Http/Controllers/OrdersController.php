@@ -18,41 +18,98 @@ use Inertia\Inertia;
 class OrdersController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource. Search, status filters and pagination
+     * are resolved server-side so every page holds the same truth: the browser
+     * only ever renders one page of orders.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $userRole = $user->role;
 
-        // `store` is needed by editRulesFor() to tell an agent's own sales
-        // apart from orders they merely placed as a shopper.
-        if ($userRole === 'admin' || $userRole === 'superadmin') {
+        $search = $request->query('search', '');
+        $status = $request->query('status', 'all');
+        $payment = $request->query('payment', 'all');
 
-            $orders = Orders::with(['orderItems', 'store'])
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } elseif ($userRole === 'agent') {
+        $search = is_string($search) ? trim($search) : '';
+        $status = is_string($status) && in_array($status, Orders::ORDER_STATUSES, true) ? $status : 'all';
+        $payment = is_string($payment) && in_array($payment, Orders::PAYMENT_STATUSES, true) ? $payment : 'all';
 
-            $orders = Orders::with(['orderItems', 'store'])
-                ->forAgent($user->id)
-                ->orderBy('created_at', 'desc')
-                ->get();
-        } else {
+        $scoped = $this->scopedOrders($user, $userRole);
 
-            $orders = Orders::with(['orderItems', 'store'])
-                ->where('user_id', $user->id)
-                ->orderBy('created_at', 'desc')
-                ->get();
+        // Unfiltered role-scoped counts, so the summary cards stay truthful
+        // (and clickable) even while a filter is active.
+        $statusCounts = array_fill_keys(Orders::ORDER_STATUSES, 0);
+        $countRows = (clone $scoped)->toBase()
+            ->selectRaw('order_status, COUNT(*) as orders_total')
+            ->groupBy('order_status')
+            ->pluck('orders_total', 'order_status');
+
+        foreach ($countRows as $state => $count) {
+            $statusCounts[$state] = (int) $count;
         }
 
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $scoped->where(function ($query) use ($like) {
+                $query->where('order_number', 'like', $like)
+                    ->orWhere('recipient_name', 'like', $like)
+                    ->orWhere('store_name', 'like', $like);
+            });
+        }
+
+        if ($status !== 'all') {
+            $scoped->where('order_status', $status);
+        }
+
+        if ($payment !== 'all') {
+            $scoped->where('payment_status', $payment);
+        }
+
+        $orders = $scoped->with(['orderItems', 'store'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
         return Inertia::render('dashboard/adminorders/index', [
-            'orders' => $orders,
+            'orders' => $orders->items(),
+            'pagination' => [
+                'page' => $orders->currentPage(),
+                'lastPage' => $orders->lastPage(),
+                'perPage' => $orders->perPage(),
+                'total' => $orders->total(),
+                'from' => $orders->firstItem(),
+                'to' => $orders->lastItem(),
+            ],
+            'filters' => [
+                'search' => $search,
+                'status' => $status,
+                'payment' => $payment,
+            ],
+            'statusCounts' => $statusCounts,
             'userRole' => $userRole,
             'auth' => ['user' => $user],
             'revenue' => $this->revenueFor($user, $userRole),
-            'orderRules' => $this->orderRules($orders, $user),
+            'orderRules' => $this->orderRules($orders->items(), $user),
         ]);
+    }
+
+    /**
+     * Which orders each role is allowed to see. The `store` relation is eager
+     * loaded with the page, because editRulesFor() needs it to tell an agent's
+     * own sales apart from orders they merely placed as a shopper.
+     */
+    private function scopedOrders($user, string $userRole)
+    {
+        $query = Orders::query();
+
+        if ($userRole === 'agent') {
+            $query->forAgent($user->id);
+        } elseif ($userRole !== 'admin' && $userRole !== 'superadmin') {
+            $query->where('user_id', $user->id);
+        }
+
+        return $query;
     }
 
     /**
@@ -412,7 +469,15 @@ class OrdersController extends Controller
     {
         $user = Auth::user();
 
-        if (!in_array($user->role, ['admin', 'superadmin']) && $order->user_id !== $user->id && $order->agent_id !== $user->id) {
+        // Admins always; otherwise the buyer, the agent who placed the order,
+        // or the agent that owns the store it belongs to — i.e. exactly the
+        // roles that can see the order in their listing.
+        $canView = in_array($user->role, ['admin', 'superadmin'])
+            || $order->user_id === $user->id
+            || $order->agent_id === $user->id
+            || $this->isAgentStore($user, $order->store_id);
+
+        if (!$canView) {
             abort(403, 'You do not have permission to view this order confirmation.');
         }
 
