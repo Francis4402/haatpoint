@@ -7,7 +7,7 @@ import FormatPrice from '../utils/FormatePrice'
 import { BsFillPeopleFill } from 'react-icons/bs'
 import RecentOrders from './recentOrders/RecentOrders'
 import { FaTrophy } from 'react-icons/fa'
-import { FaBoxOpen } from 'react-icons/fa'
+import { FaBoxOpen, FaStore } from 'react-icons/fa'
 
 interface dashboardhometypes {
     auth: {
@@ -231,48 +231,61 @@ const DashboardHome = ({ auth, totalUsers, orders, stats }: dashboardhometypes) 
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden">
-                    <div className="px-6 py-5 border-b border-line">
-                        <h3 className="text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Quick Actions</h3>
-                        <p className="mt-1 text-sm text-text-soft">Common tasks you might want to do</p>
-                    </div>
-                    <div className="p-6">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <Link
-                                href="/dashboard/products/create"
-                                className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
-                            >
-                                <FiPackage className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-medium text-ink">Add Product</span>
-                                <span className="text-xs text-text-soft mt-1">Add new items</span>
-                            </Link>
-                            <Link
-                                href="/dashboard/orders/create"
-                                className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
-                            >
-                                <FiShoppingCart className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-medium text-ink">Create Order</span>
-                                <span className="text-xs text-text-soft mt-1">Manual order entry</span>
-                            </Link>
-                            <Link
-                                href="/dashboard/customers/create"
-                                className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
-                            >
-                                <FiUsers className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-medium text-ink">Add Customer</span>
-                                <span className="text-xs text-text-soft mt-1">New customer profile</span>
-                            </Link>
-                            <Link
-                                href="/dashboard/analytics"
-                                className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
-                            >
-                                <FiTrendingUp className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-medium text-ink">View Reports</span>
-                                <span className="text-xs text-text-soft mt-1">Detailed analytics</span>
-                            </Link>
+                {(isAdmin || isAgent) && (
+                    <div className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden">
+                        <div className="px-6 py-5 border-b border-line">
+                            <h3 className="text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Quick Actions</h3>
+                            <p className="mt-1 text-sm text-text-soft">Common tasks you might want to do</p>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <Link
+                                    href={route('dashboard.createproduct')}
+                                    className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
+                                >
+                                    <FiPackage className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
+                                    <span className="text-sm font-medium text-ink">Add Product</span>
+                                    <span className="text-xs text-text-soft mt-1">Add new items</span>
+                                </Link>
+                                <Link
+                                    href={route('dashboard.createstore')}
+                                    className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
+                                >
+                                    <FaStore className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
+                                    <span className="text-sm font-medium text-ink">Add Store</span>
+                                    <span className="text-xs text-text-soft mt-1">Create a new store</span>
+                                </Link>
+                                {isAdmin ? (
+                                    <Link
+                                        href={route('dashboard.customers')}
+                                        className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
+                                    >
+                                        <FiUsers className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
+                                        <span className="text-sm font-medium text-ink">Add Customer</span>
+                                        <span className="text-xs text-text-soft mt-1">Manage customers</span>
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        href={route('dashboard.orders')}
+                                        className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
+                                    >
+                                        <FiShoppingCart className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
+                                        <span className="text-sm font-medium text-ink">Manage Orders</span>
+                                        <span className="text-xs text-text-soft mt-1">View &amp; update orders</span>
+                                    </Link>
+                                )}
+                                <Link
+                                    href={route('dashboard.analytics')}
+                                    className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
+                                >
+                                    <FiTrendingUp className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
+                                    <span className="text-sm font-medium text-ink">View Reports</span>
+                                    <span className="text-xs text-text-soft mt-1">Detailed analytics</span>
+                                </Link>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* Performance Summary */}
                 <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">

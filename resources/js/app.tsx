@@ -4,7 +4,7 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { Suspense } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 import { Toaster } from 'sonner';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -42,12 +42,20 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.tsx'),
         ),
     setup({ el, App, props }) {
-        const root = createRoot(el);
+        const tree = (
+            <Suspense fallback={<div>Loading...</div>}>
+                <App {...props} />
+                <Toaster position="top-right" />
+            </Suspense>
+        );
 
-        root.render(<Suspense fallback={<div>Loading...</div>}>
-            <App {...props} />
-            <Toaster position="top-right" />
-        </Suspense>);
+        // Hydrate the markup the SSR server pre-rendered; fall back to a fresh
+        // client render when SSR is unavailable (e.g. `npm run dev`).
+        if (el.hasChildNodes()) {
+            hydrateRoot(el, tree);
+        } else {
+            createRoot(el).render(tree);
+        }
     },
     progress: {
         color: '#6E7F5C',

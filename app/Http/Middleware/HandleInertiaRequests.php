@@ -7,6 +7,7 @@ use App\Models\Contact;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -49,6 +50,11 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
+            // Ziggy route definitions. The @routes Blade directive exposes these
+            // to the browser, but the Node SSR server has no Blade output, so the
+            // same config is shared here and passed to Ziggy's global route()
+            // helper in resources/js/ssr.tsx.
+            'ziggy' => fn () => (new Ziggy())->toArray(),
             // Computed by SeoMeta (this middleware runs after it) so the client
             // renders exactly the tags the server already printed in the shell.
             // Without it SeoHead falls back to its own defaults, which
