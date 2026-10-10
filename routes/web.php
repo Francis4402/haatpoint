@@ -202,6 +202,7 @@ Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])
         ->name('dashboard.customer.delete')
         ->middleware('role:superadmin')
         ->where('type', 'user|agent|admin');
+
     Route::put('/dashboard/categories/update/{id}', [CategoriesController::class, 'update'])->name('dashboard.updatecategory');
 
     Route::patch('/dashboard/stores/{id}/toggle-active', [StoreController::class, 'toggleActive'])
@@ -210,9 +211,6 @@ Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])
     Route::delete('/orders/{order}', [OrdersController::class, 'destroy'])
         ->name('orders.destroy');
 
-    // OrdersController rather than PageController: the same component used to
-    // be rendered without `orderRules`, so the status dropdowns never appeared
-    // and the superadmin could not change payment or order status from here.
     Route::get('/dashboard/admin/orders', [OrdersController::class, 'index'])->name('dashboard.adminorders');
 
     Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])
@@ -224,6 +222,7 @@ Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])
     Route::delete('/dashboard/store/{store}', [StoreController::class, 'destroy'])->name('dashboard.deletestore');
 
     Route::get('/dashboard/store/{name}/edit', [StoreController::class, 'edit'])->name('dashboard.storeedit');
+
     Route::put('/dashboard/store/update/{store}', [StoreController::class, 'update'])->name('dashboard.storeupdate');
 });
 
@@ -235,6 +234,7 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
     Route::get('/dashboard/stores', [StoreController::class, 'index'])->name('dashboard.store');
 
     Route::get('/dashboard/products/{slug}/edit', [ProductsController::class, 'edit'])->name('dashboard.productedit');
+
     Route::match(['put', 'post'], '/dashboard/products/update/{slug}', [ProductsController::class, 'update'])->name('dashboard.updateproduct');
 
     Route::get('/dashboard/stores/{id}/products', [StoreController::class, 'products'])
@@ -242,6 +242,7 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
 
     Route::get('/dashboard/stores/{id}/analytics', [StoreController::class, 'analytics'])
         ->name('dashboard.storeanalytics');
+
     Route::get('/dashboard/orders', [OrdersController::class, 'index'])->name('dashboard.orders');
 
     Route::get('/dashboard/shipping', [PageController::class, 'shipping'])->name('dashboard.shipping');
@@ -351,9 +352,9 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-
     Route::get('/dashboard/vendor/profile', [VendorProfileController::class, 'edit'])
         ->name('vendor.profile.edit');
+
     Route::post('/dashboard/vendor/profile', [VendorProfileController::class, 'update'])
         ->name('vendor.profile.update');
 });

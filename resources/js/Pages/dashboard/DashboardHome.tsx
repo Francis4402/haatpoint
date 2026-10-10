@@ -240,7 +240,7 @@ const DashboardHome = ({ auth, totalUsers, orders, stats }: dashboardhometypes) 
                         <div className="p-6">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <Link
-                                    href={route('dashboard.createproduct')}
+                                    href={route('dashboard.products')}
                                     className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
                                 >
                                     <FiPackage className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
