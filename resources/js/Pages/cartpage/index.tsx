@@ -24,6 +24,7 @@ import {
   FaInfoCircle,
   FaWeightHanging,
   FaPercent,
+  FaChevronDown,
 } from 'react-icons/fa';
 import AppLayout from '@/Layouts/AppLayout';
 import axios from 'axios';
@@ -32,6 +33,7 @@ import { toast } from 'sonner';
 import { useStore } from '../state/cartStore';
 import ClearCartDialog from '../dialogpopups/ClearCartDialog';
 import FormatPrice from '../utils/FormatePrice';
+import { parseVariantList } from '../utils/parseVariants';
 import Eyebrow from '../Components/Eyebrow';
 import SeoHead from '@/Components/SeoHead';
 
@@ -54,7 +56,8 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
     getShipping,
     increaseQty,
     decreaseQty,
-    getItemById,
+    getItemByKey,
+    updateCartItemVariant,
     pathaoCharges,
     selectedCity,
     selectedZone,
@@ -326,32 +329,46 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
 
   const cartTotals = calculateTotals();
 
-  const handleIncreaseQuantity = async (itemId: string) => {
-    const item = getItemById(itemId);
+  const handleIncreaseQuantity = async (key: string) => {
+    const item = getItemByKey(key);
     if (item && item.cartQty && item.cartQty < item.quantity) {
-      increaseQty(itemId);
+      increaseQty(key);
       if (selectedCity && selectedZone) {
         await calculatePathaoPrice(selectedCity, selectedZone, selectedArea);
       }
     }
   };
 
-  const handleDecreaseQuantity = async (itemId: string) => {
-    const item = getItemById(itemId);
+  const handleDecreaseQuantity = async (key: string) => {
+    const item = getItemByKey(key);
     if (item && item.cartQty && item.cartQty > 1) {
-      decreaseQty(itemId);
+      decreaseQty(key);
       if (selectedCity && selectedZone) {
         await calculatePathaoPrice(selectedCity, selectedZone, selectedArea);
       }
     } else {
-      removeFromCart(itemId);
+      removeFromCart(key);
     }
   };
 
-  const moveToWishlist = (itemId: string) => {
-    const item = cartItems?.find(item => item.id === itemId);
+  const handleVariantChange = async (key: string, field: 'size' | 'color', value: string) => {
+    const item = getItemByKey(key);
+    if (!item) return;
+
+    const nextSize = field === 'size' ? value : (item.selectedSize || '');
+    const nextColor = field === 'color' ? value : (item.selectedColor || '');
+
+    updateCartItemVariant(key, nextSize, nextColor);
+
+    if (selectedCity && selectedZone) {
+      await calculatePathaoPrice(selectedCity, selectedZone, selectedArea);
+    }
+  };
+
+  const moveToWishlist = (key: string) => {
+    const item = getItemByKey(key);
     if (item) {
-      removeFromCart(itemId);
+      removeFromCart(key);
       toast.success(`${item.name} moved to wishlist`);
     }
   };
@@ -596,9 +613,12 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                     const totalPrice = currentPrice * quantity;
                     const imageUrl = getFirstImage(item.images);
                     const rating = item.rating || 0;
+                    const itemCartKey = item.cartKey || `${item.id}__${item.selectedSize || ''}__${item.selectedColor || ''}`;
+                    const availableColors = parseVariantList(item.color);
+                    const availableSizes = parseVariantList(item.size);
 
                     return (
-                      <div key={item.id} className="p-4 sm:p-6 hover:bg-paper-dim/50 transition-colors">
+                      <div key={itemCartKey} className="p-4 sm:p-6 hover:bg-paper-dim/50 transition-colors">
                         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                           {/* Product Image */}
                           <div className="flex-shrink-0">
@@ -664,13 +684,62 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                                   )}
                                 </div>
 
+                                {/* Selected Variant (color / size) */}
+                                {(availableColors.length > 0 || availableSizes.length > 0) && (
+                                  <div className="flex flex-wrap items-center gap-3 mb-3 sm:mb-4">
+                                    {availableColors.length > 0 && (
+                                      <label className="flex items-center gap-2 text-xs sm:text-sm">
+                                        <span className="text-text-soft">Color:</span>
+                                        <div className="relative">
+                                          <select
+                                            value={item.selectedColor || ''}
+                                            onChange={(e) => handleVariantChange(itemCartKey, 'color', e.target.value)}
+                                            style={{ appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }}
+                                            className="appearance-none cursor-pointer rounded-xl border border-line bg-white pl-3 pr-9 py-1.5 text-xs sm:text-sm text-ink capitalize font-medium focus:ring-2 focus:ring-marigold focus:border-transparent hover:border-marigold/50 transition-colors"
+                                          >
+                                            <option value="">Select</option>
+                                            {availableColors.map((color) => (
+                                              <option key={color} value={color}>{color}</option>
+                                            ))}
+                                          </select>
+                                          <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-text-soft" />
+                                        </div>
+                                      </label>
+                                    )}
+
+                                    {availableSizes.length > 0 && (
+                                      <label className="flex items-center gap-2 text-xs sm:text-sm">
+                                        <span className="text-text-soft">Size:</span>
+                                        <div className="relative">
+                                          <select
+                                            value={item.selectedSize || ''}
+                                            onChange={(e) => handleVariantChange(itemCartKey, 'size', e.target.value)}
+                                            style={{ appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }}
+                                            className="appearance-none cursor-pointer rounded-xl border border-line bg-white pl-3 pr-9 py-1.5 text-xs sm:text-sm text-ink uppercase font-medium focus:ring-2 focus:ring-marigold focus:border-transparent hover:border-marigold/50 transition-colors"
+                                          >
+                                            <option value="">Select</option>
+                                            {availableSizes.map((optionSize) => (
+                                              <option key={optionSize} value={optionSize}>{optionSize}</option>
+                                            ))}
+                                          </select>
+                                          <FaChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-text-soft" />
+                                        </div>
+                                      </label>
+                                    )}
+
+                                    {!item.selectedColor && !item.selectedSize && (
+                                      <span className="text-[10px] sm:text-xs text-red-500">Select options</span>
+                                    )}
+                                  </div>
+                                )}
+
                                 {/* Quantity Controls & Actions */}
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                   <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                                     {/* Quantity Controls */}
                                     <div className="flex items-center border border-line rounded-lg bg-white">
                                       <button
-                                        onClick={() => handleDecreaseQuantity(item.id)}
+                                        onClick={() => handleDecreaseQuantity(itemCartKey)}
                                         disabled={quantity <= 1}
                                         className="px-2 sm:px-3 py-1.5 sm:py-2 text-text-soft hover:bg-paper-dim disabled:opacity-50 disabled:cursor-not-allowed rounded-l-lg transition-colors"
                                       >
@@ -680,7 +749,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                                         {quantity}
                                       </span>
                                       <button
-                                        onClick={() => handleIncreaseQuantity(item.id)}
+                                        onClick={() => handleIncreaseQuantity(itemCartKey)}
                                         disabled={quantity >= item.quantity}
                                         className="px-2 sm:px-3 py-1.5 sm:py-2 text-text-soft hover:bg-paper-dim disabled:opacity-50 disabled:cursor-not-allowed rounded-r-lg transition-colors"
                                       >
@@ -697,14 +766,14 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                                   {/* Action Buttons */}
                                   <div className="flex items-center gap-2 sm:gap-4">
                                     <button
-                                      onClick={() => moveToWishlist(item.id)}
+                                      onClick={() => moveToWishlist(itemCartKey)}
                                       className="inline-flex items-center text-xs sm:text-sm text-text-soft hover:text-marigold hover:bg-paper-dim px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors"
                                     >
                                       <FaHeart className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                                       <span className="hidden sm:inline">Save</span>
                                     </button>
                                     <button
-                                      onClick={() => removeFromCart(item.id)}
+                                      onClick={() => removeFromCart(itemCartKey)}
                                       className="inline-flex items-center text-xs sm:text-sm text-red-500 hover:text-red-600 hover:bg-red-50 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-colors"
                                     >
                                       <FaTrash className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />

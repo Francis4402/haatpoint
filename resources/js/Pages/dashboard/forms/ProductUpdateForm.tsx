@@ -33,6 +33,7 @@ import {
 import {
   HiCheck,
   HiOutlineExclamationCircle,
+  HiXMark,
 } from 'react-icons/hi2';
 import { toast } from 'sonner';
 import ReactQuill from 'react-quill';
@@ -86,8 +87,14 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
   const [showProductTypeDropdown, setShowProductTypeDropdown] = useState(false);
   const [availableSubcategories, setAvailableSubcategories] = useState<string[]>([]);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [availableSizes, setAvailableSizes] = useState<string[]>([]);
   const [imagesToRemove, setImagesToRemove] = useState<string[]>([]);
   const [colorInputs, setColorInputs] = useState<string[]>(['']);
+  const [showNewBrandInput, setShowNewBrandInput] = useState(false);
+  const [newBrandValue, setNewBrandValue] = useState('');
+
+  const [sizeInput, setSizeInput] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
 
   // ✅ NEW: Track manual slug edits (state so the hint re-renders live)
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -112,6 +119,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
     sale_price: product.sale_price?.toString() || '',
     description: product.description || '',
     color: [] as string[],
+    size: [] as string[],
     inStock: product.inStock ?? true,
     item_weight: product.item_weight?.toString() || '',
     store_id: store.id || '',
@@ -141,6 +149,60 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
       return brandString ? [brandString] : [];
     }
   };
+
+  const parseSizes = (sizeString: string | null | undefined): string[] => {
+    if (!sizeString) return [];
+    try {
+      const parsed = JSON.parse(sizeString);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const canAddBrand = ['agent', 'admin', 'superadmin'].includes(auth?.user?.role);
+
+  const toggleSize = (size: string) => {
+    setData('size', data.size.includes(size)
+      ? data.size.filter((s) => s !== size)
+      : [...data.size, size]);
+  };
+
+  const addCustomSize = () => {
+    const parts = sizeInput
+      .split(',')
+      .map((part) => part.trim())
+      .filter((part) => part !== '');
+    if (parts.length === 0) return;
+    const current = data.size || [];
+    const toAdd = parts.filter((part) => !current.includes(part));
+    if (toAdd.length === 0) {
+      toast.info('Size already added');
+      setSizeInput('');
+      return;
+    }
+    setData('size', [...current, ...toAdd]);
+    setSizeInput('');
+  };
+
+  const closeAllDropdowns = () => {
+    setShowCategoryDropdown(false);
+    setShowSubcategoryDropdown(false);
+    setShowBrandDropdown(false);
+    setShowProductTypeDropdown(false);
+  };
+
+  // Close any open dropdown when clicking outside the form (mobile friendly:
+  // prevents panels from staying open and overlapping one another).
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (formRef.current && !formRef.current.contains(event.target as Node)) {
+        closeAllDropdowns();
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const generateSlug = (name: string) => {
     return name
@@ -197,6 +259,17 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
       }
     }
 
+    if (product.size) {
+      try {
+        const parsedSizes = JSON.parse(product.size);
+        if (Array.isArray(parsedSizes) && parsedSizes.length > 0) {
+          setData('size', parsedSizes);
+        }
+      } catch (e) {
+        console.error('Error parsing product sizes:', e);
+      }
+    }
+
     if (product.product_type) {
       setData('product_type', product.product_type);
     }
@@ -232,12 +305,18 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
           setAvailableBrands([]);
           setData('brand', '');
         }
+
+        const sizes = parseSizes(selectedCat.sizes ?? null);
+        setAvailableSizes(sizes);
+        setData('size', (data.size || []).filter((s) => sizes.includes(s)));
       }
     } else {
       setAvailableSubcategories([]);
       setAvailableBrands([]);
+      setAvailableSizes([]);
       setData('subcategory', '');
       setData('brand', '');
+      setData('size', []);
     }
   }, [data.category, categories]);
 
@@ -345,6 +424,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
     }
     formData.append('description', data.description);
     formData.append('color', JSON.stringify(data.color));
+    formData.append('size', JSON.stringify(data.size));
     formData.append('inStock', data.inStock ? '1' : '0');
     formData.append('store_id', data.store_id);
     formData.append('item_weight', data.item_weight);
@@ -464,7 +544,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
           )}
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Left Column */}
             <div className="space-y-6">
@@ -567,7 +647,10 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                          onClick={() => {
+                            closeAllDropdowns();
+                            setShowCategoryDropdown(!showCategoryDropdown);
+                          }}
                           className="w-full rounded-xl border border-line px-4 py-3 text-left flex justify-between items-center hover:border-marigold transition-colors bg-white"
                         >
                           <span className={data.category ? 'text-ink' : 'text-text-soft'}>
@@ -614,7 +697,10 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() => data.category && availableSubcategories.length > 0 && setShowSubcategoryDropdown(!showSubcategoryDropdown)}
+                          onClick={() => data.category && availableSubcategories.length > 0 && (() => {
+                            closeAllDropdowns();
+                            setShowSubcategoryDropdown(!showSubcategoryDropdown);
+                          })()}
                           disabled={!data.category || availableSubcategories.length === 0}
                           className={`w-full rounded-xl border px-4 py-3 text-left flex justify-between items-center transition-colors ${
                             !data.category || availableSubcategories.length === 0
@@ -675,18 +761,21 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() => data.category && availableBrands.length > 0 && setShowBrandDropdown(!showBrandDropdown)}
-                          disabled={!data.category || availableBrands.length === 0}
+                          onClick={() => data.category && (availableBrands.length > 0 || canAddBrand) && (() => {
+                            closeAllDropdowns();
+                            setShowBrandDropdown(!showBrandDropdown);
+                          })()}
+                          disabled={!data.category || (availableBrands.length === 0 && !canAddBrand)}
                           className={`w-full rounded-xl border px-4 py-3 text-left flex justify-between items-center transition-colors ${
-                            !data.category || availableBrands.length === 0
+                            !data.category || (availableBrands.length === 0 && !canAddBrand)
                               ? 'border-line bg-paper-dim text-text-soft cursor-not-allowed'
                               : 'border-line hover:border-marigold bg-white'
                           }`}
                         >
                           <span className={data.brand ? 'text-ink' : 'text-text-soft'}>
-                            {data.brand || (data.category ? (availableBrands.length > 0 ? 'Select brand' : 'No brands available') : 'Select main category first')}
+                            {data.brand || (data.category ? (availableBrands.length > 0 || canAddBrand ? 'Select brand' : 'No brands available') : 'Select main category first')}
                           </span>
-                          {data.category && availableBrands.length > 0 && (
+                          {data.category && (availableBrands.length > 0 || canAddBrand) && (
                             <FaChevronDown
                               className={`h-5 w-5 text-text-soft transition-transform ${showBrandDropdown ? 'rotate-180' : ''}`}
                             />
@@ -695,26 +784,66 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
 
                         {data.category && showBrandDropdown && (
                           <div className="absolute z-10 mt-1 w-full bg-white rounded-xl shadow-hard-sm border border-line max-h-60 overflow-auto">
-                            {availableBrands.length > 0 ? (
-                              availableBrands.map((brand, index) => (
-                                <button
-                                  key={index}
-                                  type="button"
-                                  onClick={() => {
-                                    setData('brand', brand);
-                                    setShowBrandDropdown(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-3 hover:bg-paper-dim transition-colors flex items-center justify-between ${
-                                    data.brand === brand ? 'bg-marigold/10 text-marigold' : 'text-ink'
-                                  }`}
-                                >
-                                  {brand}
-                                  {data.brand === brand && <HiCheck className="h-5 w-5 text-marigold" />}
-                                </button>
-                              ))
-                            ) : (
+                            {availableBrands.map((brand, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => {
+                                  setData('brand', brand);
+                                  setShowBrandDropdown(false);
+                                }}
+                                className={`w-full text-left px-4 py-3 hover:bg-paper-dim transition-colors flex items-center justify-between ${
+                                  data.brand === brand ? 'bg-marigold/10 text-marigold' : 'text-ink'
+                                }`}
+                              >
+                                {brand}
+                                {data.brand === brand && <HiCheck className="h-5 w-5 text-marigold" />}
+                              </button>
+                            ))}
+
+                            {availableBrands.length === 0 && !canAddBrand && (
                               <div className="px-4 py-3 text-sm text-text-soft text-center">
                                 No brands available for this category
+                              </div>
+                            )}
+
+                            {canAddBrand && (
+                              <div className="border-t border-line p-3">
+                                {showNewBrandInput ? (
+                                  <div className="flex gap-2">
+                                    <input
+                                      type="text"
+                                      value={newBrandValue}
+                                      onChange={(e) => setNewBrandValue(e.target.value)}
+                                      placeholder="New brand name"
+                                      className="flex-1 rounded-lg border border-line px-3 py-2 text-sm focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft"
+                                      autoFocus
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const value = newBrandValue.trim();
+                                        if (!value) return;
+                                        setData('brand', value);
+                                        setNewBrandValue('');
+                                        setShowNewBrandInput(false);
+                                        setShowBrandDropdown(false);
+                                      }}
+                                      className="px-3 py-2 bg-marigold text-white text-sm font-medium rounded-lg hover:bg-marigold-dark transition-colors"
+                                    >
+                                      Add
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowNewBrandInput(true)}
+                                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-marigold hover:bg-marigold/10 rounded-lg transition-colors"
+                                  >
+                                    <FaPlus className="h-3 w-3" />
+                                    Add new brand
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
@@ -737,7 +866,10 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                     <div className="relative">
                       <button
                         type="button"
-                        onClick={() => setShowProductTypeDropdown(!showProductTypeDropdown)}
+                        onClick={() => {
+                          closeAllDropdowns();
+                          setShowProductTypeDropdown(!showProductTypeDropdown);
+                        }}
                         className="w-full rounded-xl border border-line px-4 py-3 text-left flex justify-between items-center hover:border-marigold transition-colors bg-white"
                       >
                         <div className="flex items-center gap-2">
@@ -896,6 +1028,78 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                         </p>
                       )}
                     </div>
+                  </div>
+
+                  {/* Sizes */}
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">
+                      Sizes <span className="text-xs font-normal text-text-soft">(Select available sizes or add your own)</span>
+                    </label>
+                    {availableSizes.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {availableSizes.map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => toggleSize(size)}
+                            className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${
+                              data.size.includes(size)
+                                ? 'bg-marigold text-white border-marigold'
+                                : 'bg-white text-ink border-line hover:border-marigold'
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={sizeInput}
+                        onChange={(e) => setSizeInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addCustomSize();
+                          }
+                        }}
+                        placeholder={availableSizes.length > 0 ? 'Add sizes, comma separated e.g. S, M, XL' : 'Type sizes e.g. M, XL (comma separated)'}
+                        className="flex-1 rounded-xl border border-line bg-white px-4 py-2 text-sm text-ink placeholder:text-text-soft focus:border-marigold focus:outline-none focus:ring-1 focus:ring-marigold"
+                      />
+                      <button
+                        type="button"
+                        onClick={addCustomSize}
+                        className="px-4 py-2 rounded-xl bg-marigold text-white text-sm font-semibold hover:bg-marigold-dark transition-colors"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {data.size.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {data.size.map((size) => (
+                          <span
+                            key={size}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-marigold/10 text-marigold text-sm font-medium"
+                          >
+                            {size}
+                            <button
+                              type="button"
+                              onClick={() => toggleSize(size)}
+                              className="hover:text-red-500 transition-colors"
+                            >
+                              <HiXMark className="h-3.5 w-3.5" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {errors.size && (
+                      <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                        <HiOutlineExclamationCircle className="h-4 w-4" />
+                        {errors.size}
+                      </p>
+                    )}
                   </div>
 
                   {/* Row 5: Item Weight */}
@@ -1291,6 +1495,24 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                             )}
                           </div>
                         )}
+
+                        {data.size.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {data.size.slice(0, 4).map((size, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-marigold/10 text-marigold border border-marigold/20"
+                              >
+                                {size}
+                              </span>
+                            ))}
+                            {data.size.length > 4 && (
+                              <span className="text-xs text-text-soft">
+                                +{data.size.length - 4} more
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="mt-2">
@@ -1373,12 +1595,12 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                   {processing ? (
                     <>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                      Updating Product...
+                      Uploading Product...
                     </>
                   ) : (
                     <>
                       <FaEdit className="h-4 w-4" />
-                      Update Product
+                      Upload Product
                     </>
                   )}
                 </button>

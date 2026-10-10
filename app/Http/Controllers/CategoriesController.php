@@ -41,12 +41,14 @@ class CategoriesController extends Controller
                 'categories' => 'required|string|max:255|unique:categories,categories',
                 'brand' => 'required|json',
                 'subcategory' => 'json',
+                'sizes' => 'nullable|json',
                 'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
             ]);
 
             // Decode JSON strings to arrays
             $brands = json_decode($request->input('brand'), true);
             $subcategories = json_decode($request->input('subcategory'), true);
+            $sizes = json_decode($request->input('sizes') ?? '[]', true);
 
             // Validate arrays
             if (!is_array($brands) || empty($brands)) {
@@ -65,6 +67,7 @@ class CategoriesController extends Controller
             $category->categories = $validated['categories'];
             $category->brand = json_encode($brands);
             $category->subcategory = json_encode($subcategories);
+            $category->sizes = json_encode(is_array($sizes) ? array_values(array_filter($sizes, fn ($s) => trim((string) $s) !== '')) : []);
 
             // Handle image upload
             if ($request->hasFile('image')) {
@@ -121,6 +124,7 @@ class CategoriesController extends Controller
                 'categories' => 'required|string|max:255|unique:categories,categories,' . $store,
                 'brand' => 'required|json',
                 'subcategory' => 'json',
+                'sizes' => 'nullable|json',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
                 'remove_image' => 'nullable|boolean',
             ]);
@@ -128,6 +132,7 @@ class CategoriesController extends Controller
             // Decode JSON strings to arrays
             $brands = json_decode($request->input('brand'), true);
             $subcategories = json_decode($request->input('subcategory'), true);
+            $sizes = json_decode($request->input('sizes') ?? '[]', true);
 
             // Validate arrays
             if (!is_array($brands) || empty($brands)) {
@@ -146,6 +151,7 @@ class CategoriesController extends Controller
             $category->categories = $validated['categories'];
             $category->brand = json_encode($brands);
             $category->subcategory = json_encode($subcategories);
+            $category->sizes = json_encode(is_array($sizes) ? array_values(array_filter($sizes, fn ($s) => trim((string) $s) !== '')) : []);
 
             // Handle image removal
             if ($request->has('remove_image') && $request->remove_image) {

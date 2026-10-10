@@ -182,6 +182,8 @@ class OrdersController extends Controller
                 'items.*.product_id' => 'required|string',
                 'items.*.quantity' => 'required|integer|min:1',
                 'items.*.price' => 'required|numeric',
+                'items.*.size' => 'nullable|string|max:255',
+                'items.*.color' => 'nullable|string|max:255',
                 'subtotal' => 'required|numeric',
                 'delivery_charge' => 'required|numeric',
                 'total' => 'required|numeric',
@@ -291,6 +293,8 @@ class OrdersController extends Controller
                         'quantity' => $item['quantity'],
                         'price' => $item['price'],
                         'total' => $item['price'] * $item['quantity'],
+                        'size' => $item['size'] ?? null,
+                        'color' => $item['color'] ?? null,
                     ]);
                     $product->decrement('quantity', $item['quantity']);
                 }

@@ -107,6 +107,7 @@ class ProductsController extends Controller
             'description' => 'required|string',
             'inStock' => 'nullable',
             'color' => 'nullable|max:1000',
+            'size' => 'nullable|max:1000',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'images' => 'max:5',
             'item_weight' => 'required|numeric|min:0.1',
@@ -131,9 +132,14 @@ class ProductsController extends Controller
             : null;                                                       // ✅ handle empty string
         $product->description = $validated['description'];
         $product->color = $validated['color'] ?? '[]';
+        $product->size = $validated['size'] ?? '[]';
         $product->inStock = $request->boolean('inStock', true);
         $product->item_weight = $validated['item_weight'];
         $product->product_type = $validated['product_type'] ?? 'regular';
+
+        // Agents (and admins) may type a brand that is not yet on the category's
+        // list. Persist it there so it becomes reusable in future dropdowns.
+        $this->registerCategoryBrand($validated['category'] ?? '', $validated['brand'] ?? '');
 
         if ($request->hasFile('images')) {
             $images = [];
@@ -321,6 +327,39 @@ class ProductsController extends Controller
     }
 
     /**
+     * Append a brand to its category's reusable brand list when it is not
+     * already there. Categories store their brands as a JSON array string.
+     */
+    private function registerCategoryBrand(string $categoryName, string $brand): void
+    {
+        $categoryName = trim($categoryName);
+        $brand = trim($brand);
+
+        if ($categoryName === '' || $brand === '') {
+            return;
+        }
+
+        $category = Categories::where('categories', $categoryName)->first();
+
+        if (! $category) {
+            return;
+        }
+
+        $brands = json_decode($category->brand, true);
+        $brands = is_array($brands) ? $brands : [];
+
+        foreach ($brands as $existing) {
+            if (strcasecmp((string) $existing, $brand) === 0) {
+                return;
+            }
+        }
+
+        $brands[] = $brand;
+        $category->brand = json_encode(array_values($brands));
+        $category->save();
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, $slug)
@@ -341,6 +380,7 @@ class ProductsController extends Controller
             'description' => 'required|string',
             'inStock' => 'nullable',
             'color' => 'nullable|string|max:1000',
+            'size' => 'nullable|string|max:1000',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
             'images' => 'nullable|array|max:5',
             'images_to_remove' => 'nullable|string',
@@ -367,6 +407,9 @@ class ProductsController extends Controller
 
         // ✅ Now set slug with timestamp (same as store)
         $product->slug = Str::slug($validated['name']).'-'.time();
+
+        // Keep category brand list in sync when a new brand is typed by an agent.
+        $this->registerCategoryBrand($validated['category'] ?? '', $validated['brand'] ?? '');
 
         $product->save();
 

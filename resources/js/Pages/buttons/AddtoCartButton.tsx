@@ -1,27 +1,47 @@
-import { CartItem } from '@/types'
+import { useState } from 'react'
+import { CartItem, Product } from '@/types'
 import { FaShoppingCart } from 'react-icons/fa'
 import { toast } from 'sonner'
 import { useStore } from '../state/cartStore'
 import { useTranslation } from '@/state/languageStore'
+import { parseVariantList } from '@/Pages/utils/parseVariants'
 
 interface AddtoCartButtonProps {
-    product: CartItem,
+    product: CartItem | Product,
     className?: string;
     variant?: 'default' | 'icon' | 'full';
     size?: 'sm' | 'md' | 'lg';
+    /** Controlled variant values (used by the product detail page). */
+    selectedSize?: string;
+    selectedColor?: string;
+    /** Render the inline size/color picker. Disable when the parent renders its own. */
+    showVariantPicker?: boolean;
 }
 
 const AddtoCartButton = ({
     product,
     className = '',
     variant = 'full',
-    size = 'md'
+    size = 'md',
+    selectedSize,
+    selectedColor,
+    showVariantPicker = true,
 }: AddtoCartButtonProps) => {
-const addtoCart = useStore((state) => state.addToCart)
-  const { t } = useTranslation()
+    const addtoCart = useStore((state) => state.addToCart)
+    const { t } = useTranslation()
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    const availableSizes = parseVariantList(product.size)
+    const availableColors = parseVariantList(product.color)
+    const hasVariants = availableSizes.length > 0 || availableColors.length > 0
+
+    const [internalSize, setInternalSize] = useState('')
+    const [internalColor, setInternalColor] = useState('')
+
+    const chosenSize = selectedSize !== undefined ? selectedSize : internalSize
+    const chosenColor = selectedColor !== undefined ? selectedColor : internalColor
+
+    const handleAddToCart = (e: React.MouseEvent) => {
+        e.stopPropagation();
 
         const resolvedStore = product.store;
 
@@ -30,7 +50,17 @@ const addtoCart = useStore((state) => state.addToCart)
             return;
         }
 
-        addtoCart(product, resolvedStore);
+        if (availableSizes.length > 0 && !chosenSize) {
+            toast.error(t('select_size', 'Please select a size'));
+            return;
+        }
+
+        if (availableColors.length > 0 && !chosenColor) {
+            toast.error(t('select_color', 'Please select a color'));
+            return;
+        }
+
+        addtoCart(product, resolvedStore, 1, chosenSize, chosenColor);
     };
 
     // Size configurations
@@ -70,6 +100,65 @@ const addtoCart = useStore((state) => state.addToCart)
         ? t('add_to_cart', 'Add to Cart')
         : t('out_of_stock', 'Out of Stock');
 
+    const renderPicker = () => {
+        if (!showVariantPicker || !hasVariants || variant === 'icon') return null;
+
+        return (
+            <div
+                className="w-full rounded-lg bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg p-2.5 space-y-2 mb-1.5"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {availableColors.length > 0 && (
+                    <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
+                            {t('color', 'Color')}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                            {availableColors.map((color) => (
+                                <button
+                                    key={color}
+                                    type="button"
+                                    onClick={() => setInternalColor(color)}
+                                    className={`px-2 py-0.5 rounded-full border text-[11px] font-medium transition-colors capitalize ${
+                                        chosenColor === color
+                                            ? 'bg-marigold text-white border-marigold'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:border-marigold'
+                                    }`}
+                                >
+                                    {color}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {availableSizes.length > 0 && (
+                    <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
+                            {t('size', 'Size')}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                            {availableSizes.map((optionSize) => (
+                                <button
+                                    key={optionSize}
+                                    type="button"
+                                    onClick={() => setInternalSize(optionSize)}
+                                    className={`min-w-[28px] px-2 py-0.5 rounded-md border text-[11px] font-semibold uppercase transition-colors ${
+                                        chosenSize === optionSize
+                                            ? 'bg-marigold text-white border-marigold'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:border-marigold'
+                                    }`}
+                                >
+                                    {optionSize}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     if (variant === 'icon') {
         return (
             <button
@@ -85,14 +174,17 @@ const addtoCart = useStore((state) => state.addToCart)
     }
 
     return (
-        <button
-            onClick={handleAddToCart}
-            className={`${variantClasses[variant === 'full' ? 'full' : 'default']} ${sizeClasses[size]} ${className}`}
-            disabled={!product.inStock || product.quantity <= 0}
-        >
-            <FaShoppingCart className={`${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
-            {buttonText}
-        </button>
+        <div className={`w-full ${className}`}>
+            {renderPicker()}
+            <button
+                onClick={handleAddToCart}
+                className={`${variantClasses[variant === 'full' ? 'full' : 'default']} ${sizeClasses[size]}`}
+                disabled={!product.inStock || product.quantity <= 0}
+            >
+                <FaShoppingCart className={`${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
+                {buttonText}
+            </button>
+        </div>
     );
 }
 

@@ -67,6 +67,12 @@ function calculateDiscount(regularPrice: number, salePrice: number): number {
   return Math.round(((regularPrice - salePrice) / regularPrice) * 100);
 }
 
+function getStoreLogoSrc(logo?: string | null): string {
+  if (!logo) return "";
+  if (logo.startsWith("http") || logo.startsWith("/")) return logo;
+  return `/storage/${logo}`;
+}
+
 // Render stars based on average rating
 const renderStars = (rating: number) => {
   const fullStars = Math.floor(rating);
@@ -129,7 +135,9 @@ const ProductCard = ({
     ? (product as any).emoji
     : CATEGORY_LABEL[product.category ?? ""] ?? (product.category || "Product");
   const [gradientFrom, gradientTo] = CATEGORY_GRADIENT[product.category ?? ""] ?? DEFAULT_GRADIENT;
-  const vendor = ("vendor" in product ? (product as any).vendor : null) ?? product.category ?? "General";
+  const store = product.store;
+  const storeLogo = getStoreLogoSrc(store?.logo);
+  const vendor = store?.name ?? (("vendor" in product ? (product as any).vendor : null) ?? product.category ?? "General");
 
   const discount = calculateDiscount(product.regular_price, product.sale_price);
   const hasDiscount = discount > 0;
@@ -253,13 +261,30 @@ const ProductCard = ({
       <div className="p-4">
         {/* Vendor/Category & Brand */}
         <div className="font-mono text-[10.5px] text-[#767470] uppercase tracking-wide mb-1.5 flex items-center justify-between">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span>{vendor}</span>
-            {product.brand && (
-              <>
-                <span className="text-[#E3E1DB]" aria-hidden="true">/</span>
-                <span className="text-[#6E7F5C] font-semibold">{product.brand}</span>
-              </>
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
+            {store ? (
+              <Link
+                href={`/stores/${store.id}`}
+                className="shrink-0"
+                title={`Visit ${vendor}`}
+                aria-label={`Visit ${vendor}`}
+              >
+                {storeLogo ? (
+                  <img
+                    src={storeLogo}
+                    alt={`${vendor} store logo`}
+                    loading="lazy"
+                    className="w-7 h-7 rounded-full object-cover border border-[#E3E1DB] bg-white shadow-sm"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                  />
+                ) : (
+                  <span className="w-7 h-7 rounded-full bg-[#E7F4EF] text-[#4F6B63] flex items-center justify-center text-[11px] font-bold">
+                    {vendor.charAt(0)}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <span className="min-w-0 truncate">{vendor}</span>
             )}
           </div>
           {variant === "trending" && !badge && !product.brand && (

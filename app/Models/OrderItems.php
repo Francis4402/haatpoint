@@ -19,7 +19,9 @@ class OrderItems extends Model
         'product_image',
         'quantity',
         'price',
-        'total'
+        'total',
+        'size',
+        'color'
     ];
 
     protected $casts = [

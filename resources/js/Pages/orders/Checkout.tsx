@@ -529,7 +529,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                       {/* Cart Items */}
                       <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
                         {cartItems.map((item) => (
-                          <div key={item.id} className="flex gap-3">
+                          <div key={item.cartKey || `${item.id}__${item.selectedSize || ''}__${item.selectedColor || ''}`} className="flex gap-3">
                             <div className="w-16 h-16 bg-paper-dim rounded-xl overflow-hidden flex-shrink-0 border border-line">
                               <img
                                 src={getFirstImage(item.images)}
@@ -547,6 +547,13 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                               <p className="text-xs text-text-soft mt-1">
                                 Qty: {item.cartQty || 1}
                               </p>
+                              {(item.selectedColor || item.selectedSize) && (
+                                <p className="text-xs text-text-soft mt-0.5">
+                                  {item.selectedColor && <span className="capitalize">{item.selectedColor}</span>}
+                                  {item.selectedColor && item.selectedSize && ' · '}
+                                  {item.selectedSize && <span className="uppercase">{item.selectedSize}</span>}
+                                </p>
+                              )}
                               <p className="text-sm font-semibold text-ink mt-1">
                                 <FormatPrice price={(item.sale_price || item.regular_price) * (item.cartQty || 1)} />
                               </p>

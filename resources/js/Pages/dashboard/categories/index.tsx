@@ -582,6 +582,7 @@ const Categories = ({ auth, categories: initialCategories }: PageProps<{ categor
                     categories: categoryToEdit.categories,
                     brand: categoryToEdit.brand,
                     subcategory: categoryToEdit.subcategory,
+                    sizes: categoryToEdit.sizes ?? null,
                     image: categoryToEdit.image,
                 } : undefined}
                 isProcessing={processing}

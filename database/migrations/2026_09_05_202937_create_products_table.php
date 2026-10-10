@@ -26,6 +26,7 @@ return new class extends Migration
             $table->decimal('sale_price', 10, 2)->nullable();
             $table->mediumText('description');
             $table->string('color')->nullable();
+            $table->string('size')->nullable();
             $table->enum('product_type', ['top-selling', 'trending', 'featured', 'regular', 'new-arrival'])
                   ->default('regular');
             $table->decimal('item_weight', 8, 2);

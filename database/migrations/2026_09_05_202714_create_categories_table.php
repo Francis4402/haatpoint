@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('categories')->unique();
             $table->text('brand');
             $table->text('subcategory')->nullable();
+            $table->text('sizes')->nullable();
             $table->string('image');
             $table->timestamps();
         });

@@ -25,9 +25,10 @@ import { Product, storeType, Comments } from "@/types";
 import AppLayout from "@/Layouts/AppLayout";
 import { Link, router } from "@inertiajs/react";
 import { toast } from "sonner";
-import { useStore } from "../state/cartStore";
+import { useStore, makeCartKey } from "../state/cartStore";
 import CommentsList from "../dashboard/forms/CommentsList";
 import FormatPrice from "../utils/FormatePrice";
+import { parseVariantList } from "../utils/parseVariants";
 import axios from "axios";
 import SeoHead from "@/Components/SeoHead";
 import WishlistButton from "../buttons/WishListButton";
@@ -79,9 +80,14 @@ const ProductDetailsPage = ({
   const [reviewCount, setReviewCount] = useState<number>(initialReviewCount);
   const [loading, setLoading] = useState<boolean>(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
+  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>('');
 
-  const { addToCart, getItemById } = useStore();
-  const cartItem = getItemById(product.id.toString());
+  const availableSizes = parseVariantList(product.size);
+  const availableColors = parseVariantList(product.color);
+
+  const { addToCart, getItemByKey } = useStore();
+  const cartItem = getItemByKey(makeCartKey(product.id.toString(), selectedSize, selectedColor));
   const currentCartQuantity = cartItem?.cartQty || 0;
 
   // Fetch comments and ratings from API
@@ -195,15 +201,29 @@ const ProductDetailsPage = ({
       return false;
     }
 
+    if (availableSizes.length > 0 && !selectedSize) {
+      toast.error('Please select a size');
+      return false;
+    }
+
+    if (availableColors.length > 0 && !selectedColor) {
+      toast.error('Please select a color');
+      return false;
+    }
+
     if (currentCartQuantity + quantity > (product.quantity || 0)) {
       toast.error(`Only ${product.quantity} items available in stock`);
       return false;
     }
 
-    addToCart(product, store, quantity);
+    addToCart(product, store, quantity, selectedSize, selectedColor);
 
     return true;
   };
+
+  useEffect(() => {
+    setQuantity(1);
+  }, [selectedSize, selectedColor]);
 
   const incrementQuantity = (): void => {
     const maxAvailable = (product.quantity || 0) - currentCartQuantity;
@@ -527,6 +547,69 @@ const ProductDetailsPage = ({
                     </div>
                   )}
                 </div>
+
+                {/* Size & Color Selectors */}
+                {(availableColors.length > 0 || availableSizes.length > 0) && (
+                  <div className="space-y-5">
+                    {availableColors.length > 0 && (
+                      <div>
+                        <p className="text-text-soft font-medium mb-2">
+                          Color:
+                          {selectedColor ? (
+                            <span className="text-ink font-semibold capitalize"> {selectedColor}</span>
+                          ) : (
+                            <span className="text-red-500 ml-1">*</span>
+                          )}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {availableColors.map((color) => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => setSelectedColor(color)}
+                              className={`px-4 py-2 rounded-xl border text-sm font-medium capitalize transition-colors ${
+                                selectedColor === color
+                                  ? 'bg-marigold text-white border-marigold shadow-sm'
+                                  : 'bg-white text-ink border-line hover:border-marigold'
+                              }`}
+                            >
+                              {color}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {availableSizes.length > 0 && (
+                      <div>
+                        <p className="text-text-soft font-medium mb-2">
+                          Size:
+                          {selectedSize ? (
+                            <span className="text-ink font-semibold"> {selectedSize}</span>
+                          ) : (
+                            <span className="text-red-500 ml-1">*</span>
+                          )}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {availableSizes.map((optionSize) => (
+                            <button
+                              key={optionSize}
+                              type="button"
+                              onClick={() => setSelectedSize(optionSize)}
+                              className={`min-w-[48px] px-4 py-2 rounded-xl border text-sm font-semibold uppercase transition-colors ${
+                                selectedSize === optionSize
+                                  ? 'bg-marigold text-white border-marigold shadow-sm'
+                                  : 'bg-white text-ink border-line hover:border-marigold'
+                              }`}
+                            >
+                              {optionSize}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Stock Status & Quantity */}
                 <div className="space-y-4">

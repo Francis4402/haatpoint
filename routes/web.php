@@ -229,6 +229,7 @@ Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])
 
 Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/agent-guide', [DashboardController::class, 'agentGuide'])->name('dashboard.agent-guide');
     Route::get('/dashboard/products', [ProductsController::class, 'index'])->name('dashboard.products');
 
     Route::get('/dashboard/stores', [StoreController::class, 'index'])->name('dashboard.store');

@@ -7,6 +7,7 @@ use App\Http\Requests\StoreDashboardRequest;
 use App\Http\Requests\UpdateDashboardRequest;
 use App\Models\OrderItems;
 use App\Models\Orders;
+use App\Models\Products;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,13 @@ class DashboardController extends Controller
 
         $user = Auth::user();
         $userRole = $user->role;
+
+        // Agents must create a store before anything else: redirect a brand-new
+        // agent (one with no store yet) to the onboarding guide. The dashboard
+        // only becomes useful once at least one store exists.
+        if ($userRole === 'agent' && Store::where('agent_id', $user->id)->doesntExist()) {
+            return redirect()->route('dashboard.agent-guide');
+        }
 
         if (in_array($userRole, ['admin', 'superadmin'])) {
             // Admins see everything
@@ -144,5 +152,31 @@ class DashboardController extends Controller
     public function destroy(Dashboard $dashboard)
     {
         //
+    }
+
+    /**
+     * Onboarding guide shown right after an agent registers / logs in.
+     *
+     * Step 1 (create a store) is mandatory and cannot be skipped. Step 2
+     * (upload your first product) is optional. Also documents the full
+     * store-creation and product-upload flows for new sellers.
+     */
+    public function agentGuide()
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof \App\Models\Agent) {
+            return redirect()->route('dashboard');
+        }
+
+        $stores = Store::where('agent_id', $user->id)->get();
+        $productsCount = Products::whereIn('store_id', $stores->pluck('id'))->count();
+
+        return Inertia::render('dashboard/AgentGuide', [
+            'userRole' => $user->role,
+            'hasStore' => $stores->isNotEmpty(),
+            'stores' => $stores,
+            'productsCount' => (int) $productsCount,
+        ]);
     }
 }

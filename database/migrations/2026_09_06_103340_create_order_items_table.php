@@ -20,6 +20,8 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('price');
             $table->decimal('total');
+            $table->string('size')->nullable();
+            $table->string('color')->nullable();
             $table->timestamps();
         });
     }

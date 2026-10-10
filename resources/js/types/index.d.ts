@@ -36,6 +36,7 @@ export type CartItem = {
     sale_price: number;
     description: string;
     color: string;
+    size: string;
     product_type: 'top-selling' | 'trending' | 'featured' | 'new-arrival' | 'regular';
     inStock: boolean;
     rating: number;
@@ -43,6 +44,11 @@ export type CartItem = {
     store?: storeType;
     review?: number;
     cartQty?: number;
+    /** Chosen variant for this cart line (parsed from the selectors). */
+    selectedSize?: string;
+    selectedColor?: string;
+    /** Stable identity for a product + variant combination inside the cart. */
+    cartKey?: string;
     created_at: string;
     updated_at: string;
 }
@@ -70,6 +76,7 @@ export interface categoryType {
     categories: string;
     brand: string;
     subcategory: string | null;
+    sizes?: string | null;
     image: string | null;
     created_at: string;
     updated_at: string;
@@ -90,6 +97,7 @@ export interface Product {
     sale_price: number;
     description: string;
     color: string;
+    size: string;
     product_type: 'top-selling' | 'trending' | 'featured' | 'new-arrival' | 'regular';
     inStock: boolean;
     rating: number;
@@ -150,7 +158,9 @@ export interface OrderItem {
   quantity: number;
   price: number;
   total: number;
-  weight: number;
+  weight?: number;
+  size?: string | null;
+  color?: string | null;
   created_at?: string;
   updated_at?: string;
 }

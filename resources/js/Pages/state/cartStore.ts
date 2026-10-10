@@ -4,6 +4,12 @@ import { toast } from 'sonner';
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
+export const makeCartKey = (id: string, size?: string, color?: string) =>
+    `${id}__${size || ''}__${color || ''}`;
+
+const itemKey = (item: CartItem) =>
+    item.cartKey || makeCartKey(item.id, item.selectedSize, item.selectedColor);
+
 export interface OrderData {
     user_id: string;
     sender_name: string;
@@ -51,17 +57,18 @@ type Store = {
     areas: areatypes[];
 
     // Cart actions
-    addToCart: (product: CartItem | Product, store: storeType, quantity?: number) => void;
-    removeFromCart: (id: string) => void;
+    addToCart: (product: CartItem | Product, store: storeType, quantity?: number, selectedSize?: string, selectedColor?: string) => void;
+    removeFromCart: (key: string) => void;
     clearCart: () => void;
     getTotalItems: () => number;
     getSubTotal: () => number;
     getTax: () => number;
     getShipping: () => number;
     getTotal: () => number;
-    increaseQty: (id: string) => void;
-    decreaseQty: (id: string) => void;
-    updateCartItemQty: (id: string, quantity: number) => void;
+    increaseQty: (key: string) => void;
+    decreaseQty: (key: string) => void;
+    updateCartItemQty: (key: string, quantity: number) => void;
+    updateCartItemVariant: (key: string, size?: string, color?: string) => void;
 
     // Pathao shipping actions
     setPathaoCharges: (charges: PathaoCharges | null) => void;
@@ -84,6 +91,8 @@ type Store = {
         store_phone: string;
         store_email: string;
         item_weight: number;
+        size?: string;
+        color?: string;
     }>;
 
     getOrderSummary: () => {
@@ -100,6 +109,7 @@ type Store = {
 
     resetShippingState: () => void;
     getItemById: (id: string) => CartItem | undefined;
+    getItemByKey: (key: string) => CartItem | undefined;
 
     // Cart metadata
     lastUpdated: string | null;
@@ -126,15 +136,16 @@ export const useStore = create<Store>()(
                 discountAmount: 0,
 
                 // Add to cart
-                addToCart: (product, store, quantity = 1) =>
+                addToCart: (product, store, quantity = 1, selectedSize = '', selectedColor = '') =>
                     set((state) => {
                         if (!store || !store.id) {
                             toast.error('Store information is missing');
                             return state;
                         }
 
+                        const variantKey = makeCartKey(product.id, selectedSize, selectedColor);
                         const existing = state.cart.find(
-                            (item) => item.id === product.id
+                            (item) => itemKey(item) === variantKey
                         );
 
                         if (existing) {
@@ -146,7 +157,7 @@ export const useStore = create<Store>()(
 
                             return {
                                 cart: state.cart.map((item) =>
-                                    item.id === product.id
+                                    itemKey(item) === variantKey
                                         ? { ...item, cartQty: newQty }
                                         : item
                                 ),
@@ -154,13 +165,16 @@ export const useStore = create<Store>()(
                             };
                         }
 
-                        // Create cart item with store information
+                        // Create cart item with store + variant information
                         const cartItem: CartItem = {
                             ...product,
                             store: store,
                             cartQty: quantity,
                             item_weight: product.item_weight || 0.5,
                             store_id: store.id,
+                            cartKey: variantKey,
+                            selectedSize,
+                            selectedColor,
                         };
 
                         toast.success(`${product.name} added to cart`);
@@ -170,9 +184,9 @@ export const useStore = create<Store>()(
                         };
                     }),
 
-                increaseQty: (id) =>
+                increaseQty: (key) =>
                     set((state) => {
-                        const item = state.cart.find(item => item.id === id);
+                        const item = state.cart.find(item => itemKey(item) === key);
                         if (item) {
                             if (item.cartQty! >= (item.quantity || 0)) {
                                 toast.error('Maximum quantity reached');
@@ -181,7 +195,7 @@ export const useStore = create<Store>()(
 
                             return {
                                 cart: state.cart.map((item) =>
-                                    item.id === id
+                                    itemKey(item) === key
                                         ? { ...item, cartQty: (item.cartQty || 1) + 1 }
                                         : item
                                 ),
@@ -191,11 +205,11 @@ export const useStore = create<Store>()(
                         return state;
                     }),
 
-                decreaseQty: (id) =>
+                decreaseQty: (key) =>
                     set((state) => ({
                         cart: state.cart
                             .map((item) =>
-                                item.id === id
+                                itemKey(item) === key
                                     ? { ...item, cartQty: Math.max((item.cartQty || 1) - 1, 1) }
                                     : item
                             )
@@ -203,9 +217,9 @@ export const useStore = create<Store>()(
                         lastUpdated: new Date().toISOString(),
                     })),
 
-                updateCartItemQty: (id, quantity) =>
+                updateCartItemQty: (key, quantity) =>
                     set((state) => {
-                        const item = state.cart.find(item => item.id === id);
+                        const item = state.cart.find(item => itemKey(item) === key);
                         if (item) {
                             if (quantity > (item.quantity || 0)) {
                                 toast.error('Maximum quantity reached');
@@ -214,7 +228,7 @@ export const useStore = create<Store>()(
 
                             return {
                                 cart: state.cart.map((item) =>
-                                    item.id === id ? { ...item, cartQty: quantity } : item
+                                    itemKey(item) === key ? { ...item, cartQty: quantity } : item
                                 ),
                                 lastUpdated: new Date().toISOString(),
                             };
@@ -222,14 +236,66 @@ export const useStore = create<Store>()(
                         return state;
                     }),
 
-                removeFromCart: (id) =>
+                updateCartItemVariant: (key, size = '', color = '') =>
                     set((state) => {
-                        const item = state.cart.find(item => item.id === id);
+                        const index = state.cart.findIndex((item) => itemKey(item) === key);
+                        if (index === -1) return state;
+
+                        const newKey = makeCartKey(state.cart[index].id, size, color);
+
+                        if (newKey === key) {
+                            return {
+                                cart: state.cart.map((item, i) =>
+                                    i === index
+                                        ? { ...item, selectedSize: size, selectedColor: color }
+                                        : item
+                                ),
+                                lastUpdated: new Date().toISOString(),
+                            };
+                        }
+
+                        const targetIndex = state.cart.findIndex(
+                            (item, i) => i !== index && itemKey(item) === newKey
+                        );
+
+                        const updatedItem: CartItem = {
+                            ...state.cart[index],
+                            selectedSize: size,
+                            selectedColor: color,
+                            cartKey: newKey,
+                        };
+
+                        if (targetIndex !== -1) {
+                            const maxQty = updatedItem.quantity || 0;
+                            const mergedQty = Math.min(
+                                (state.cart[targetIndex].cartQty || 1) + (updatedItem.cartQty || 1),
+                                maxQty || (state.cart[targetIndex].cartQty || 1) + (updatedItem.cartQty || 1)
+                            );
+                            const newCart = state.cart
+                                .map((item, i) => {
+                                    if (i === index) return null;
+                                    if (i === targetIndex) return { ...item, cartQty: mergedQty };
+                                    return item;
+                                })
+                                .filter((item): item is CartItem => item !== null);
+                            toast.success('Cart items merged');
+                            return { cart: newCart, lastUpdated: new Date().toISOString() };
+                        }
+
+                        return {
+                            cart: state.cart.map((item, i) => (i === index ? updatedItem : item)),
+                            lastUpdated: new Date().toISOString(),
+                        };
+                    }),
+
+                removeFromCart: (key) =>
+                    set((state) => {
+                        const item = state.cart.find(item => itemKey(item) === key);
                         if (item) {
                             toast.success(`${item.name} removed from cart`);
                         }
                         return {
-                            cart: state.cart.filter((item) => item.id !== id),
+                            cart: state.cart.filter((item) => itemKey(item) !== key),
                             lastUpdated: new Date().toISOString(),
                         };
                     }),
@@ -259,6 +325,9 @@ export const useStore = create<Store>()(
 
                 getItemById: (id: string) =>
                     get().cart.find((item) => item.id === id),
+
+                getItemByKey: (key: string) =>
+                    get().cart.find((item) => itemKey(item) === key),
 
                 // Subtotal includes tax
                 getSubTotal: () => {
@@ -360,6 +429,8 @@ export const useStore = create<Store>()(
                             store_phone: item.store?.mobile || '',
                             store_email: item.store?.email || '',
                             item_weight: weight,
+                            size: item.selectedSize || undefined,
+                            color: item.selectedColor || undefined,
                         };
                     });
                 },
@@ -518,12 +589,26 @@ export const useStore = create<Store>()(
             }),
             {
                 name: 'cart-storage',
-                version: 1,
+                version: 2,
+                migrate: (persistedState: any, version: number) => {
+                    if (persistedState && Array.isArray(persistedState.cart)) {
+                        persistedState.cart = persistedState.cart.map((item: any) => ({
+                            ...item,
+                            selectedSize: item.selectedSize || '',
+                            selectedColor: item.selectedColor || '',
+                            cartKey: item.cartKey || makeCartKey(item.id, item.selectedSize, item.selectedColor),
+                        }));
+                    }
+                    return persistedState;
+                },
                 partialize: (state) => ({
                     cart: state.cart.map(item => ({
                         ...item,
                         store: item.store,
                         item_weight: item.item_weight || 0.5,
+                        selectedSize: item.selectedSize || '',
+                        selectedColor: item.selectedColor || '',
+                        cartKey: item.cartKey || makeCartKey(item.id, item.selectedSize, item.selectedColor),
                     })),
                     pathaoCharges: state.pathaoCharges,
                     selectedCity: state.selectedCity,

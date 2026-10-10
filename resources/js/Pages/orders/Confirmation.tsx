@@ -158,7 +158,14 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
             <tbody>
               {items.map((item, index) => (
                 <tr key={index}>
-                  <td>{getProductName(item)}</td>
+                  <td>
+                    {getProductName(item)}
+                    {(item.color || item.size) && (
+                      <div style={{ fontSize: '8pt', color: '#555' }}>
+                        {item.color || ''}{item.color && item.size ? ' · ' : ''}{item.size || ''}
+                      </div>
+                    )}
+                  </td>
                   <td className="center">{item.quantity}</td>
                   <td className="right"><FormatPrice price={item.price} /></td>
                   <td className="right"><FormatPrice price={item.total} /></td>
@@ -265,6 +272,11 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
                           <tr key={index} className="border-b border-line">
                             <td className="py-3 text-sm">
                               <span className="font-medium text-ink">{getProductName(item)}</span>
+                              {(item.color || item.size) && (
+                                <div className="text-xs text-text-soft mt-0.5 capitalize">
+                                  {item.color || ''}{item.color && item.size ? ' · ' : ''}{item.size || ''}
+                                </div>
+                              )}
                             </td>
                             <td className="py-3 text-sm text-center text-text-soft">{item.quantity}</td>
                             <td className="py-3 text-sm text-right text-text-soft"><FormatPrice price={item.price} /></td>

@@ -12,6 +12,7 @@ interface CategoryModalProps {
         categories: string;
         brand: string | string[];
         subcategory: string | null;
+        sizes?: string | null;
         image: string | null;
     };
     isProcessing: boolean;
@@ -27,6 +28,7 @@ interface CategoryFormData {
     categories: string;
     brand: string[];
     subcategory: string[];
+    sizes: string[];
     image: File | null;
 }
 
@@ -43,6 +45,7 @@ const CategoryModal = ({
         categories: '',
         brand: [''],
         subcategory: [''],
+        sizes: [''],
         image: null,
     });
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -60,6 +63,18 @@ const CategoryModal = ({
                     }
                 } catch (e) {
                     parsedSubcategories = [];
+                }
+            }
+
+            let parsedSizes: string[] = [];
+            if (initialData.sizes) {
+                try {
+                    const parsed = JSON.parse(initialData.sizes);
+                    if (Array.isArray(parsed)) {
+                        parsedSizes = parsed;
+                    }
+                } catch (e) {
+                    parsedSizes = [];
                 }
             }
 
@@ -87,6 +102,7 @@ const CategoryModal = ({
                 categories: initialData.categories,
                 brand: brands.length > 0 ? brands : [''],
                 subcategory: parsedSubcategories.length > 0 ? parsedSubcategories : [''],
+                sizes: parsedSizes.length > 0 ? parsedSizes : [''],
                 image: null,
             });
 
@@ -100,6 +116,7 @@ const CategoryModal = ({
                 categories: '',
                 brand: [''],
                 subcategory: [''],
+                sizes: [''],
                 image: null,
             });
             setCurrentImagePath(null);
@@ -147,6 +164,23 @@ const CategoryModal = ({
         updateField('subcategory', newSubcategories);
     };
 
+    // Size functions
+    const addSizeField = () => {
+        updateField('sizes', [...formData.sizes, '']);
+    };
+
+    const removeSizeField = (index: number) => {
+        const newSizes = [...formData.sizes];
+        newSizes.splice(index, 1);
+        updateField('sizes', newSizes.length > 0 ? newSizes : ['']);
+    };
+
+    const updateSize = (index: number, value: string) => {
+        const newSizes = [...formData.sizes];
+        newSizes[index] = value;
+        updateField('sizes', newSizes);
+    };
+
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -190,6 +224,10 @@ const CategoryModal = ({
         // Send subcategories as JSON array (can be empty)
         const filteredSubcategory = formData.subcategory.filter(subcat => subcat.trim() !== '');
         formDataToSend.append('subcategory', JSON.stringify(filteredSubcategory));
+
+        // Send sizes as JSON array (optional)
+        const filteredSizes = formData.sizes.filter(size => size.trim() !== '');
+        formDataToSend.append('sizes', JSON.stringify(filteredSizes));
 
         if (formData.image) {
             formDataToSend.append('image', formData.image);
@@ -338,6 +376,52 @@ const CategoryModal = ({
                             )}
                             <p className="mt-2 text-sm text-text-soft">
                                 Add subcategories for better product organization (optional)
+                            </p>
+                        </div>
+
+                        {/* Sizes - Optional */}
+                        <div className="mb-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <label className="block text-sm font-medium text-ink">
+                                    Sizes (Optional)
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={addSizeField}
+                                    className="inline-flex items-center px-3 py-1 text-sm bg-marigold/10 text-marigold rounded-lg hover:bg-marigold/20 transition-colors font-medium"
+                                >
+                                    <FaPlus className="h-3 w-3 mr-1" />
+                                    Add Size
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {formData.sizes.map((size, index) => (
+                                    <div key={index} className="flex items-center space-x-2">
+                                        <div className="flex-1">
+                                            <input
+                                                type="text"
+                                                value={size}
+                                                onChange={(e) => updateSize(index, e.target.value)}
+                                                placeholder={`Size ${index + 1} (e.g. XL, L, M)`}
+                                                className="w-full px-4 py-2 border border-line rounded-xl focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft"
+                                            />
+                                        </div>
+                                        {formData.sizes.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeSizeField(index)}
+                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="Remove size"
+                                            >
+                                                <FaMinus className="h-4 w-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="mt-2 text-sm text-text-soft">
+                                Sizes offered for products in this category (e.g. clothing: S, M, L, XL, 2XL)
                             </p>
                         </div>
 
