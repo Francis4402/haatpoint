@@ -229,12 +229,12 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
         let weightSurchargeAmount = pathaoDeliveryCharge * (weightSurchargePercentage / 100);
 
         const pathaoWithSurcharge = pathaoDeliveryCharge + weightSurchargeAmount;
-        const totalDeliveryCharge = pathaoWithSurcharge + 20;
+        const totalDeliveryCharge = pathaoWithSurcharge;
 
         setPathaoCharges({
           delivery_charge: totalDeliveryCharge,
           base_charge: pathaoDeliveryCharge,
-          service_fee: 20,
+          service_fee: 0,
           weight_surcharge: weightSurchargeAmount,
           weight_surcharge_percentage: weightSurchargePercentage
         });
@@ -1067,11 +1067,6 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                                         <span className="flex-shrink-0">+ <FormatPrice price={pathaoCharges.weight_surcharge} /></span>
                                       </div>
                                     )}
-
-                                    <div className="flex justify-between text-blue-600">
-                                      <span>Service Fee:</span>
-                                      <span>+ <FormatPrice price={20} /></span>
-                                    </div>
 
                                     <div className="flex justify-between pt-2 border-t border-gray-200 font-semibold">
                                       <span>Total:</span>
