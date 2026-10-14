@@ -14,10 +14,12 @@ import {
   FaChartLine,
   FaTag,
   FaImage,
+  FaInfoCircle,
 } from 'react-icons/fa';
 import { Product, storeType } from '@/types';
 import { toast } from 'sonner';
 import FormatPrice from '@/Pages/utils/FormatePrice';
+import { withMarkup } from '@/Pages/utils/price';
 import Eyebrow from '@/Pages/Components/Eyebrow';
 import DeleteConfirmationDialog from '@/Pages/buttons/DeleteConfirmationDialog';
 
@@ -186,6 +188,15 @@ const Products = ({auth, products, store}: dashboarProductProps) => {
                                 </button>
                             )}
                         </div>
+                    </div>
+
+                    {/* Pricing notice */}
+                    <div className="mb-8 flex items-start gap-3 rounded-2xl border border-marigold/30 bg-marigold/5 p-4">
+                        <FaInfoCircle className="mt-0.5 h-5 w-5 shrink-0 text-marigold" />
+                        <p className="text-sm text-ink">
+                            <span className="font-semibold">Note:</span> 10% price will be increased when you add the product.
+                            The price you enter for your customers is shown with this increase already included.
+                        </p>
                     </div>
 
                     {/* Stats Cards */}
@@ -418,13 +429,20 @@ const Products = ({auth, products, store}: dashboarProductProps) => {
                                             <div className="flex items-center justify-between mb-4">
                                                 <div>
                                                     {product.sale_price ? (
-                                                        <>
+                                                        <div className="flex items-baseline gap-2">
                                                             <span className="text-lg font-bold text-ink"><FormatPrice price={product.sale_price} /></span>
-                                                            <span className="text-sm text-text-soft line-through ml-2"><FormatPrice price={product.regular_price} /></span>
-                                                        </>
+                                                            <span className="text-sm text-text-soft line-through"><FormatPrice price={product.regular_price} /></span>
+                                                        </div>
                                                     ) : (
                                                         <span className="text-lg font-bold text-ink"><FormatPrice price={product.regular_price} /></span>
                                                     )}
+                                                    <p className="text-xs text-text-soft mt-0.5">
+                                                        Your price ·{" "}
+                                                        <span className="text-marigold font-semibold">
+                                                            Customer pays <FormatPrice price={withMarkup(product.sale_price || product.regular_price)} />
+                                                        </span>{" "}
+                                                        (+10%)
+                                                    </p>
                                                 </div>
                                                 <div className="flex items-center">
                                                     <span className="text-yellow-500">★</span>

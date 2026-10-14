@@ -10,11 +10,12 @@ const FormatPrice = ({ price, currency = 'BDT' }: FormatPriceProps) => {
 
     const formatPrice = (amount: number) => {
         const locale = language === 'bn' ? 'bn-BD' : 'en-US';
+        const isWhole = Number.isInteger(amount);
         return new Intl.NumberFormat(locale, {
             style: 'currency',
             currency: currency,
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            minimumFractionDigits: isWhole ? 0 : 2,
+            maximumFractionDigits: isWhole ? 0 : 2
         }).format(amount);
     };
 

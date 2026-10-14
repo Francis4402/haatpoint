@@ -2,15 +2,19 @@
 
 namespace App\Models;
 
-use App\Traits\SendsVerificationEmailSafely;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class Agent extends Authenticatable implements MustVerifyEmail
+/**
+ * Agents do not verify their email address: no verification link is sent on
+ * registration and the account is never held back for confirmation, so the
+ * model deliberately does not implement MustVerifyEmail. Their only onboarding
+ * gate is the vendor KYC profile (see missingVendorProfileFields()).
+ */
+class Agent extends Authenticatable
 {
-    use HasUuids, Notifiable, SendsVerificationEmailSafely;
+    use HasUuids, Notifiable;
 
     protected $guarded = [];
 

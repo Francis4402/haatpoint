@@ -48,8 +48,11 @@ class PageController extends Controller
     public function checkout()
     {
         $wishlist = Wishlist::where('user_id', Auth::id())->paginate(12);
+        // No explicit `auth` prop: the shared `auth` from HandleInertiaRequests
+        // already carries the user plus the isVerified/requiresVerification
+        // flags. Passing `auth` here would overwrite it (page props win) and
+        // drop those flags, so a page prop would silently shadow the shared one.
         return Inertia::render('orders/Checkout', [
-            'auth' => ['user' => Auth::user()],
             'wishlist' => $wishlist
         ]);
     }
@@ -78,8 +81,11 @@ class PageController extends Controller
             $deliveredPaid = Orders::where('order_status', 'delivered')->where('payment_status', 'paid')->get();
             $delivered = Orders::where('order_status', 'delivered')->get();
 
-            // Admin revenue = 10% profit on delivered & paid orders (per order rule)
-            $totalProfit = $deliveredPaid->sum(fn ($o) => ((float) $o->subtotal * 0.10));
+            // Order subtotals store the agent's ORIGINAL product price (what the agent
+            // set). The platform's cut is 10% of that original price.
+            $subtotalSum = $deliveredPaid->sum(fn ($o) => (float) $o->subtotal);
+            $totalProfit = $subtotalSum * 0.10;
+            $originalRevenue = $subtotalSum;
             // Total sells = all delivered products
             $totalSells = (float) $delivered->sum('total');
             $totalProductsSold = (int) OrderItems::query()
@@ -98,6 +104,8 @@ class PageController extends Controller
                     'name' => $r->product_name,
                     'qty' => (int) $r->qty,
                     'revenue' => (float) $r->revenue,
+                    'original' => (float) $r->revenue,
+                    'profit' => round((float) $r->revenue * 0.10, 2),
                     'image' => $r->image,
                 ])->values();
 
@@ -105,6 +113,7 @@ class PageController extends Controller
                 'role' => 'admin',
                 'isAdmin' => true,
                 'totalProfit' => round($totalProfit, 2),
+                'originalRevenue' => round($originalRevenue, 2),
                 'profitCommissionRate' => 10,
                 'profitOrdersCount' => $deliveredPaid->count(),
                 'totalSells' => round($totalSells, 2),
@@ -137,7 +146,9 @@ class PageController extends Controller
                 ->where('order_status', 'delivered')
                 ->get();
 
-            $totalRevenue = $deliveredPaid->sum('total');
+            // Agents are paid the ORIGINAL price they set (no markup).
+            $subtotalSum = $deliveredPaid->sum(fn ($o) => (float) $o->subtotal);
+            $totalRevenue = $subtotalSum;
             $totalOrdersCount = $orders->count();
             $conversionRate = $totalOrdersCount > 0
                 ? round(($deliveredPaid->count() / $totalOrdersCount) * 100, 2)
@@ -155,6 +166,7 @@ class PageController extends Controller
                     'name' => $r->product_name,
                     'qty' => (int) $r->qty,
                     'revenue' => (float) $r->revenue,
+                    'original' => (float) $r->revenue,
                     'image' => $r->image,
                 ])->values();
 

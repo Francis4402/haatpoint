@@ -170,19 +170,14 @@ abstract class StaffAuthController extends Controller
 
         $this->afterRegistration($request);
 
+        // None of the staff roles verify their email. Admin and superadmin never
+        // did, and agents deliberately do not, so no verification link is ever
+        // sent. The event is kept because it is the standard "account created"
+        // hook; the framework's verification listener ignores it for any model
+        // that does not implement MustVerifyEmail.
         event(new Registered($user));
 
         $this->loginOnGuard($this->guard(), $user);
-
-        // Agent verifies its address, so a Brevo outage here means no link was
-        // ever sent. Admin and Superadmin have no verification step and do not
-        // carry the trait, hence the property_exists() guard rather than reading
-        // $user->verificationMailFailed directly and risking an undefined
-        // property read on those two models.
-        if (property_exists($user, 'verificationMailFailed') && $user->verificationMailFailed) {
-            return redirect()->intended(route('dashboard', absolute: false))
-                ->with('error', $user->verificationMailFailureMessage());
-        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

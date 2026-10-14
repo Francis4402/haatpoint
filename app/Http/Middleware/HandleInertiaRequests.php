@@ -40,11 +40,12 @@ class HandleInertiaRequests extends Middleware
             ?? auth('agent')->user()
             ?? auth('admin')->user();
 
-        // Only User and Agent implement the MustVerifyEmail contract, so that
-        // is the discriminator. method_exists() does not work here: every model
+        // Only the customer (User) model implements the MustVerifyEmail
+        // contract. Agents deliberately do not verify, and Admin/Superadmin have
+        // no verification step. method_exists() does not work here: every model
         // extending Illuminate\Foundation\Auth\User inherits hasVerifiedEmail()
-        // from the framework trait, including Admin, which has no verification
-        // step and must never be warned about one.
+        // from the framework trait, including Admin, which must never be warned
+        // about a verification it does not have.
         $requiresVerification = $user instanceof MustVerifyEmail
             && ! $user->hasVerifiedEmail();
 

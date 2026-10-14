@@ -1,4 +1,5 @@
 import { citytypes, zonetypes, areatypes, CartItem, storeType, Product } from '@/types'
+import { withMarkup } from '@/Pages/utils/price'
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { create } from 'zustand'
@@ -62,7 +63,7 @@ type Store = {
     clearCart: () => void;
     getTotalItems: () => number;
     getSubTotal: () => number;
-    getTax: () => number;
+    getBaseSubTotal: () => number;
     getShipping: () => number;
     getTotal: () => number;
     increaseQty: (key: string) => void;
@@ -98,7 +99,6 @@ type Store = {
     getOrderSummary: () => {
         subtotal: number;
         shipping: number;
-        tax: number;
         total: number;
         item_count: number;
         total_weight: number;
@@ -329,24 +329,24 @@ export const useStore = create<Store>()(
                 getItemByKey: (key: string) =>
                     get().cart.find((item) => itemKey(item) === key),
 
-                // Subtotal includes tax
-                getSubTotal: () => {
+                // Subtotal using the agent's original price (what the agent earns).
+                getBaseSubTotal: () => {
                     const subtotal = get().cart.reduce(
                         (sum, item) =>
-                            sum + ((item.sale_price || item.regular_price) * (item.cartQty || 1)),
+                            sum + ((parseFloat(String(item.sale_price || item.regular_price)) || 0) * (item.cartQty || 1)),
                         0
                     );
                     return subtotal;
                 },
 
-                // Tax calculation for display purposes only
-                getTax: () => {
+                // Subtotal using the customer-facing price (agent price + platform markup)
+                getSubTotal: () => {
                     const subtotal = get().cart.reduce(
                         (sum, item) =>
-                            sum + ((item.sale_price || item.regular_price) * (item.cartQty || 1)),
+                            sum + (withMarkup(item.sale_price || item.regular_price) * (item.cartQty || 1)),
                         0
                     );
-                    return subtotal * 0.10;
+                    return subtotal;
                 },
 
                 // Get shipping - returns the total delivery charge including all surcharges
@@ -359,7 +359,7 @@ export const useStore = create<Store>()(
                     return pathaoCharges.delivery_charge;
                 },
 
-                // Total = Subtotal (incl. tax) + Shipping - Discount
+                // Total = Subtotal + Shipping - Discount
                 getTotal: () => {
                     const subtotal = get().getSubTotal();
                     const shipping = get().getShipping();
@@ -414,7 +414,9 @@ export const useStore = create<Store>()(
                 getFormattedCartItems: () => {
                     const cart = get().cart;
                     return cart.map(item => {
-                        const price = item.sale_price || item.regular_price;
+                        // Orders store the agent's ORIGINAL price (without the platform
+                        // markup) so agent/superadmin reports reflect the agent's price.
+                        const price = parseFloat(String(item.sale_price || item.regular_price)) || 0;
                         const quantity = Math.max(1, item.cartQty || 1);
                         const weight = item.item_weight || 0.5;
 
@@ -435,10 +437,9 @@ export const useStore = create<Store>()(
                     });
                 },
 
-                // Order summary with tax included in subtotal
+                // Order summary - prices already include the platform markup
                 getOrderSummary: () => {
                     const subtotal = get().getSubTotal();
-                    const tax = get().getTax();
                     const shipping = get().getShipping();
                     const total = get().getTotal();
                     const item_count = get().getTotalItems();
@@ -450,8 +451,7 @@ export const useStore = create<Store>()(
                     }, 0);
 
                     return {
-                        subtotal, // This includes tax
-                        tax,
+                        subtotal,
                         shipping,
                         total,
                         item_count,
@@ -546,8 +546,7 @@ export const useStore = create<Store>()(
                         amount_to_collect: summary.total,
                         item_description: 'Products order',
                         store_name: storeInfo.name,
-                        subtotal: summary.subtotal,
-                        tax_amount: summary.tax,
+                        subtotal: state.getBaseSubTotal(),
                         delivery_charge: state.pathaoCharges.delivery_charge,
                         base_delivery_charge: state.pathaoCharges.base_charge || state.pathaoCharges.delivery_charge - 20 - (state.pathaoCharges.weight_surcharge || 0),
                         weight_surcharge: state.pathaoCharges.weight_surcharge || 0,

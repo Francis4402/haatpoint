@@ -99,12 +99,19 @@ class DashboardController extends Controller
                 'name' => $r->product_name,
                 'qty' => (int) $r->qty,
                 'revenue' => (float) $r->revenue,
+                'original' => (float) $r->revenue,
+                'profit' => round((float) $r->revenue * 0.10, 2),
                 'image' => $r->image,
             ])
             ->values();
 
+        // Order subtotals store the agent's ORIGINAL product price (the price the
+        // agent set). The platform's cut is 10% of that original price.
+        $subtotalSum = $deliveredPaid->sum(fn ($o) => (float) $o->subtotal);
+
         return [
-            'totalProfit' => round($deliveredPaid->sum(fn ($o) => ((float) $o->subtotal * 0.10)), 2),
+            'totalProfit' => round($subtotalSum * 0.10, 2),
+            'originalRevenue' => round($subtotalSum, 2),
             'totalSells' => round($delivered->sum('total'), 2),
             'totalRevenue' => round($deliveredPaid->sum('total'), 2),
             'totalProductsSold' => $delivered->sum('item_quantity'),

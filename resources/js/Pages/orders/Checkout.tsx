@@ -23,13 +23,16 @@ import AppLayout from '@/Layouts/AppLayout';
 import { useStore, OrderData } from '../state/cartStore';
 import { toast } from 'sonner';
 import FormatPrice from '../utils/FormatePrice';
+import { withMarkup } from '../utils/price';
 import Eyebrow from '../Components/Eyebrow';
 import SeoHead from '@/Components/SeoHead';
 
 
 interface CheckoutProps {
   auth: {
-    user: any
+    user: any;
+    isVerified?: boolean;
+    requiresVerification?: boolean;
   };
   wishlist: any
 }
@@ -49,6 +52,10 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
   } = useStore();
 
   const store = cartItems[0]?.store;
+
+  // A customer must confirm their email address before ordering. Agents and
+  // staff never require this, so the flag only ever arrives for a User.
+  const requiresVerification = !!auth?.requiresVerification;
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -130,6 +137,11 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (requiresVerification) {
+      toast.error('Please verify your email address before placing an order.');
+      return;
+    }
 
     if (!validateForm()) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -249,6 +261,27 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                     ))}
                   </ul>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Email verification required */}
+          {requiresVerification && (
+            <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 text-amber-800 px-4 py-3 rounded-xl flex items-start shadow-hard-sm">
+              <FaEnvelope className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold">Verify your email to place an order</p>
+                <p className="text-sm mt-1">
+                  We sent a verification link to{' '}
+                  <span className="font-medium break-all">{auth.user?.email}</span>.
+                  Please confirm your address before completing your purchase.
+                </p>
+                <Link
+                  href={route('verification.notice')}
+                  className="inline-block mt-2 text-sm font-semibold underline underline-offset-4 hover:text-amber-900"
+                >
+                  Resend verification email
+                </Link>
               </div>
             </div>
           )}
@@ -555,7 +588,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                                 </p>
                               )}
                               <p className="text-sm font-semibold text-ink mt-1">
-                                <FormatPrice price={(item.sale_price || item.regular_price) * (item.cartQty || 1)} />
+                                <FormatPrice price={withMarkup(item.sale_price || item.regular_price) * (item.cartQty || 1)} />
                               </p>
                             </div>
                           </div>
@@ -571,10 +604,6 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                         <div className="flex justify-between text-sm">
                           <span className="text-text-soft">Shipping</span>
                           <span className="font-medium text-ink"><FormatPrice price={summary.shipping} /></span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-text-soft">Tax (10%)</span>
-                          <span className="font-medium text-ink"><FormatPrice price={summary.tax} /></span>
                         </div>
                         {summary.discount && summary.discount > 0 && (
                           <div className="flex justify-between text-sm">
@@ -617,7 +646,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
 
                         <button
                           type="submit"
-                          disabled={processing || isProcessing || cartItems.length === 0 || !selectedCity || !selectedZone || !pathaoCharges || !termsAccepted}
+                          disabled={processing || isProcessing || cartItems.length === 0 || !selectedCity || !selectedZone || !pathaoCharges || !termsAccepted || requiresVerification}
                           className="w-full py-4 bg-gray-900 hover:bg-marigold text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
                         >
                           <FaLock className="h-5 w-5 mr-2" />

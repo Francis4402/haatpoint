@@ -3,6 +3,7 @@ import DashboardLayout from '@/Layouts/DashboardLayout';
 import { categoryType, storeType } from '@/types';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
+import { withMarkup } from '../../utils/price';
 import {
   FaFileAlt,
   FaImage,
@@ -1105,6 +1106,10 @@ export default function CreateProductForm({auth, store, stores = [], categories}
                           {errors.regular_price}
                         </p>
                       )}
+                      <p className="mt-2 flex items-start gap-2 rounded-lg border border-marigold/30 bg-marigold/5 px-3 py-2 text-xs text-ink">
+                        <FaInfoCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-marigold" />
+                        <span>10% price will be increased when you add the product. Customers see the increased amount.</span>
+                      </p>
                     </div>
 
                     {/* Sale Price */}
@@ -1155,7 +1160,7 @@ export default function CreateProductForm({auth, store, stores = [], categories}
                                 Save {discountPercentage}%
                               </span>
                               <span className="text-sm text-text-soft">
-                                Save BDT {(parseFloat(data.regular_price) - parseFloat(data.sale_price)).toFixed(2)}
+                                Save BDT {withMarkup(parseFloat(data.regular_price) - parseFloat(data.sale_price)).toFixed(2)}
                               </span>
                             </div>
                           )}
@@ -1419,22 +1424,29 @@ export default function CreateProductForm({auth, store, stores = [], categories}
                       <div className="mt-2">
                         {data.sale_price ? (
                           <div className="flex items-center gap-2">
-                            <span className="text-xl font-bold text-marigold">
-                              BDT {parseFloat(data.sale_price).toFixed(2)}
+                            <span className="text-xl font-bold text-ink">
+                              BDT {parseFloat(data.sale_price || '0').toFixed(2)}
                             </span>
                             <span className="text-sm text-text-soft line-through">
-                              BDT {parseFloat(data.regular_price).toFixed(2)}
+                              BDT {parseFloat(data.regular_price || '0').toFixed(2)}
                             </span>
                           </div>
                         ) : data.regular_price ? (
                           <span className="text-xl font-bold text-ink">
-                            BDT {parseFloat(data.regular_price).toFixed(2)}
+                            BDT {parseFloat(data.regular_price || '0').toFixed(2)}
                           </span>
                         ) : (
                           <span className="text-xl font-bold text-text-soft">
                             BDT 0.00
                           </span>
                         )}
+                        <p className="text-xs text-text-soft mt-1">
+                          Your price ·{" "}
+                          <span className="text-marigold font-semibold">
+                            Customer pays BDT {withMarkup(parseFloat(data.sale_price || data.regular_price || '0')).toFixed(2)}
+                          </span>{" "}
+                          (+10%)
+                        </p>
                       </div>
 
                       <div className="flex items-center justify-between mt-3">

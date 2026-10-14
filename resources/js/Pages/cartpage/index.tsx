@@ -33,6 +33,7 @@ import { toast } from 'sonner';
 import { useStore } from '../state/cartStore';
 import ClearCartDialog from '../dialogpopups/ClearCartDialog';
 import FormatPrice from '../utils/FormatePrice';
+import { withMarkup } from '../utils/price';
 import { parseVariantList } from '../utils/parseVariants';
 import Eyebrow from '../Components/Eyebrow';
 import SeoHead from '@/Components/SeoHead';
@@ -443,7 +444,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
   };
 
   const calculateSaleSavings = () => {
-    return (cartItems || []).reduce((sum, item) => {
+    const base = (cartItems || []).reduce((sum, item) => {
       const regular = (item.regular_price);
       const sale = (item.sale_price);
       const quantity = item.cartQty || 1;
@@ -453,6 +454,8 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
       }
       return sum;
     }, 0);
+
+    return withMarkup(base);
   };
 
   const getSelectedCityName = () => {
@@ -612,8 +615,8 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
 
                 <div className="divide-y divide-line">
                   {cartItems.map((item) => {
-                    const regularPrice = (item.regular_price);
-                    const salePrice = item.sale_price ? (item.sale_price) : null;
+                    const regularPrice = withMarkup(item.regular_price);
+                    const salePrice = item.sale_price ? withMarkup(item.sale_price) : null;
                     const discountPercent = calculateDiscountPercentage(regularPrice, salePrice);
                     const stockStatus = getStockStatus(item.inStock);
                     const currentPrice = salePrice || regularPrice;
@@ -849,15 +852,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                     {/* Pricing Breakdown */}
                     <div className="space-y-3 mb-6">
                       <div className="flex justify-between items-center">
-                        <div className="flex items-center">
-                          <span className="text-sm sm:text-base text-text-soft">Subtotal</span>
-                          <div className="group relative ml-2">
-                            <FaInfoCircle className="h-3 w-3 text-text-soft cursor-help" />
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-ink text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                              Tax (10%) is included
-                            </div>
-                          </div>
-                        </div>
+                        <span className="text-sm sm:text-base text-text-soft">Subtotal</span>
                         <span className="font-medium text-ink text-sm sm:text-base">
                           <FormatPrice price={cartTotals.subtotal} />
                         </span>

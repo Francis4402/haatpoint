@@ -11,6 +11,7 @@ use App\Models\Products;
 use App\Models\Store;
 use App\Models\Wishlist;
 use Enan\PathaoCourier\Requests\PathaoOrderRequest;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -166,9 +167,15 @@ class OrdersController extends Controller
             $user = Auth::user();
             if (!$user) return back()->withErrors(['error' => 'User not authenticated']);
 
-            // Email verification is no longer required to place an order. The
-            // verification feature itself is untouched, it simply no longer
-            // gates checkout.
+            // A customer must confirm their email address before ordering.
+            // Agents deliberately do not verify, and admin/superadmin have no
+            // verification step, so only a User can trip this guard.
+            if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
+                return back()->withErrors([
+                    'error' => 'Please verify your email address before placing an order. '
+                        . 'We sent a verification link to ' . $user->email . '.',
+                ]);
+            }
 
             $validated = $request->validate([
                 'recipient_name' => 'required|string|max:255',

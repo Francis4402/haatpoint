@@ -17,6 +17,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import { useEffect } from 'react';
 import { Orders, OrderItem } from '@/types';
 import FormatPrice from '../utils/FormatePrice';
+import { withMarkup } from '../utils/price';
 import Eyebrow from '../Components/Eyebrow';
 import SeoHead from '@/Components/SeoHead';
 
@@ -52,7 +53,6 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
 
   const getFullDeliveryAddress = () => order.recipient_address;
 
-  const taxAmount = (order.subtotal || 0) * 0.1;
   const items = order.order_items || [];
 
   const getProductName = (item: any): string => {
@@ -167,8 +167,8 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
                     )}
                   </td>
                   <td className="center">{item.quantity}</td>
-                  <td className="right"><FormatPrice price={item.price} /></td>
-                  <td className="right"><FormatPrice price={item.total} /></td>
+                  <td className="right"><FormatPrice price={withMarkup(item.price)} /></td>
+                  <td className="right"><FormatPrice price={withMarkup(item.total)} /></td>
                 </tr>
               ))}
             </tbody>
@@ -176,9 +176,8 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
 
           <table className="excel-summary">
             <tbody>
-              <tr><td>Subtotal</td><td className="right"><FormatPrice price={order.subtotal} /></td></tr>
+              <tr><td>Subtotal</td><td className="right"><FormatPrice price={withMarkup(order.subtotal)} /></td></tr>
               <tr><td>Delivery Charge</td><td className="right"><FormatPrice price={order.delivery_charge} /></td></tr>
-              <tr><td>Tax (10%)</td><td className="right"><FormatPrice price={taxAmount} /></td></tr>
               {order.discount_amount > 0 && (
                 <tr>
                   <td>Discount {order.coupon_code && `(${order.coupon_code})`}</td>
@@ -279,8 +278,8 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
                               )}
                             </td>
                             <td className="py-3 text-sm text-center text-text-soft">{item.quantity}</td>
-                            <td className="py-3 text-sm text-right text-text-soft"><FormatPrice price={item.price} /></td>
-                            <td className="py-3 text-sm text-right font-medium text-ink"><FormatPrice price={item.total} /></td>
+                            <td className="py-3 text-sm text-right text-text-soft"><FormatPrice price={withMarkup(item.price)} /></td>
+                            <td className="py-3 text-sm text-right font-medium text-ink"><FormatPrice price={withMarkup(item.total)} /></td>
                           </tr>
                         ))}
                       </tbody>
@@ -290,15 +289,11 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
                     <div className="mt-4 pt-4 border-t border-line">
                       <div className="flex justify-between text-sm py-1">
                         <span className="text-text-soft">Subtotal</span>
-                        <span className="font-medium text-ink"><FormatPrice price={order.subtotal} /></span>
+                        <span className="font-medium text-ink"><FormatPrice price={withMarkup(order.subtotal)} /></span>
                       </div>
                       <div className="flex justify-between text-sm py-1">
                         <span className="text-text-soft">Shipping</span>
                         <span className="font-medium text-ink"><FormatPrice price={order.delivery_charge} /></span>
-                      </div>
-                      <div className="flex justify-between text-sm py-1">
-                        <span className="text-text-soft">Tax (10%)</span>
-                        <span className="font-medium text-ink"><FormatPrice price={taxAmount} /></span>
                       </div>
                       {order.discount_amount > 0 && (
                         <div className="flex justify-between text-sm py-1">

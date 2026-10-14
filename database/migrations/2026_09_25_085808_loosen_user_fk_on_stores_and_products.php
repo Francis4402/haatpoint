@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Stores and products can be created by admins and agents who are NOT
-     * rows in the users table. Drop the users FK so their real creator id
-     * can be recorded in user_id regardless of role.
+     * Stores, products and orders can be created by admins and agents who are
+     * NOT rows in the users table. Drop the users FK so their real creator id
+     * can be recorded in user_id regardless of role -- in particular an
+     * admin/superadmin can place an order and have it linked to them.
      */
     public function up(): void
     {
@@ -19,6 +20,10 @@ return new class extends Migration
         });
 
         Schema::table('products', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
+
+        Schema::table('orders', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
         });
     }
@@ -34,6 +39,10 @@ return new class extends Migration
         });
 
         Schema::table('products', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+        });
+
+        Schema::table('orders', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }

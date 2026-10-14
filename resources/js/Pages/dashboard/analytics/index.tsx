@@ -23,6 +23,8 @@ interface SellByProduct {
   name: string;
   qty: number;
   revenue: number;
+  original?: number;
+  profit?: number;
   image: string | null;
 }
 
@@ -31,6 +33,7 @@ interface Metrics {
   isAdmin: boolean;
   // admin only
   totalProfit?: number;
+  originalRevenue?: number;
   profitCommissionRate?: number;
   profitOrdersCount?: number;
   totalSells?: number;
@@ -80,12 +83,12 @@ const Analytics = ({ auth, metrics }: AnalyticsProps) => {
           {/* Key Metrics — Admin */}
           {isAdmin && metrics && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
                 {/* Platform Profit (Total Revenue) */}
                 <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Revenue (Profit)</p>
+                      <p className="text-xs font-mono text-text-soft uppercase tracking-wide">10% Profit</p>
                       <p className="text-2xl font-bold text-ink mt-1">
                         <FormatPrice price={metrics.totalProfit ?? 0} />
                       </p>
@@ -97,6 +100,25 @@ const Analytics = ({ auth, metrics }: AnalyticsProps) => {
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-marigold/10 flex items-center justify-center">
                       <FaDollarSign className="h-6 w-6 text-marigold" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Original (Agent) Price */}
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Original Price</p>
+                      <p className="text-2xl font-bold text-ink mt-1">
+                        <FormatPrice price={metrics.originalRevenue ?? 0} />
+                      </p>
+                      <div className="flex items-center mt-2 text-text-soft">
+                        <FaTags className="h-3 w-3 mr-1" />
+                        <span className="font-medium text-sm">Agent price • delivered & paid</span>
+                      </div>
+                    </div>
+                    <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                      <FaTags className="h-6 w-6 text-blue-600" />
                     </div>
                   </div>
                 </div>
@@ -167,7 +189,7 @@ const Analytics = ({ auth, metrics }: AnalyticsProps) => {
                     <table className="min-w-full divide-y divide-line">
                       <thead className="bg-paper-dim">
                         <tr>
-                          {['Product', 'Quantity Sold', 'Revenue'].map(col => (
+                          {['Product', 'Quantity Sold', 'Original Price', '10% Profit', 'Customer Price'].map(col => (
                             <th key={col} scope="col" className="px-6 py-3 text-left text-xs font-mono text-text-soft uppercase tracking-wide">
                               {col}
                             </th>
@@ -190,6 +212,12 @@ const Analytics = ({ auth, metrics }: AnalyticsProps) => {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">{product.qty}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">
+                              <FormatPrice price={product.original ?? product.revenue} />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-marigold">
+                              +<FormatPrice price={product.profit ?? 0} />
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ink">
                               <FormatPrice price={product.revenue} />
                             </td>
@@ -217,13 +245,13 @@ const Analytics = ({ auth, metrics }: AnalyticsProps) => {
                 <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Revenue (Delivered & Paid)</p>
+                      <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Profit (Your Price)</p>
                       <p className="text-2xl font-bold text-ink mt-1">
                         <FormatPrice price={metrics.totalRevenue ?? 0} />
                       </p>
                       <div className="flex items-center mt-2 text-green-600">
                         <FaCheckCircle className="h-3 w-3 mr-1" />
-                        <span className="font-medium text-sm">{metrics.deliveredOrders} delivered & paid</span>
+                        <span className="font-medium text-sm">{metrics.deliveredOrders} delivered & paid • original price</span>
                       </div>
                     </div>
                     <div className="w-12 h-12 rounded-xl bg-marigold/10 flex items-center justify-center">
@@ -296,7 +324,7 @@ const Analytics = ({ auth, metrics }: AnalyticsProps) => {
                     <table className="min-w-full divide-y divide-line">
                       <thead className="bg-paper-dim">
                         <tr>
-                          {['Product', 'Quantity Sold', 'Revenue'].map(col => (
+                          {['Product', 'Quantity Sold', 'Your Price', 'Customer Price (+10%)'].map(col => (
                             <th key={col} scope="col" className="px-6 py-3 text-left text-xs font-mono text-text-soft uppercase tracking-wide">
                               {col}
                             </th>
@@ -320,6 +348,9 @@ const Analytics = ({ auth, metrics }: AnalyticsProps) => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">{product.qty}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ink">
+                              <FormatPrice price={product.original ?? product.revenue} />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-text-soft">
                               <FormatPrice price={product.revenue} />
                             </td>
                           </tr>

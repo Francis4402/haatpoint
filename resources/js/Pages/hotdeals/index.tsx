@@ -21,6 +21,7 @@ import {
 } from 'react-icons/ri';
 import AppLayout from '@/Layouts/AppLayout';
 import FormatPrice from '../utils/FormatePrice';
+import { withMarkup } from '../utils/price';
 import AddtoCartButton from '../buttons/AddtoCartButton';
 import SeoHead from '@/Components/SeoHead';
 import ProductCard from '@/Components/ProductCard';
@@ -583,7 +584,7 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
                                         } else {
                                             // List View
                                             const discountPercentage = calculateDiscount(product.regular_price, product.sale_price);
-                                            const displayPrice = product.sale_price || product.regular_price;
+                                            const displayPrice = withMarkup(product.sale_price || product.regular_price);
                                             const imageSrc = product.images ? (() => {
                                                 try {
                                                     const parsed = JSON.parse(product.images);
@@ -654,7 +655,7 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
                                                                     {/* Savings Info */}
                                                                     <div className="bg-green-50 border border-green-200 rounded-lg p-2 sm:p-3">
                                                                         <p className="text-green-700 text-[10px] sm:text-sm">
-                                                                            <span className="font-bold">You Save:</span> <FormatPrice price={product.regular_price - displayPrice} /> ({discountPercentage}% off)
+                                                                            <span className="font-bold">You Save:</span> <FormatPrice price={withMarkup(product.regular_price) - displayPrice} /> ({discountPercentage}% off)
                                                                         </p>
                                                                     </div>
                                                                 </div>
@@ -666,7 +667,7 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
                                                                             <FormatPrice price={displayPrice} />
                                                                         </div>
                                                                         <div className="text-xs sm:text-sm text-text-soft line-through">
-                                                                            <FormatPrice price={product.regular_price} />
+                                                                            <FormatPrice price={withMarkup(product.regular_price)} />
                                                                         </div>
                                                                     </div>
 

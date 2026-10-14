@@ -52,11 +52,11 @@ Route::middleware('auth:web,superadmin,admin,agent')->group(function () {
 
 // Email verification.
 //
-// Scoped to `auth:web,agent` on purpose. Only User and Agent implement
-// MustVerifyEmail; Admin and Superadmin have no verification step, so allowing
-// them here would let a staff account open a page that asks it to verify an
-// address it never had to confirm.
-Route::middleware('auth:web,agent')->group(function () {
+// Scoped to `auth:web` on purpose. Only the customer (User) model verifies its
+// email. Admin and Superadmin have no verification step, and agents
+// deliberately do not verify either, so allowing either here would let an
+// account open a page that asks it to confirm an address it never had to.
+Route::middleware('auth:web')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

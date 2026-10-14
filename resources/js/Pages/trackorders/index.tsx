@@ -923,10 +923,6 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
                         <span className="font-medium">${selectedOrderData.shippingFee.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Tax</span>
-                        <span className="font-medium">${selectedOrderData.tax.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
                         <span className="text-gray-600">Discount</span>
                         <span className="font-medium text-green-600">-${selectedOrderData.discount.toFixed(2)}</span>
                       </div>

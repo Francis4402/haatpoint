@@ -69,9 +69,7 @@ export default function Welcome({
     });
 
 
-    // The showcase rails are queried separately on the server. Filtering the
-    // paginated list above used to leave them empty, because that list only
-    // carries two items.
+
     const topSellingProduct = topSelling ?? [];
     const offered = offeredProducts ?? [];
     const trending = trendingProducts ?? [];

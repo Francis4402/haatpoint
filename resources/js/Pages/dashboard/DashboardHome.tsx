@@ -25,9 +25,10 @@ interface dashboardhometypes {
     } | null,
     stats?: {
         totalProfit?: number,
-totalRevenue?: number,
-    totalSells?: number,
-    totalProductsSold?: number,
+        originalRevenue?: number,
+        totalRevenue?: number,
+        totalSells?: number,
+        totalProductsSold?: number,
         conversionRate?: number,
         totalOrders?: number,
         deliveredPaidOrders?: number,
@@ -39,6 +40,8 @@ totalRevenue?: number,
             name: string,
             qty: number,
             revenue: number,
+            original?: number,
+            profit?: number,
             image: string | null,
         }[],
     }
@@ -48,10 +51,6 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding }: dashboar
     const userRole = auth?.user?.role;
     const isAdmin = userRole === 'admin' || userRole === 'superadmin';
     const isAgent = userRole === 'agent';
-
-    const totalRevenue = isAdmin
-        ? (stats?.totalProfit ?? 0)
-        : (stats?.totalRevenue ?? stats?.totalSells ?? 0);
 
     const conversionRate = stats?.conversionRate ?? 0;
     const topProducts = stats?.topProducts ?? [];
@@ -97,36 +96,84 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding }: dashboar
 
                 {/* Stats Cards */}
                 {(isAdmin || isAgent) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
-                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Revenue</h3>
-                                    <p className="text-2xl font-bold text-ink mt-2"><FormatPrice price={totalRevenue} /></p>
-                                    <p className="text-xs text-text-soft mt-1">
-                                        {isAdmin ? '10% profit (delivered & paid)' : 'Delivered & paid orders'}
-                                    </p>
-                                </div>
-                                <div className="bg-marigold/10 p-3 rounded-xl">
-                                    <FiTrendingUp className="h-6 w-6 text-marigold" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {isAdmin && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                        {/* Agent — what the agent earns (original price they set) */}
+                        {isAgent && (
                             <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Sells</h3>
-                                        <p className="text-2xl font-bold text-ink mt-2"><FormatPrice price={stats?.totalSells ?? 0} /></p>
-                                        <p className="text-xs text-text-soft mt-1">Delivered products</p>
+                                        <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Profit</h3>
+                                        <p className="text-2xl font-bold text-ink mt-2"><FormatPrice price={stats?.originalRevenue ?? 0} /></p>
+                                        <p className="text-xs text-text-soft mt-1">Your earnings (original price)</p>
                                     </div>
-                                    <div className="bg-yellow-100 p-3 rounded-xl">
-                                        <FaBoxOpen className="h-6 w-6 text-yellow-600" />
+                                    <div className="bg-marigold/10 p-3 rounded-xl">
+                                        <FiTrendingUp className="h-6 w-6 text-marigold" />
                                     </div>
                                 </div>
                             </div>
                         )}
+
+                        {/* Admin — customer paid total */}
+                        {isAdmin && (
+                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Revenue</h3>
+                                        <p className="text-2xl font-bold text-ink mt-2"><FormatPrice price={stats?.totalRevenue ?? 0} /></p>
+                                        <p className="text-xs text-text-soft mt-1">Customer paid (delivered &amp; paid)</p>
+                                    </div>
+                                    <div className="bg-marigold/10 p-3 rounded-xl">
+                                        <FiTrendingUp className="h-6 w-6 text-marigold" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Admin — original (agent) price side */}
+                        {isAdmin && (
+                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Original Price</h3>
+                                        <p className="text-2xl font-bold text-ink mt-2"><FormatPrice price={stats?.originalRevenue ?? 0} /></p>
+                                        <p className="text-xs text-text-soft mt-1">Agent prices (delivered &amp; paid)</p>
+                                    </div>
+                                    <div className="bg-blue-100 p-3 rounded-xl">
+                                        <FaBoxOpen className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Admin — the 10% platform profit */}
+                        {isAdmin && (
+                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">10% Profit</h3>
+                                        <p className="text-2xl font-bold text-ink mt-2"><FormatPrice price={stats?.totalProfit ?? 0} /></p>
+                                        <p className="text-xs text-text-soft mt-1">Platform markup (delivered &amp; paid)</p>
+                                    </div>
+                                    <div className="bg-yellow-100 p-3 rounded-xl">
+                                        <FiTrendingUp className="h-6 w-6 text-yellow-600" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Products Sold — both roles */}
+                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Products Sold</h3>
+                                    <p className="text-2xl font-bold text-ink mt-2">{stats?.totalProductsSold ?? 0}</p>
+                                    <p className="text-xs text-text-soft mt-1">Units delivered</p>
+                                </div>
+                                <div className="bg-yellow-100 p-3 rounded-xl">
+                                    <FaBoxOpen className="h-6 w-6 text-yellow-600" />
+                                </div>
+                            </div>
+                        </div>
 
                         <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                             <div className="flex items-center justify-between">
@@ -224,10 +271,17 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding }: dashboar
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    {isAdmin || isAgent ? (
+                                                    {isAdmin ? (
                                                         <>
-                                                            <p className="text-sm font-semibold text-ink"><FormatPrice price={product.revenue} /></p>
-                                                            <p className="text-xs text-text-soft">Revenue</p>
+                                                            <p className="text-sm font-semibold text-ink"><FormatPrice price={product.original ?? product.revenue} /></p>
+                                                            <p className="text-xs text-text-soft">
+                                                                Original · <span className="text-marigold font-medium">+<FormatPrice price={product.profit ?? 0} /> (10%)</span>
+                                                            </p>
+                                                        </>
+                                                    ) : isAgent ? (
+                                                        <>
+                                                            <p className="text-sm font-semibold text-ink"><FormatPrice price={product.original ?? product.revenue} /></p>
+                                                            <p className="text-xs text-text-soft">Your revenue (original price)</p>
                                                         </>
                                                     ) : (
                                                         <p className="text-sm font-semibold text-ink">{product.qty.toLocaleString()}</p>

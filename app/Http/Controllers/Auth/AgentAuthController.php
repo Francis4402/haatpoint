@@ -47,9 +47,9 @@ class AgentAuthController extends StaffAuthController
     }
 
     /**
-     * Agents must verify their email before they can create a store
-     * (the /dashboard group enforces the 'verified' middleware), and must
-     * provide KYC details at registration.
+     * Agents must provide KYC details at registration. They do not verify their
+     * email address (see App\Models\Agent), so there is no verification step
+     * here.
      */
     protected function registrationRules(): array
     {

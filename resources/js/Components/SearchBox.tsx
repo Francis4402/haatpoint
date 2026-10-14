@@ -7,6 +7,7 @@ import { Link, router } from '@inertiajs/react';
 import { FiSearch, FiX, FiLoader, FiArrowRight, FiGrid, FiTag, FiShoppingBag, FiTrendingUp } from 'react-icons/fi';
 import { FaStar } from 'react-icons/fa';
 import FormatPrice from '@/Pages/utils/FormatePrice';
+import { withMarkup } from '@/Pages/utils/price';
 
 export interface SearchProduct {
   id: string;
@@ -508,7 +509,7 @@ const SearchBox = ({
               </p>
               <ul className="max-h-[340px] overflow-y-auto pb-1">
                 {results.products.map((product, index) => {
-                  const off = Math.round((product.sale_price ?? product.regular_price) * 100) / 100;
+                  const off = withMarkup(product.sale_price ?? product.regular_price);
                   const discount = discountOf(product.regular_price, product.sale_price);
 
                   return (
@@ -552,7 +553,7 @@ const SearchBox = ({
                             {discount > 0 && (
                               <>
                                 <span className="text-[11px] text-text-soft line-through">
-                                  <FormatPrice price={product.regular_price} />
+                                  <FormatPrice price={withMarkup(product.regular_price)} />
                                 </span>
                                 <span className="rounded-full bg-green-50 px-1.5 py-0.5 text-[9.5px] font-bold text-green-600">
                                   -{discount}%

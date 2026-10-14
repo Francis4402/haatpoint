@@ -7,6 +7,7 @@ import { FaEye } from "react-icons/fa";
 import Eyebrow from "./Eyebrow";
 import AddtoCartButton from "../buttons/AddtoCartButton";
 import FormatPrice from "../utils/FormatePrice";
+import { withMarkup } from "../utils/price";
 import { Product } from "@/types";
 import WishlistButton from "../buttons/WishListButton";
 
@@ -183,7 +184,7 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                 const imageSrc = getImageSrc(product.images);
                 const soldCount = product.sold;
                 const percentage = Math.round((soldCount / maxSold) * 100);
-                const displayPrice = product.sale_price || product.regular_price;
+                const displayPrice = withMarkup(product.sale_price || product.regular_price);
                 const discount =
                   product.sale_price && product.sale_price < product.regular_price
                     ? Math.round(((product.regular_price - product.sale_price) / product.regular_price) * 100)

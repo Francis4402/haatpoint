@@ -27,6 +27,7 @@ import {
 import AppLayout from '@/Layouts/AppLayout';
 import AddtoCartButton from '../buttons/AddtoCartButton';
 import FormatPrice from '../utils/FormatePrice';
+import { withMarkup } from '../utils/price';
 import Eyebrow from '../Components/Eyebrow';
 import SeoHead from '@/Components/SeoHead';
 import ProductCard from '@/Components/ProductCard';
@@ -764,7 +765,7 @@ const Products = ({ products, auth, wishlist, productRatings = {}, filters }: Pr
                                         const discountPercentage = hasDiscount
                                             ? calculateDiscount(product.regular_price, product.sale_price)
                                             : 0;
-                                        const displayPrice = product.sale_price || product.regular_price;
+                                        const displayPrice = withMarkup(product.sale_price || product.regular_price);
                                         const { average: avgRating, count: reviewCount } = getProductRating(product);
 
                                         if (viewMode === 'grid') {
@@ -875,7 +876,7 @@ const Products = ({ products, auth, wishlist, productRatings = {}, filters }: Pr
                                                                         </div>
                                                                         {hasDiscount && (
                                                                             <div className="text-sm text-[#767470] line-through">
-                                                                                <FormatPrice price={product.regular_price} />
+                                                                                <FormatPrice price={withMarkup(product.regular_price)} />
                                                                             </div>
                                                                         )}
                                                                     </div>

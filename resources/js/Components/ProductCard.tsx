@@ -7,6 +7,7 @@ import axios from "axios";
 import { Product, User } from "@/types";
 import AddtoCartButton from "@/Pages/buttons/AddtoCartButton";
 import FormatPrice from "@/Pages/utils/FormatePrice";
+import { withMarkup } from "@/Pages/utils/price";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import WishlistButton from "@/Pages/buttons/WishListButton";
 
@@ -142,7 +143,8 @@ const ProductCard = ({
   const discount = calculateDiscount(product.regular_price, product.sale_price);
   const hasDiscount = discount > 0;
   const hasSalePrice = product.sale_price !== undefined && product.sale_price !== null && product.sale_price > 0;
-  const displayPrice = hasSalePrice ? product.sale_price : product.regular_price;
+  const displayPrice = withMarkup(hasSalePrice ? product.sale_price : product.regular_price);
+  const regularDisplayPrice = withMarkup(product.regular_price);
   const showImage = imageSrc && !imageFailed;
 
   // Fetch real review data using the route: /products/{product}/comments
@@ -325,8 +327,8 @@ const ProductCard = ({
               <FormatPrice price={displayPrice} />
             </span>
             {hasSalePrice && (
-              <span className="text-sm text-[#767470] line-through" aria-label={`Original price: ${product.regular_price}`}>
-                <FormatPrice price={product.regular_price} />
+              <span className="text-sm text-[#767470] line-through" aria-label={`Original price: ${regularDisplayPrice}`}>
+                <FormatPrice price={regularDisplayPrice} />
               </span>
             )}
           </div>
@@ -341,7 +343,7 @@ const ProductCard = ({
         {hasDiscount && (
           <div className="mt-1.5">
             <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-600">
-              Save <FormatPrice price={product.regular_price - product.sale_price} />
+              Save <FormatPrice price={regularDisplayPrice - displayPrice} />
             </span>
           </div>
         )}

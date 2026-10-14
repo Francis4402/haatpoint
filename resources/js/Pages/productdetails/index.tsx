@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { useStore, makeCartKey } from "../state/cartStore";
 import CommentsList from "../dashboard/forms/CommentsList";
 import FormatPrice from "../utils/FormatePrice";
+import { withMarkup } from "../utils/price";
 import { parseVariantList } from "../utils/parseVariants";
 import axios from "axios";
 import SeoHead from "@/Components/SeoHead";
@@ -309,7 +310,7 @@ const ProductDetailsPage = ({
               '@type': 'Offer',
               url: `https://www.haatpoint.com/products/${product.id}`,
               priceCurrency: 'BDT',
-              price: String(Number(product.sale_price) || Number(product.regular_price) || 0),
+              price: String(withMarkup(Number(product.sale_price) || Number(product.regular_price) || 0)),
               priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
               availability: product.inStock && Number(product.quantity) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
               seller: {
@@ -530,12 +531,12 @@ const ProductDetailsPage = ({
                 <div className="bg-paper-dim p-6 rounded-xl border border-line">
                   <div className="flex items-baseline space-x-4 mb-2">
                     <span className="text-3xl sm:text-4xl font-bold text-ink">
-                      <FormatPrice price={product.sale_price || product.regular_price} />
+                      <FormatPrice price={withMarkup(product.sale_price || product.regular_price)} />
                     </span>
 
                     {product.sale_price && (
                       <span className="text-xl text-text-soft line-through">
-                        <FormatPrice price={product.regular_price} />
+                        <FormatPrice price={withMarkup(product.regular_price)} />
                       </span>
                     )}
                   </div>
@@ -543,7 +544,7 @@ const ProductDetailsPage = ({
                   {discount > 0 && (
                     <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-sm font-medium">
                       <FaTag className="w-4 h-4 mr-1.5" />
-                      Save <FormatPrice price={product.regular_price - product.sale_price} /> ({discount}% OFF)
+                      Save <FormatPrice price={withMarkup(product.regular_price) - withMarkup(product.sale_price)} /> ({discount}% OFF)
                     </div>
                   )}
                 </div>
@@ -845,12 +846,12 @@ const ProductDetailsPage = ({
                             </div>
                             <div className="flex justify-between pb-2 border-b border-line">
                               <span className="text-text-soft">Regular Price</span>
-                              <span className="font-medium text-ink"><FormatPrice price={product.regular_price} /></span>
+                              <span className="font-medium text-ink"><FormatPrice price={withMarkup(product.regular_price)} /></span>
                             </div>
                             {product.sale_price && (
                               <div className="flex justify-between pb-2 border-b border-line">
                                 <span className="text-text-soft">Sale Price</span>
-                                <span className="font-medium text-green-600"><FormatPrice price={product.sale_price} /></span>
+                                <span className="font-medium text-green-600"><FormatPrice price={withMarkup(product.sale_price)} /></span>
                               </div>
                             )}
                             {product.item_weight && (
