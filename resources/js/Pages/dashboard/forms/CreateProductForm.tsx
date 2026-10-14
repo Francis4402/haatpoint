@@ -121,6 +121,8 @@ export default function CreateProductForm({auth, store, stores = [], categories}
     product_type: 'regular',
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const selectedStore = stores.find((s) => s.id === data.store_id) ?? store;
 
   const discountPercentage = data.regular_price && data.sale_price
@@ -358,6 +360,8 @@ export default function CreateProductForm({auth, store, stores = [], categories}
     router.post(route('products.store'), formData, {
       forceFormData: true,
       preserveScroll: true,
+      onStart: () => setIsSubmitting(true),
+      onFinish: () => setIsSubmitting(false),
       onSuccess: () => {
         toast.success('Product created successfully!');
         router.visit(route('dashboard.products'));
@@ -1486,10 +1490,10 @@ export default function CreateProductForm({auth, store, stores = [], categories}
               <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
                 <button
                   type="submit"
-                  disabled={processing || !data.name || !data.category || !data.regular_price || !data.description || !data.item_weight}
-                  className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 flex items-center justify-center gap-2"
+                  disabled={isSubmitting || processing || !data.name || !data.category || !data.regular_price || !data.description || !data.item_weight}
+                  className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                 >
-                  {processing ? (
+                  {isSubmitting || processing ? (
                     <>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
                       Uploading Product...

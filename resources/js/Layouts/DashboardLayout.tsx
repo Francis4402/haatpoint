@@ -22,6 +22,7 @@ import {
   FiHelpCircle,
   FiGlobe,
   FiSearch,
+  FiCompass,
 } from 'react-icons/fi';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { User } from '@/types';
@@ -64,6 +65,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
     ] : []),
 
     ...(user.role === 'agent' ? [
+        {
+            name: 'Selling Guide',
+            href: '/dashboard/agent-guide',
+            icon: FiCompass,
+            current: url.startsWith('/dashboard/agent-guide')
+        },
         {
             name: 'Products',
             href: '/dashboard/products',

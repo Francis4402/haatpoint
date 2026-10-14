@@ -55,11 +55,26 @@ class DashboardController extends Controller
 
         $stats = $this->computeStats($orders);
 
+        // Onboarding progress for the agent checklist shown on the dashboard.
+        // Agents without any store are redirected to the guide above, so this
+        // always reflects an agent who already has a store.
+        $onboarding = null;
+        if ($userRole === 'agent') {
+            $storeIds = Store::where('agent_id', $user->id)->pluck('id');
+            $onboarding = [
+                'vendorProfileComplete' => $user->hasCompleteVendorProfile(),
+                'hasStore' => $storeIds->isNotEmpty(),
+                'productsCount' => (int) Products::whereIn('store_id', $storeIds)->count(),
+                'storeCount' => (int) $storeIds->count(),
+            ];
+        }
+
         return Inertia::render('dashboard/DashboardHome', [
             'totalUsers' => $totalUsers,
             'orders' => $orders,
             'userRole' => $userRole,
             'stats' => $stats,
+            'onboarding' => $onboarding,
         ]);
     }
 
@@ -177,6 +192,7 @@ class DashboardController extends Controller
             'hasStore' => $stores->isNotEmpty(),
             'stores' => $stores,
             'productsCount' => (int) $productsCount,
+            'vendorProfileComplete' => $user->hasCompleteVendorProfile(),
         ]);
     }
 }

@@ -62,6 +62,7 @@ export interface storeType {
     storetype: string;
     license: string;
     address: string;
+    sender_city?: number | null;
     mobile: string;
     rating: number;
     review_count: string;

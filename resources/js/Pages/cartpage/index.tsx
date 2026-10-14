@@ -192,9 +192,17 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
         return sum + ((item.item_weight || 0.5) * item.quantity);
       }, 0);
 
+      const storeSenderCity = cartItems[0]?.store?.sender_city;
+
+      if (!storeSenderCity) {
+        toast.error('This store has not set a pickup location yet');
+        setLoadingPathao(false);
+        return;
+      }
+
       const priceRequest: any = {
         store_id: 367082,
-        sender_city: 2,
+        sender_city: Number(storeSenderCity),
         recipient_city: parseInt(cityId),
         recipient_zone: parseInt(zoneId),
         item_type: 2,

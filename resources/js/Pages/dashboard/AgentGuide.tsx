@@ -20,6 +20,7 @@ interface agentGuideProps {
         slug?: string;
     }[];
     productsCount: number;
+    vendorProfileComplete: boolean;
 }
 
 const StoreGuideCard = ({ step, title, done, optional, children }: {
@@ -56,7 +57,7 @@ const StoreGuideCard = ({ step, title, done, optional, children }: {
     </div>
 )
 
-const AgentGuide = ({ auth, hasStore, stores, productsCount }: agentGuideProps) => {
+const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComplete }: agentGuideProps) => {
     const storeDone = hasStore;
     const productDone = productsCount > 0;
 
@@ -99,6 +100,39 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount }: agentGuideProps) 
                     </div>
                 </div>
 
+                {/* Vendor profile prerequisite */}
+                {!vendorProfileComplete ? (
+                    <div className="bg-rose-50 border border-rose-200 rounded-2xl shadow-hard-sm p-6 md:p-8">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-start gap-3">
+                                <span className="bg-rose-100 text-rose-600 rounded-xl h-11 w-11 flex items-center justify-center shrink-0 font-display font-extrabold">0</span>
+                                <div>
+                                    <h2 className="text-lg font-display font-bold text-ink">First, complete your business details</h2>
+                                    <p className="text-sm text-text-soft mt-1 max-w-2xl">
+                                        Store creation is locked until your vendor profile is complete. Add your
+                                        name, mobile number, National ID and business address once — we'll
+                                        pre-fill them into your store form so you never type them twice.
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                href={route('vendor.profile.edit')}
+                                className="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl px-6 py-3 shadow-hard-sm transition-all duration-300 hover:-translate-y-0.5 shrink-0"
+                            >
+                                Complete Profile
+                                <FiChevronRight className="h-5 w-5" />
+                            </Link>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-4 flex items-center gap-3">
+                        <FiCheckCircle className="h-5 w-5 text-emerald-600 shrink-0" />
+                        <p className="text-sm text-emerald-800">
+                            Your business details are complete — we'll fill them into your store form automatically.
+                        </p>
+                    </div>
+                )}
+
                 {/* Steps */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <StoreGuideCard step={1} title="Create Your Store" done={storeDone} optional={!storeDone && false}>
@@ -111,8 +145,8 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount }: agentGuideProps) 
                             <div>
                                 <h3 className="font-display font-bold text-ink text-lg">Ready to start?</h3>
                                 <p className="text-sm text-text-soft mt-1">
-                                    Creating a store takes about a minute. You'll add your store name,
-                                    address, mobile number and a logo.
+                                    Creating a store takes about a minute. Your details are pre-filled
+                                    from your profile — just pick a store name, type and shipping city.
                                 </p>
                             </div>
                             <Link
@@ -218,11 +252,13 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount }: agentGuideProps) 
                             </h3>
                             <ol className="space-y-3 text-sm text-text-soft list-decimal list-inside">
                                 <li>Click <strong className="text-ink">Create Your Store</strong> from the guide.</li>
-                                <li>Choose a <strong className="text-ink">store type</strong> that matches what you sell.</li>
-                                <li>Enter a unique <strong className="text-ink">store name</strong> and your
-                                    <strong className="text-ink"> address</strong>.</li>
-                                <li>Add your <strong className="text-ink">mobile number</strong> (11 digits, starts with 01) and your
-                                    <strong className="text-ink"> National ID</strong>.</li>
+                                <li>Your <strong className="text-ink">name, address, mobile</strong> and
+                                    <strong className="text-ink"> National ID</strong> are already filled in
+                                    from your profile — just double-check them.</li>
+                                <li>Enter a unique <strong className="text-ink">store name</strong> and choose a
+                                    <strong className="text-ink"> store type</strong> that matches what you sell.</li>
+                                <li>Pick your <strong className="text-ink">Store Location</strong> — this is the
+                                    city your store ships from and it decides your delivery charges.</li>
                                 <li>Enter your <strong className="text-ink">trade license</strong> if you have one (optional).</li>
                                 <li>Upload a <strong className="text-ink">store logo</strong> and hit save. You're done!</li>
                             </ol>
@@ -248,6 +284,36 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount }: agentGuideProps) 
                                     <strong className="text-ink"> stock quantity</strong>, and
                                     <strong className="text-ink"> product photos</strong>, then publish.</li>
                             </ol>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="rounded-xl border border-line bg-paper-dim p-4">
+                            <div className="flex items-center gap-2 text-ink font-bold text-sm">
+                                <FaStore className="h-4 w-4 text-marigold" />
+                                Look for "Create Your Store"
+                            </div>
+                            <p className="text-xs text-text-soft mt-1">
+                                The orange button starts everything. It unlocks the moment your profile is complete.
+                            </p>
+                        </div>
+                        <div className="rounded-xl border border-line bg-paper-dim p-4">
+                            <div className="flex items-center gap-2 text-ink font-bold text-sm">
+                                <FiInfo className="h-4 w-4 text-marigold" />
+                                Greyed-out fields are pre-filled
+                            </div>
+                            <p className="text-xs text-text-soft mt-1">
+                                Fields already filled from your profile are ready to go — edit only if something changed.
+                            </p>
+                        </div>
+                        <div className="rounded-xl border border-line bg-paper-dim p-4">
+                            <div className="flex items-center gap-2 text-ink font-bold text-sm">
+                                <FaBoxOpen className="h-4 w-4 text-marigold" />
+                                Upload products any time
+                            </div>
+                            <p className="text-xs text-text-soft mt-1">
+                                Once your store exists, add as many products as you like from your dashboard.
+                            </p>
                         </div>
                     </div>
                 </div>

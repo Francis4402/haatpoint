@@ -8,6 +8,7 @@ import { BsFillPeopleFill } from 'react-icons/bs'
 import RecentOrders from './recentOrders/RecentOrders'
 import { FaTrophy } from 'react-icons/fa'
 import { FaBoxOpen, FaStore } from 'react-icons/fa'
+import AgentOnboardingChecklist from '@/Components/AgentOnboardingChecklist'
 
 interface dashboardhometypes {
     auth: {
@@ -16,6 +17,12 @@ interface dashboardhometypes {
     totalUsers: number,
     orders: Orders[],
     userRole?: string,
+    onboarding?: {
+        vendorProfileComplete: boolean,
+        hasStore: boolean,
+        productsCount: number,
+        storeCount: number,
+    } | null,
     stats?: {
         totalProfit?: number,
 totalRevenue?: number,
@@ -37,7 +44,7 @@ totalRevenue?: number,
     }
 }
 
-const DashboardHome = ({ auth, totalUsers, orders, stats }: dashboardhometypes) => {
+const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding }: dashboardhometypes) => {
     const userRole = auth?.user?.role;
     const isAdmin = userRole === 'admin' || userRole === 'superadmin';
     const isAgent = userRole === 'agent';
@@ -57,6 +64,15 @@ const DashboardHome = ({ auth, totalUsers, orders, stats }: dashboardhometypes) 
             </Head>
 
             <div className="space-y-6">
+                {/* Agent onboarding checklist */}
+                {isAgent && onboarding && (
+                    <AgentOnboardingChecklist
+                        vendorProfileComplete={onboarding.vendorProfileComplete}
+                        hasStore={onboarding.hasStore}
+                        productsCount={onboarding.productsCount}
+                    />
+                )}
+
                 {/* Welcome Banner */}
                 <div className="bg-gradient-to-r from-marigold to-marigold-dark rounded-2xl shadow-hard-sm p-6 text-white border border-line/20">
                     <div className="flex items-center justify-between">

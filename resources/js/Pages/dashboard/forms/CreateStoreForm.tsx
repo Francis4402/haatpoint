@@ -1,8 +1,9 @@
 // CreateStoreForm.tsx
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { PageProps } from '@/types';
+import { citytypes, PageProps } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import {
   FaStore,
   FaTag,
@@ -21,7 +22,8 @@ import {
   FaIdCard,
   FaUser,
   FaMobile,
-  FaMobileAlt
+  FaMobileAlt,
+  FaMapMarkerAlt
 } from 'react-icons/fa';
 import {
   HiOutlineExclamationCircle
@@ -53,16 +55,47 @@ export default function CreateStoreForm({auth}: PageProps) {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [showStoreTypeDropdown, setShowStoreTypeDropdown] = useState(false);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [cities, setCities] = useState<citytypes[]>([]);
+  const [loadingCities, setLoadingCities] = useState(false);
 
-  const { data, setData, post, processing, errors, reset } = useForm({
-    name: '',
+  // Prefill from the agent/profile so vendors don't retype their KYC details.
+  const profile = (auth?.user ?? {}) as Record<string, any>;
+  const initialValues = {
+    name: profile.name ?? '',
     logo: null as File | null,
     storetype: '',
-    address: '',
+    address: profile.address ?? '',
+    sender_city: '' as number | string,
     license: '',
-    national_id: '',
-    mobile: ''
-  });
+    national_id: profile.national_id ?? '',
+    mobile: profile.mobile ?? '',
+  };
+
+  const { data, setData, post, processing, errors, reset } = useForm(initialValues);
+
+  // Load Pathao cities so the vendor can pick where the store ships from.
+  // That city is used as the Pathao sender_city when calculating delivery.
+  useEffect(() => {
+    let active = true;
+    setLoadingCities(true);
+    axios.get('/api/pathao/cities')
+      .then((res) => {
+        if (!active) return;
+        const list = res.data?.data?.data ?? [];
+        setCities(list.map((city: any) => ({
+          city_id: city.city_id,
+          city_name: city.city_name,
+        })));
+      })
+      .catch(() => {
+        if (active) toast.error('Failed to load cities');
+      })
+      .finally(() => {
+        if (active) setLoadingCities(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   // useForm types `errors` from the field list above, so the controller's
   // generic `error` key is not on the inferred type. Read it through a widened
@@ -104,15 +137,8 @@ export default function CreateStoreForm({auth}: PageProps) {
         if (logoPreview) URL.revokeObjectURL(logoPreview);
         setLogoPreview(null);
         setShowStoreTypeDropdown(false);
-        setData({
-          name: '',
-          logo: null,
-          storetype: '',
-          address: '',
-          license: '',
-          national_id: '',
-          mobile: ''
-        });
+        setShowCityDropdown(false);
+        setData(initialValues);
       },
       onError: () => {
         toast.error('Failed to create store. Please check the form for errors.');
@@ -308,6 +334,64 @@ export default function CreateStoreForm({auth}: PageProps) {
                 )}
                 <p className="text-xs text-text-soft mt-1">
                   Select the category that best describes your business
+                </p>
+              </div>
+
+              {/* Store Location (Pathao sender city) */}
+              <div>
+                <label className="text-sm font-medium text-ink mb-2 flex items-center gap-1">
+                  <FaMapMarkerAlt className="h-4 w-4 text-marigold" />
+                  Store Location <span className="text-red-500 ml-1">*</span>
+                </label>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowCityDropdown(!showCityDropdown)}
+                    className="w-full rounded-xl border border-line px-4 py-3 text-left flex justify-between items-center hover:border-marigold transition-colors bg-white"
+                    disabled={processing || loadingCities}
+                  >
+                    <span className={data.sender_city !== '' && data.sender_city != null ? 'text-ink' : 'text-text-soft'}>
+                      {loadingCities
+                        ? 'Loading cities...'
+                        : (cities.find(c => c.city_id === Number(data.sender_city))?.city_name
+                          || 'Select your city')}
+                    </span>
+                    <FaCheck className="h-5 w-5 text-text-soft" />
+                  </button>
+
+                  {showCityDropdown && !loadingCities && (
+                    <div className="absolute z-10 mt-1 w-full bg-white rounded-xl shadow-hard-sm border border-line max-h-60 overflow-auto">
+                      {cities.length === 0 && (
+                        <div className="px-4 py-3 text-sm text-text-soft">No cities available</div>
+                      )}
+                      {cities.map(city => (
+                        <button
+                          key={city.city_id}
+                          type="button"
+                          onClick={() => {
+                            setData('sender_city', Number(city.city_id));
+                            setShowCityDropdown(false);
+                          }}
+                          className={`w-full text-left px-4 py-3 hover:bg-paper-dim transition-colors flex items-center justify-between ${
+                            Number(data.sender_city) === city.city_id ? 'bg-marigold/10 text-marigold' : 'text-ink'
+                          }`}
+                        >
+                          {city.city_name}
+                          {Number(data.sender_city) === city.city_id && <FaCheckCircle className="h-5 w-5 text-marigold" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {formErrors.sender_city && (
+                  <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                    <HiOutlineExclamationCircle className="h-4 w-4" />
+                    {formErrors.sender_city}
+                  </p>
+                )}
+                <p className="text-xs text-text-soft mt-1 flex items-center gap-1">
+                  <FaInfoCircle className="h-3 w-3" />
+                  Delivery charges are calculated from this city, so pick where your store ships from
                 </p>
               </div>
             </div>
@@ -625,7 +709,7 @@ export default function CreateStoreForm({auth}: PageProps) {
             <button
               type="submit"
               disabled={processing}
-              className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
             >
               {processing ? (
                 <>

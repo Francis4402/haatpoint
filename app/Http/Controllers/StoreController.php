@@ -113,6 +113,7 @@ class StoreController extends Controller
             'storetype' => 'required|string',
             'license' => 'nullable|string|max:24',
             'address' => 'required|string|max:255',
+            'sender_city' => 'required|integer',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'national_id' => [
                 'required',
@@ -137,6 +138,7 @@ class StoreController extends Controller
                 'storetype' => $validated['storetype'],
                 'license' => $validated['license'] ?? null,
                 'address' => $validated['address'],
+                'sender_city' => $validated['sender_city'],
                 'national_id' => $validated['national_id'],
                 'mobile' => $validated['mobile'],
                 'logo' => null,
@@ -305,6 +307,7 @@ class StoreController extends Controller
             ],
             'storetype' => 'required|string',
             'address' => 'required|string|max:255',
+            'sender_city' => 'required|integer',
             'license' => [
                 'nullable',
                 'string',
@@ -373,6 +376,7 @@ class StoreController extends Controller
             'name' => $validated['name'],
             'storetype' => $validated['storetype'],
             'address' => $validated['address'],
+            'sender_city' => $validated['sender_city'],
             'license' => $validated['license'] ?? null,
             'mobile' => $validated['mobile'],
             'national_id' => $validated['national_id'],

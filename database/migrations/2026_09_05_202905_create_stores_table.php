@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('email');
             $table->string('logo')->nullable();
             $table->text('address');
+            $table->unsignedInteger('sender_city')->nullable();
             $table->string('mobile')->unique();
             $table->string('storetype');
             $table->string('national_id')->unique();
