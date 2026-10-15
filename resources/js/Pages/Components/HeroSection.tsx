@@ -112,21 +112,17 @@ export default function Hero({ user, categories }: HeroProps) {
           </span>
 
           <h1 className="text-[38px] sm:text-[54px] lg:text-[76px] leading-[0.95]">
-            Shop local
+            Shop local.
             <br />
-            <span className="text-marigold">products</span> from
+            <span className="text-marigold">Save more.</span>
             <br />
-            your{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10">haat</span>
-              <span className="absolute inset-x-0 bottom-1 z-0 h-3 -skew-x-6 bg-sun/70 sm:h-4" />
-            </span>
+            Delivered fast.
           </h1>
 
           <p className="text-text-soft text-[15px] sm:text-[17px] max-w-[460px] my-5 sm:my-6 leading-relaxed">
-            Everything from fresh produce to electronics, sold directly by verified
-            local vendors, with no middlemen. Better prices, faster delivery, and
-            every order goes straight to the seller.
+            Discover fresh produce, fashion, electronics and more from trusted
+            sellers near you. Honest prices, no middlemen, and every order
+            delivered straight to your door.
           </p>
 
           <div className="flex flex-wrap gap-3 items-center mb-7 sm:mb-8">
@@ -138,10 +134,10 @@ export default function Hero({ user, categories }: HeroProps) {
               <FaArrowRight size={14} className="transition-transform duration-150 group-hover:translate-x-1" />
             </Link>
             <Link
-              href={user ? "/agent/register" : "/dashboard"}
+              href={route("products.hotdeals")}
               className="inline-flex items-center gap-2 rounded-sm px-[22px] sm:px-[26px] py-[13px] sm:py-[15px] font-bold text-sm bg-white border border-ink shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
             >
-              Become a vendor
+              Explore deals
             </Link>
           </div>
 

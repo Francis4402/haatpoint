@@ -90,6 +90,68 @@ class Agent extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'blocked' => 'boolean',
+            'subscription_ends_at' => 'datetime',
+            'subscription_payment_submitted_at' => 'datetime',
+            'subscription_payment_amount' => 'decimal:2',
         ];
+    }
+
+    /**
+     * The agent's subscription plan: 'free' or 'pro'.
+     */
+    public function getPlanAttribute(): string
+    {
+        return $this->attributes['plan'] ?? 'free';
+    }
+
+    /**
+     * Whether the subscription is currently active (not expired).
+     */
+    public function isSubscriptionActive(): bool
+    {
+        if (! $this->subscription_ends_at) {
+            return false;
+        }
+
+        return $this->subscription_ends_at->isFuture();
+    }
+
+    /**
+     * Whether the subscription has expired.
+     */
+    public function isSubscriptionExpired(): bool
+    {
+        if (! $this->subscription_ends_at) {
+            return true;
+        }
+
+        return $this->subscription_ends_at->isPast();
+    }
+
+    /**
+     * True if the agent is on the Pro plan and subscription is active.
+     */
+    public function isPro(): bool
+    {
+        return $this->plan === 'pro' && $this->isSubscriptionActive();
+    }
+
+    /**
+     * The agent's plan is the Pro one but a bKash payment is still waiting for
+     * a superadmin to approve it. These agents are sent to the payment page
+     * rather than the generic upgrade prompt.
+     */
+    public function hasPendingSubscriptionPayment(): bool
+    {
+        return $this->subscription_payment_status === 'pending';
+    }
+
+    /**
+     * A bKash transaction id has been submitted at some point (pending or
+     * already reviewed) and is worth showing to the superadmin.
+     */
+    public function hasSubscriptionPayment(): bool
+    {
+        return in_array($this->subscription_payment_status, ['pending', 'approved', 'rejected'], true);
     }
 }

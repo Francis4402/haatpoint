@@ -20,6 +20,14 @@ return new class extends Migration
             $table->string('role')->default('agent');
             $table->string('images')->nullable();
             $table->string('google_id')->nullable()->unique();
+            $table->string('plan')->default('free');
+            $table->timestamp('subscription_ends_at')->nullable();
+            // bKash payment for HaatPoint Pro. A pending row is what the
+            // superadmin reviews; Pro only activates once it is approved.
+            $table->string('subscription_payment_status')->default('none');
+            $table->string('subscription_trx_id')->nullable();
+            $table->decimal('subscription_payment_amount', 8, 2)->nullable();
+            $table->timestamp('subscription_payment_submitted_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

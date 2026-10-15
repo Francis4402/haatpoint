@@ -96,6 +96,8 @@ class CustomersController extends Controller
                 'images' => $user->images,
                 'email_verified_at' => $user->email_verified_at,
                 'blocked' => $user->blocked,
+                'plan' => 'free',
+                'subscription_ends_at' => now()->addYear(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

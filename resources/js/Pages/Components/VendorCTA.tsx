@@ -1,4 +1,5 @@
 import { FaArrowRight } from "react-icons/fa";
+import { Link } from "@inertiajs/react";
 import Eyebrow from "./Eyebrow";
 import useRevealChildren from "@/Components/useRevealChildren";
 
@@ -24,12 +25,12 @@ export default function VendorCTA() {
               No booth rent, no middlemen. Set your own prices, list in minutes, and get paid
               directly — Haatpoint just brings the buyers to you.
             </p>
-            <a
-              href="#"
+            <Link
+              href={route("sell")}
               className="inline-flex items-center gap-2 rounded-sm px-[26px] py-[15px] font-bold text-sm bg-marigold text-white shadow-hard-marigold transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5"
             >
               Open your shop <FaArrowRight size={14} />
-            </a>
+            </Link>
           </div>
         </div>
       </section>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Dashboard;
 use App\Http\Requests\StoreDashboardRequest;
 use App\Http\Requests\UpdateDashboardRequest;
+use App\Models\Agent;
 use App\Models\OrderItems;
 use App\Models\Orders;
 use App\Models\Products;
@@ -69,12 +70,36 @@ class DashboardController extends Controller
             ];
         }
 
+        // Superadmin only: the bKash Pro payments agents have submitted, so
+        // they can be verified (approved/rejected) from the dashboard.
+        $subscriptionPayments = null;
+        if ($userRole === 'superadmin') {
+            $subscriptionPayments = Agent::whereIn('subscription_payment_status', ['pending', 'approved', 'rejected'])
+                ->orderByRaw("CASE WHEN subscription_payment_status = 'pending' THEN 0 ELSE 1 END")
+                ->orderByDesc('subscription_payment_submitted_at')
+                ->get()
+                ->map(fn (Agent $a) => [
+                    'id' => $a->id,
+                    'name' => $a->name,
+                    'email' => $a->email,
+                    'mobile' => $a->mobile,
+                    'trxId' => $a->subscription_trx_id,
+                    'amount' => (float) ($a->subscription_payment_amount ?? 0),
+                    'status' => $a->subscription_payment_status,
+                    'plan' => $a->plan,
+                    'submittedAt' => $a->subscription_payment_submitted_at?->toIso8601String(),
+                    'subscriptionEndsAt' => $a->subscription_ends_at?->toIso8601String(),
+                ])
+                ->values();
+        }
+
         return Inertia::render('dashboard/DashboardHome', [
             'totalUsers' => $totalUsers,
             'orders' => $orders,
             'userRole' => $userRole,
             'stats' => $stats,
             'onboarding' => $onboarding,
+            'subscriptionPayments' => $subscriptionPayments,
         ]);
     }
 

@@ -30,6 +30,7 @@ import { FaStore } from 'react-icons/fa';
 import logoutUrl from '@/Components/logoutUrl';
 import SearchBox from '@/Components/SearchBox';
 import IncompleteVendorProfileBanner from '@/Components/IncompleteVendorProfileBanner';
+import SubscriptionBanner from '@/Components/SubscriptionBanner';
 import { useTranslation } from '@/state/languageStore';
 
 interface DashboardLayoutProps {
@@ -579,6 +580,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
         <main className="py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <IncompleteVendorProfileBanner />
+            <SubscriptionBanner />
             {children}
           </div>
         </main>

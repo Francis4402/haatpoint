@@ -17,6 +17,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\VendorProfileController;
 use App\Http\Controllers\WishlistController;
 use App\Models\Categories;
@@ -226,7 +227,7 @@ Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])
     Route::put('/dashboard/store/update/{store}', [StoreController::class, 'update'])->name('dashboard.storeupdate');
 });
 
-Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(function () {
+Route::middleware(['auth:web,superadmin,admin,agent', 'blocked', 'subscription'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/agent-guide', [DashboardController::class, 'agentGuide'])->name('dashboard.agent-guide');
     Route::get('/dashboard/products', [ProductsController::class, 'index'])->name('dashboard.products');
@@ -300,7 +301,24 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
     Route::delete('/comments/{comment}', [CommentsController::class, 'destroy'])->name('comments.destroy');
 
     Route::post('/stores/{store}/review', [CommentsController::class, 'storeReview'])->name('stores.review');
+
+    // Superadmin-only: verify the bKash transactions agents submit for Pro.
+    Route::middleware('role:superadmin')->group(function () {
+        Route::post('/dashboard/subscription/{agent}/approve', [SubscriptionController::class, 'approve'])->name('dashboard.subscription.approve');
+        Route::post('/dashboard/subscription/{agent}/reject', [SubscriptionController::class, 'reject'])->name('dashboard.subscription.reject');
+    });
 });
+
+Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(function () {
+    Route::get('/dashboard/upgrade', [SubscriptionController::class, 'showUpgrade'])->name('dashboard.upgrade');
+
+    // bKash payment for HaatPoint Pro. Deliberately outside the `subscription`
+    // group: the agent being asked to pay is, by definition, not active yet.
+    Route::get('/dashboard/subscription/payment', [SubscriptionController::class, 'showPayment'])->name('dashboard.subscription.payment');
+    Route::post('/dashboard/subscription/payment', [SubscriptionController::class, 'submitPayment'])->name('dashboard.subscription.payment.submit');
+});
+
+Route::get('/sell', [SubscriptionController::class, 'sell'])->name('sell');
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
@@ -347,7 +365,7 @@ Route::post('/reviews', [ReviewsController::class, 'store'])->name('reviews.stor
 Route::get('/products/{slug}/reviews', [ReviewsController::class, 'status'])->name('reviews.status');
 
 
-Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(function () {
+Route::middleware(['auth:web,superadmin,admin,agent', 'blocked', 'subscription'])->group(function () {
     Route::get('/dashboard/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

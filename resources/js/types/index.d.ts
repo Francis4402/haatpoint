@@ -22,6 +22,31 @@ export interface User {
     address?: string | null;
 }
 
+export interface AgentSubscription {
+    plan: 'free' | 'pro';
+    isActive: boolean;
+    isExpired: boolean;
+    isPro: boolean;
+    endsAt: string | null;
+    /** bKash payment progress for HaatPoint Pro. */
+    paymentStatus?: 'none' | 'pending' | 'approved' | 'rejected';
+    /** True while a submitted bKash TrxID still awaits superadmin approval. */
+    pendingPayment?: boolean;
+}
+
+export interface SubscriptionPayment {
+    id: string;
+    name: string;
+    email: string;
+    mobile: string | null;
+    trxId: string | null;
+    amount: number;
+    status: 'pending' | 'approved' | 'rejected';
+    plan: string;
+    submittedAt: string | null;
+    subscriptionEndsAt: string | null;
+}
+
 export type CartItem = {
     id: string;
     user_id: string;
@@ -247,6 +272,8 @@ export type PageProps<
         isVerified?: boolean;
         incompleteVendorProfile?: boolean;
         missingVendorProfileFields?: string[];
+        subscription?: AgentSubscription | null;
+        subscriptionExpired?: boolean;
     };
     /** Shared by HandleInertiaRequests so redirect()->back()->with() is visible. */
     flash?: {

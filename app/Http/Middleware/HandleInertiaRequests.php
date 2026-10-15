@@ -49,29 +49,36 @@ class HandleInertiaRequests extends Middleware
         $requiresVerification = $user instanceof MustVerifyEmail
             && ! $user->hasVerifiedEmail();
 
+        $subscription = null;
+        $subscriptionExpired = false;
+        if ($user instanceof Agent) {
+            $subscriptionExpired = $user->isSubscriptionExpired();
+            $subscription = [
+                'plan' => $user->plan,
+                'isActive' => $user->isSubscriptionActive(),
+                'isExpired' => $subscriptionExpired,
+                'endsAt' => $user->subscription_ends_at ? $user->subscription_ends_at->toIso8601String() : null,
+                'isPro' => $user->isPro(),
+                'paymentStatus' => $user->subscription_payment_status ?? 'none',
+                'pendingPayment' => $user->hasPendingSubscriptionPayment(),
+            ];
+        }
+
         return [
             ...parent::share($request),
-            // Ziggy route definitions. The @routes Blade directive exposes these
-            // to the browser, but the Node SSR server has no Blade output, so the
-            // same config is shared here and passed to Ziggy's global route()
-            // helper in resources/js/ssr.tsx.
             'ziggy' => fn () => (new Ziggy())->toArray(),
-            // Computed by SeoMeta (this middleware runs after it) so the client
-            // renders exactly the tags the server already printed in the shell.
-            // Without it SeoHead falls back to its own defaults, which
-            // canonicalised every page at the homepage.
             'seo' => $request->attributes->get('seo', []),
             'auth' => [
                 'user' => $user,
                 'isVerified' => $requiresVerification ? false : true,
                 'requiresVerification' => $requiresVerification,
-                // Vendor KYC, resolved from the model rather than recomputed in
-                // the banner so the banner and the store guard cannot disagree.
                 'incompleteVendorProfile' => $user instanceof Agent
                     && ! $user->hasCompleteVendorProfile(),
                 'missingVendorProfileFields' => $user instanceof Agent
                     ? $user->missingVendorProfileFields()
                     : [],
+                'subscription' => $subscription,
+                'subscriptionExpired' => $subscriptionExpired,
             ],
             // Without this, redirect()->back()->with('success'|'error', ...) is
             // invisible to the SPA and actions appear to do nothing.

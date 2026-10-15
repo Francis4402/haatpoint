@@ -81,6 +81,15 @@ abstract class StaffAuthController extends Controller
     }
 
     /**
+     * Where to send a freshly registered account. Roles override this when a
+     * signup needs a follow-up step (e.g. agent Pro -> bKash payment page).
+     */
+    protected function registrationRedirect(Request $request, $user): RedirectResponse
+    {
+        return redirect()->intended(route('dashboard', absolute: false));
+    }
+
+    /**
      * Extra validation rules specific to this role's registration.
      */
     protected function registrationRules(): array
@@ -126,6 +135,7 @@ abstract class StaffAuthController extends Controller
         return Inertia::render('Auth/StaffRegister', [
             'type' => $this->roleKey(),
             'socialDestination' => $this->socialDestination(),
+            'plan' => $request->query('plan') === 'pro' ? 'pro' : 'free',
         ]);
     }
 
@@ -179,7 +189,7 @@ abstract class StaffAuthController extends Controller
 
         $this->loginOnGuard($this->guard(), $user);
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return $this->registrationRedirect($request, $user);
     }
 
     /**

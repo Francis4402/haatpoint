@@ -1,6 +1,6 @@
 
 import DashboardLayout from '@/Layouts/DashboardLayout'
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, router } from '@inertiajs/react'
 import { FiPackage, FiShoppingCart, FiTrendingUp, FiUsers, FiPercent } from 'react-icons/fi'
 import { Orders } from '@/types'
 import FormatPrice from '../utils/FormatePrice'
@@ -9,6 +9,19 @@ import RecentOrders from './recentOrders/RecentOrders'
 import { FaTrophy } from 'react-icons/fa'
 import { FaBoxOpen, FaStore } from 'react-icons/fa'
 import AgentOnboardingChecklist from '@/Components/AgentOnboardingChecklist'
+
+interface SubscriptionPayment {
+    id: string;
+    name: string;
+    email: string;
+    mobile: string | null;
+    trxId: string | null;
+    amount: number;
+    status: 'pending' | 'approved' | 'rejected';
+    plan: string;
+    submittedAt: string | null;
+    subscriptionEndsAt: string | null;
+}
 
 interface dashboardhometypes {
     auth: {
@@ -23,6 +36,7 @@ interface dashboardhometypes {
         productsCount: number,
         storeCount: number,
     } | null,
+    subscriptionPayments?: SubscriptionPayment[] | null,
     stats?: {
         totalProfit?: number,
         originalRevenue?: number,
@@ -47,13 +61,32 @@ interface dashboardhometypes {
     }
 }
 
-const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding }: dashboardhometypes) => {
+const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscriptionPayments }: dashboardhometypes) => {
     const userRole = auth?.user?.role;
     const isAdmin = userRole === 'admin' || userRole === 'superadmin';
     const isAgent = userRole === 'agent';
+    const isSuperadmin = userRole === 'superadmin';
 
     const conversionRate = stats?.conversionRate ?? 0;
     const topProducts = stats?.topProducts ?? [];
+
+    const pendingPayments = (subscriptionPayments ?? []).filter((p) => p.status === 'pending');
+
+    const approvePayment = (id: string) => {
+        router.post(route('dashboard.subscription.approve', id), {}, { preserveScroll: true });
+    };
+    const rejectPayment = (id: string) => {
+        router.post(route('dashboard.subscription.reject', id), {}, { preserveScroll: true });
+    };
+
+    const paymentStatusBadge = (status: SubscriptionPayment['status']) => {
+        const map = {
+            pending: 'bg-yellow-100 text-yellow-800',
+            approved: 'bg-green-100 text-green-800',
+            rejected: 'bg-red-100 text-red-700',
+        } as const;
+        return map[status] ?? 'bg-gray-100 text-gray-700';
+    };
 
     return (
         <DashboardLayout user={auth.user}>
@@ -93,6 +126,92 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding }: dashboar
                         </div>
                     </div>
                 </div>
+
+                {/* Superadmin — bKash Pro payment verification */}
+                {isSuperadmin && (
+                    <div className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden">
+                        <div className="px-6 py-5 border-b border-line flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink">HaatPoint Pro Payments</h3>
+                                <p className="mt-1 text-sm text-text-soft">
+                                    bKash transactions submitted by agents. Verify each TrxID before approving.
+                                </p>
+                            </div>
+                            <span className={`text-xs font-mono uppercase tracking-wide px-3 py-1 rounded-full ${pendingPayments.length > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                                {pendingPayments.length} pending
+                            </span>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            {subscriptionPayments && subscriptionPayments.length > 0 ? (
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-paper-dim text-text-soft">
+                                        <tr className="font-mono text-[10px] uppercase tracking-wide">
+                                            <th className="px-6 py-3">Agent</th>
+                                            <th className="px-6 py-3">Contact</th>
+                                            <th className="px-6 py-3">TrxID</th>
+                                            <th className="px-6 py-3">Amount</th>
+                                            <th className="px-6 py-3">Submitted</th>
+                                            <th className="px-6 py-3">Status</th>
+                                            <th className="px-6 py-3 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-line">
+                                        {subscriptionPayments.map((p) => (
+                                            <tr key={p.id} className="hover:bg-paper-dim/60 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <p className="font-medium text-ink">{p.name}</p>
+                                                    <p className="text-xs text-text-soft">{p.email}</p>
+                                                </td>
+                                                <td className="px-6 py-4 text-text-soft">{p.mobile || '—'}</td>
+                                                <td className="px-6 py-4 font-mono text-ink">{p.trxId || '—'}</td>
+                                                <td className="px-6 py-4 font-semibold text-ink"><FormatPrice price={p.amount} /></td>
+                                                <td className="px-6 py-4 text-xs text-text-soft">
+                                                    {p.submittedAt ? new Date(p.submittedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—'}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`text-[10px] font-mono uppercase tracking-wide px-2.5 py-1 rounded-full ${paymentStatusBadge(p.status)}`}>
+                                                        {p.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {p.status === 'pending' ? (
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => approvePayment(p.id)}
+                                                                className="rounded-sm bg-green-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-green-700"
+                                                            >
+                                                                Approve
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => rejectPayment(p.id)}
+                                                                className="rounded-sm border border-line px-3 py-1.5 text-xs font-bold text-ink transition-colors hover:bg-red-50 hover:text-red-700"
+                                                            >
+                                                                Reject
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-right text-xs text-text-soft">
+                                                            {p.status === 'approved' && p.subscriptionEndsAt
+                                                                ? `Pro until ${new Date(p.subscriptionEndsAt).toLocaleDateString()}`
+                                                                : 'Reviewed'}
+                                                        </p>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p className="px-6 py-10 text-center text-sm text-text-soft">
+                                    No HaatPoint Pro payments submitted yet.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Stats Cards */}
                 {(isAdmin || isAgent) && (

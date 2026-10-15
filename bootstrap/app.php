@@ -25,6 +25,7 @@ $middleware->web(append: [
 $middleware->alias([
             'role' => \App\Http\Middleware\Role::class,
             'blocked' => \App\Http\Middleware\EnsureNotBlocked::class,
+            'subscription' => \App\Http\Middleware\EnsureSubscriptionActive::class,
         ]);
     })
 ->withExceptions(function (Exceptions $exceptions): void {
