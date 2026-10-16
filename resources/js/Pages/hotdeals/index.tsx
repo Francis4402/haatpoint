@@ -1,5 +1,5 @@
 // HotDeals.tsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import { Product } from '@/types';
 import {
@@ -7,12 +7,13 @@ import {
   BsSearch,
   BsChevronRight,
   BsGrid3X3Gap,
-  BsX
+  BsX,
+  BsPercent
 } from 'react-icons/bs';
 import {
   FiShoppingBag,
   FiTruck,
-  FiClock,
+  FiClock
 } from 'react-icons/fi';
 import {
   RiFireFill,
@@ -25,7 +26,6 @@ import { withMarkup } from '../utils/price';
 import AddtoCartButton from '../buttons/AddtoCartButton';
 import SeoHead from '@/Components/SeoHead';
 import ProductCard from '@/Components/ProductCard';
-
 
 interface HotDealsPageProps {
     products: {
@@ -42,6 +42,48 @@ interface HotDealsPageProps {
     wishlist: any;
 }
 
+// Standalone memoized countdown timer component so HotDeals does NOT re-render every second
+function FlashSaleCountdown() {
+    const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({
+        hours: 12,
+        minutes: 45,
+        seconds: 30,
+    });
+
+    useEffect(() => {
+        const updateTimer = () => {
+            const now = new Date();
+            const midnight = new Date();
+            midnight.setHours(24, 0, 0, 0);
+            const diff = Math.max(0, Math.floor((midnight.getTime() - now.getTime()) / 1000));
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = diff % 60;
+            setTimeLeft({ hours, minutes, seconds });
+        };
+        updateTimer();
+        const interval = setInterval(updateTimer, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="flex gap-2 mt-2 justify-center">
+            <div className="bg-white/30 rounded-lg px-3 py-1.5">
+                <span className="text-xl font-bold">{String(timeLeft.hours).padStart(2, '0')}</span>
+                <span className="text-xs ml-1">h</span>
+            </div>
+            <div className="bg-white/30 rounded-lg px-3 py-1.5">
+                <span className="text-xl font-bold">{String(timeLeft.minutes).padStart(2, '0')}</span>
+                <span className="text-xs ml-1">m</span>
+            </div>
+            <div className="bg-white/30 rounded-lg px-3 py-1.5">
+                <span className="text-xl font-bold">{String(timeLeft.seconds).padStart(2, '0')}</span>
+                <span className="text-xs ml-1">s</span>
+            </div>
+        </div>
+    );
+}
+
 const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [searchQuery, setSearchQuery] = useState('');
@@ -49,9 +91,14 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
     const [sortBy, setSortBy] = useState('discount-high');
     const [showMobileFilters, setShowMobileFilters] = useState(false);
-    const [selectedDiscount, setSelectedDiscount] = useState<string>('all');
+    const [minDiscount, setMinDiscount] = useState<number>(0);
 
     const productsData = products.data || [];
+
+    const calculateDiscount = (regularPrice: number, salePrice?: number): number => {
+        if (!salePrice || salePrice >= regularPrice) return 0;
+        return Math.round(((regularPrice - salePrice) / regularPrice) * 100);
+    };
 
     const hotDealsProducts = useMemo(() => {
         return productsData.filter(product =>
@@ -65,22 +112,6 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
         const uniqueCategories = new Set(hotDealsProducts.map(p => p.category).filter(Boolean));
         return ['all', ...uniqueCategories];
     }, [hotDealsProducts]);
-
-    const discountOptions = [
-        { id: 'all', label: 'All Discounts' },
-        { id: '10', label: '10% or more' },
-        { id: '20', label: '20% or more' },
-        { id: '30', label: '30% or more' },
-        { id: '40', label: '40% or more' },
-        { id: '50', label: '50% or more' },
-        { id: '60', label: '60% or more' },
-        { id: '70', label: '70% or more' },
-    ];
-
-    const calculateDiscount = (regularPrice: number, salePrice?: number): number => {
-        if (!salePrice || salePrice >= regularPrice) return 0;
-        return Math.round(((regularPrice - salePrice) / regularPrice) * 100);
-    };
 
     const sortOptions = [
         { id: 'discount-high', label: 'Discount: High to Low' },
@@ -105,8 +136,7 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
             filtered = filtered.filter(product => product.category === selectedCategory);
         }
 
-        if (selectedDiscount !== 'all') {
-            const minDiscount = parseInt(selectedDiscount);
+        if (minDiscount > 0) {
             filtered = filtered.filter(product => {
                 const discount = calculateDiscount(product.regular_price, product.sale_price);
                 return discount >= minDiscount;
@@ -159,153 +189,178 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
         }
 
         return filtered;
-    }, [hotDealsProducts, searchQuery, selectedCategory, selectedDiscount, priceRange, sortBy]);
+    }, [hotDealsProducts, searchQuery, selectedCategory, minDiscount, priceRange, sortBy]);
 
     const totalDeals = hotDealsProducts.length;
-
-    // Mobile Filter Drawer
-    const FilterDrawer = () => (
-        <div className={`fixed inset-0 z-50 lg:hidden ${showMobileFilters ? 'block' : 'hidden'}`}>
-            <div
-                className="absolute inset-0 bg-black/50"
-                onClick={() => setShowMobileFilters(false)}
-            />
-            <div className="absolute right-0 top-0 h-full w-[320px] max-w-[85vw] bg-white shadow-2xl overflow-y-auto p-6 animate-slide-in">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-bold text-ink">Filters</h3>
-                    <button
-                        onClick={() => setShowMobileFilters(false)}
-                        className="p-2 hover:bg-paper-dim rounded-lg transition-colors"
-                    >
-                        <BsX className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Categories */}
-                <div className="mb-6">
-                    <h4 className="font-mono text-xs font-semibold text-text-soft uppercase tracking-wider mb-3">
-                        Categories
-                    </h4>
-                    <div className="space-y-1">
-                        {categories.map(category => (
-                            <button
-                                key={category}
-                                onClick={() => {
-                                    setSelectedCategory(category);
-                                    setShowMobileFilters(false);
-                                }}
-                                className={`block w-full text-left py-2 px-3 rounded-lg text-sm transition-all duration-200 ${
-                                    selectedCategory === category
-                                        ? 'bg-marigold/10 text-marigold font-medium'
-                                        : 'text-text-soft hover:text-ink hover:bg-paper-dim'
-                                }`}
-                            >
-                                <div className="flex items-center justify-between">
-                                    <span>{category === 'all' ? 'All Categories' : category}</span>
-                                    <span className="text-xs text-text-soft">
-                                        ({hotDealsProducts.filter(p => category === 'all' || p.category === category).length})
-                                    </span>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Discount Filter */}
-                <div className="mb-6">
-                    <h4 className="font-mono text-xs font-semibold text-text-soft uppercase tracking-wider mb-3">
-                        Discount
-                    </h4>
-                    <div className="space-y-1">
-                        {discountOptions.map(option => (
-                            <button
-                                key={option.id}
-                                onClick={() => {
-                                    setSelectedDiscount(option.id);
-                                    setShowMobileFilters(false);
-                                }}
-                                className={`block w-full text-left py-2 px-3 rounded-lg text-sm transition-all duration-200 ${
-                                    selectedDiscount === option.id
-                                        ? 'bg-marigold/10 text-marigold font-medium'
-                                        : 'text-text-soft hover:text-ink hover:bg-paper-dim'
-                                }`}
-                            >
-                                {option.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Price Range */}
-                <div className="mb-6">
-                    <h4 className="font-mono text-xs font-semibold text-text-soft uppercase tracking-wider mb-3">
-                        Price Range
-                    </h4>
-                    <div className="space-y-3">
-                        <input
-                            type="range"
-                            min="0"
-                            max="10000"
-                            step="100"
-                            value={priceRange[1]}
-                            onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                            className="w-full h-1.5 bg-paper-dim rounded-lg appearance-none cursor-pointer accent-marigold"
-                        />
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-text-soft">
-                                <FormatPrice price={priceRange[0]} />
-                            </span>
-                            <span className="text-sm text-text-soft">
-                                <FormatPrice price={priceRange[1]} />
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Sort By */}
-                <div className="mb-6">
-                    <h4 className="font-mono text-xs font-semibold text-text-soft uppercase tracking-wider mb-3">
-                        Sort by
-                    </h4>
-                    <select
-                        value={sortBy}
-                        onChange={(e) => {
-                            setSortBy(e.target.value);
-                            setShowMobileFilters(false);
-                        }}
-                        className="w-full p-2.5 text-sm border border-line rounded-lg focus:ring-2 focus:ring-marigold focus:border-transparent transition-colors bg-white"
-                    >
-                        {sortOptions.map(option => (
-                            <option key={option.id} value={option.id}>
-                                {option.label}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Clear Filters */}
-                <button
-                    onClick={() => {
-                        setSelectedCategory('all');
-                        setSelectedDiscount('all');
-                        setPriceRange([0, 10000]);
-                        setSearchQuery('');
-                        setSortBy('discount-high');
-                        setShowMobileFilters(false);
-                    }}
-                    className="w-full py-2.5 text-sm border border-line text-text-soft rounded-lg hover:bg-paper-dim hover:text-ink transition-colors"
-                >
-                    Clear all filters
-                </button>
-            </div>
-        </div>
-    );
 
     return (
         <AppLayout user={auth?.user} wishlist={wishlist}>
             <SeoHead />
 
-            <FilterDrawer />
+            {/* Mobile Filter Drawer */}
+            <div
+                className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${
+                    showMobileFilters ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                }`}
+                aria-hidden={!showMobileFilters}
+            >
+                <div
+                    className="absolute inset-0 bg-black/50 transition-opacity"
+                    onClick={() => setShowMobileFilters(false)}
+                />
+                <div
+                    className={`absolute right-0 top-0 h-full w-[320px] max-w-[85vw] bg-white shadow-2xl overflow-y-auto p-6 transition-transform duration-300 ease-out transform ${
+                        showMobileFilters ? 'translate-x-0' : 'translate-x-full'
+                    }`}
+                >
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-bold text-ink">Filters</h3>
+                        <button
+                            onClick={() => setShowMobileFilters(false)}
+                            className="p-2 hover:bg-paper-dim rounded-lg transition-colors"
+                        >
+                            <BsX className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    {/* Categories */}
+                    <div className="mb-6">
+                        <h4 className="font-mono text-xs font-semibold text-text-soft uppercase tracking-wider mb-3">
+                            Categories
+                        </h4>
+                        <div className="space-y-1">
+                            {categories.map(category => (
+                                <button
+                                    key={category}
+                                    onClick={() => {
+                                        setSelectedCategory(category);
+                                        setShowMobileFilters(false);
+                                    }}
+                                    className={`block w-full text-left py-2 px-3 rounded-lg text-sm transition-all duration-200 ${
+                                        selectedCategory === category
+                                            ? 'bg-marigold/10 text-marigold font-medium'
+                                            : 'text-text-soft hover:text-ink hover:bg-paper-dim'
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <span>{category === 'all' ? 'All Categories' : category}</span>
+                                        <span className="text-xs text-text-soft">
+                                            ({hotDealsProducts.filter(p => category === 'all' || p.category === category).length})
+                                        </span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Minimum Discount Slider */}
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-mono text-xs font-semibold text-text-soft uppercase tracking-wider">
+                                Min Discount
+                            </h4>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-marigold/10 text-marigold">
+                                {minDiscount === 0 ? 'All Deals' : `≥ ${minDiscount}% OFF`}
+                            </span>
+                        </div>
+                        <div className="space-y-2">
+                            <input
+                                type="range"
+                                min="0"
+                                max="70"
+                                step="5"
+                                value={minDiscount}
+                                onChange={(e) => setMinDiscount(parseInt(e.target.value, 10))}
+                                className="w-full h-1.5 bg-paper-dim rounded-lg appearance-none cursor-pointer accent-marigold"
+                            />
+                            <div className="flex items-center justify-between text-[11px] text-text-soft">
+                                <span>0%</span>
+                                <span>25%</span>
+                                <span>50%</span>
+                                <span>70%+</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                                {[0, 15, 30, 50, 70].map((val) => (
+                                    <button
+                                        key={val}
+                                        type="button"
+                                        onClick={() => setMinDiscount(val)}
+                                        className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
+                                            minDiscount === val
+                                                ? 'bg-marigold text-white shadow-sm'
+                                                : 'bg-paper-dim text-text-soft hover:bg-ink/5 hover:text-ink'
+                                        }`}
+                                    >
+                                        {val === 0 ? 'All' : `${val}%+`}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Price Range */}
+                    <div className="mb-6">
+                        <h4 className="font-mono text-xs font-semibold text-text-soft uppercase tracking-wider mb-3">
+                            Price Range
+                        </h4>
+                        <div className="space-y-3">
+                            <input
+                                type="range"
+                                min="0"
+                                max="10000"
+                                step="100"
+                                value={priceRange[1]}
+                                onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                                className="w-full h-1.5 bg-paper-dim rounded-lg appearance-none cursor-pointer accent-marigold"
+                            />
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-text-soft">
+                                    <FormatPrice price={priceRange[0]} />
+                                </span>
+                                <span className="text-sm text-text-soft">
+                                    <FormatPrice price={priceRange[1]} />
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sort By */}
+                    <div className="mb-6">
+                        <h4 className="font-mono text-xs font-semibold text-text-soft uppercase tracking-wider mb-3">
+                            Sort by
+                        </h4>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => {
+                                setSortBy(e.target.value);
+                                setShowMobileFilters(false);
+                            }}
+                            className="w-full p-2.5 text-sm border border-line rounded-lg focus:ring-2 focus:ring-marigold focus:border-transparent transition-colors bg-white"
+                        >
+                            {sortOptions.map(option => (
+                                <option key={option.id} value={option.id}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Clear Filters */}
+                    <button
+                        onClick={() => {
+                            setSelectedCategory('all');
+                            setMinDiscount(0);
+                            setPriceRange([0, 10000]);
+                            setSearchQuery('');
+                            setSortBy('discount-high');
+                            setShowMobileFilters(false);
+                        }}
+                        className="w-full py-2.5 text-sm border border-line text-text-soft rounded-lg hover:bg-paper-dim hover:text-ink transition-colors"
+                    >
+                        Clear all filters
+                    </button>
+                </div>
+            </div>
 
             {/* Hero Banner */}
             <div className="bg-gradient-to-r from-marigold to-marigold-dark text-white">
@@ -327,20 +382,7 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
                             <RiFlashlightFill className="text-4xl mx-auto mb-2" />
                             <p className="text-2xl font-bold">Flash Sale</p>
                             <p className="text-sm opacity-90">Ends in:</p>
-                            <div className="flex gap-2 mt-2 justify-center">
-                                <div className="bg-white/30 rounded-lg px-3 py-1.5">
-                                    <span className="text-xl font-bold">12</span>
-                                    <span className="text-xs ml-1">h</span>
-                                </div>
-                                <div className="bg-white/30 rounded-lg px-3 py-1.5">
-                                    <span className="text-xl font-bold">45</span>
-                                    <span className="text-xs ml-1">m</span>
-                                </div>
-                                <div className="bg-white/30 rounded-lg px-3 py-1.5">
-                                    <span className="text-xl font-bold">30</span>
-                                    <span className="text-xs ml-1">s</span>
-                                </div>
-                            </div>
+                            <FlashSaleCountdown />
                         </div>
                     </div>
                 </div>
@@ -384,30 +426,62 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
                                 <BsFilter />
                                 <span className="text-sm">Filters</span>
                                 <span className="text-xs bg-marigold/10 text-marigold px-1.5 py-0.5 rounded-full">
-                                    {selectedCategory !== 'all' || selectedDiscount !== 'all' || searchQuery ? '!' : ''}
+                                    {selectedCategory !== 'all' || minDiscount > 0 || searchQuery ? '!' : ''}
                                 </span>
                             </button>
                         </div>
                     </div>
 
-                    {/* Discount Categories */}
-                    <div className="bg-white rounded-xl shadow-hard-sm border border-line p-2 mb-8 overflow-x-auto">
-                        <div className="flex gap-1 min-w-max">
-                            {discountOptions.map((option) => (
-                                <button
-                                    key={option.id}
-                                    onClick={() => setSelectedDiscount(option.id)}
-                                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg whitespace-nowrap transition-all duration-300 text-xs sm:text-sm font-medium ${
-                                        selectedDiscount === option.id
-                                            ? 'bg-marigold text-white shadow-md'
-                                            : 'text-text-soft hover:bg-paper-dim hover:text-ink'
-                                    }`}
-                                >
-                                    {option.label}
-                                </button>
-                            ))}
+
+                    {/* Active Filters Bar */}
+                    {(minDiscount > 0 || selectedCategory !== 'all' || searchQuery || priceRange[1] < 10000) && (
+                        <div className="flex flex-wrap items-center gap-2 mb-6 p-3 bg-white rounded-xl border border-line shadow-sm">
+                            <span className="text-xs font-semibold text-text-soft">Active filters:</span>
+                            {minDiscount > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-marigold/10 text-marigold-dark border border-marigold/20">
+                                    ≥ {minDiscount}% OFF
+                                    <button onClick={() => setMinDiscount(0)} className="hover:text-red-500">
+                                        <BsX className="w-3.5 h-3.5" />
+                                    </button>
+                                </span>
+                            )}
+                            {selectedCategory !== 'all' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-paper-dim text-ink border border-line">
+                                    {selectedCategory}
+                                    <button onClick={() => setSelectedCategory('all')} className="hover:text-red-500">
+                                        <BsX className="w-3.5 h-3.5" />
+                                    </button>
+                                </span>
+                            )}
+                            {searchQuery && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-paper-dim text-ink border border-line">
+                                    "{searchQuery}"
+                                    <button onClick={() => setSearchQuery('')} className="hover:text-red-500">
+                                        <BsX className="w-3.5 h-3.5" />
+                                    </button>
+                                </span>
+                            )}
+                            {priceRange[1] < 10000 && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-paper-dim text-ink border border-line">
+                                    ≤ ৳{priceRange[1]}
+                                    <button onClick={() => setPriceRange([0, 10000])} className="hover:text-red-500">
+                                        <BsX className="w-3.5 h-3.5" />
+                                    </button>
+                                </span>
+                            )}
+                            <button
+                                onClick={() => {
+                                    setMinDiscount(0);
+                                    setSelectedCategory('all');
+                                    setSearchQuery('');
+                                    setPriceRange([0, 10000]);
+                                }}
+                                className="text-xs text-text-soft hover:text-red-500 ml-auto font-medium transition-colors"
+                            >
+                                Reset all
+                            </button>
                         </div>
-                    </div>
+                    )}
 
                     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
                         {/* Sidebar Filters - Desktop */}
@@ -417,6 +491,51 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
                                     <RiDiscountPercentFill className="text-marigold" />
                                     Filter Deals
                                 </h3>
+
+                                {/* Minimum Discount Slider */}
+                                <div className="mb-6">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h4 className="font-mono text-xs font-semibold text-text-soft uppercase tracking-wider">
+                                            Min Discount
+                                        </h4>
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-marigold/10 text-marigold">
+                                            {minDiscount === 0 ? 'All Deals' : `≥ ${minDiscount}% OFF`}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="70"
+                                            step="5"
+                                            value={minDiscount}
+                                            onChange={(e) => setMinDiscount(parseInt(e.target.value, 10))}
+                                            className="w-full h-1.5 bg-paper-dim rounded-lg appearance-none cursor-pointer accent-marigold"
+                                        />
+                                        <div className="flex items-center justify-between text-[11px] text-text-soft">
+                                            <span>0%</span>
+                                            <span>25%</span>
+                                            <span>50%</span>
+                                            <span>70%+</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5 pt-1">
+                                            {[0, 15, 30, 50, 70].map((val) => (
+                                                <button
+                                                    key={val}
+                                                    type="button"
+                                                    onClick={() => setMinDiscount(val)}
+                                                    className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
+                                                        minDiscount === val
+                                                            ? 'bg-marigold text-white shadow-sm'
+                                                            : 'bg-paper-dim text-text-soft hover:bg-ink/5 hover:text-ink'
+                                                    }`}
+                                                >
+                                                    {val === 0 ? 'All' : `${val}%+`}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
 
                                 {/* Categories */}
                                 <div className="mb-6">
@@ -493,7 +612,7 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
                                 <button
                                     onClick={() => {
                                         setSelectedCategory('all');
-                                        setSelectedDiscount('all');
+                                        setMinDiscount(0);
                                         setPriceRange([0, 10000]);
                                         setSearchQuery('');
                                         setSortBy('discount-high');
@@ -699,7 +818,7 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
                                     <button
                                         onClick={() => {
                                             setSelectedCategory('all');
-                                            setSelectedDiscount('all');
+                                            setMinDiscount(0);
                                             setPriceRange([0, 10000]);
                                             setSearchQuery('');
                                             setSortBy('discount-high');
