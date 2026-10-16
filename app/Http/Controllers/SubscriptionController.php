@@ -91,7 +91,7 @@ class SubscriptionController extends Controller
         $user->save();
 
         return redirect()->route('dashboard.subscription.payment')
-            ->with('success', 'Payment submitted. We will verify it and activate Pro shortly.');
+            ->with('success', 'Payment submitted! If your transaction ID is correct, then your account will be activated.');
     }
 
     /**

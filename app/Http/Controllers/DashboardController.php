@@ -74,20 +74,28 @@ class DashboardController extends Controller
         // they can be verified (approved/rejected) from the dashboard.
         $subscriptionPayments = null;
         if ($userRole === 'superadmin') {
-            $subscriptionPayments = Agent::whereIn('subscription_payment_status', ['pending', 'approved', 'rejected'])
-                ->orderByRaw("CASE WHEN subscription_payment_status = 'pending' THEN 0 ELSE 1 END")
+            $subscriptionPayments = Agent::where(function ($query) {
+                $query->whereIn('subscription_payment_status', ['pending', 'approved', 'rejected'])
+                    ->orWhere('plan', 'pro');
+            })
+                ->orderByRaw("CASE WHEN subscription_payment_status = 'pending' AND subscription_trx_id IS NOT NULL THEN 0 WHEN subscription_payment_status = 'pending' THEN 1 ELSE 2 END")
                 ->orderByDesc('subscription_payment_submitted_at')
+                ->orderByDesc('created_at')
                 ->get()
                 ->map(fn (Agent $a) => [
                     'id' => $a->id,
                     'name' => $a->name,
                     'email' => $a->email,
                     'mobile' => $a->mobile,
+                    'address' => $a->address,
+                    'nationalId' => $a->national_id,
+                    'images' => $a->images,
                     'trxId' => $a->subscription_trx_id,
-                    'amount' => (float) ($a->subscription_payment_amount ?? 0),
+                    'amount' => (float) ($a->subscription_payment_amount ?? 500),
                     'status' => $a->subscription_payment_status,
                     'plan' => $a->plan,
                     'submittedAt' => $a->subscription_payment_submitted_at?->toIso8601String(),
+                    'registeredAt' => $a->created_at?->toIso8601String(),
                     'subscriptionEndsAt' => $a->subscription_ends_at?->toIso8601String(),
                 ])
                 ->values();

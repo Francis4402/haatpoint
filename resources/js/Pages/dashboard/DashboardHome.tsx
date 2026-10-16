@@ -1,26 +1,42 @@
 
 import DashboardLayout from '@/Layouts/DashboardLayout'
 import { Head, Link, router } from '@inertiajs/react'
+import { useState } from 'react'
 import { FiPackage, FiShoppingCart, FiTrendingUp, FiUsers, FiPercent } from 'react-icons/fi'
 import { Orders } from '@/types'
 import FormatPrice from '../utils/FormatePrice'
 import { BsFillPeopleFill } from 'react-icons/bs'
 import RecentOrders from './recentOrders/RecentOrders'
-import { FaTrophy } from 'react-icons/fa'
-import { FaBoxOpen, FaStore } from 'react-icons/fa'
+import {
+    FaTrophy,
+    FaBoxOpen,
+    FaStore,
+    FaCrown,
+    FaCheck,
+    FaTimes,
+    FaCopy,
+    FaIdCard,
+    FaMapMarkerAlt,
+    FaPhoneAlt,
+    FaClock,
+} from 'react-icons/fa'
 import AgentOnboardingChecklist from '@/Components/AgentOnboardingChecklist'
 
 interface SubscriptionPayment {
     id: string;
     name: string;
     email: string;
-    mobile: string | null;
-    trxId: string | null;
+    mobile?: string | null;
+    address?: string | null;
+    nationalId?: string | null;
+    images?: string | null;
+    trxId?: string | null;
     amount: number;
     status: 'pending' | 'approved' | 'rejected';
-    plan: string;
-    submittedAt: string | null;
-    subscriptionEndsAt: string | null;
+    plan?: string;
+    submittedAt?: string | null;
+    registeredAt?: string | null;
+    subscriptionEndsAt?: string | null;
 }
 
 interface dashboardhometypes {
@@ -79,6 +95,17 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
         router.post(route('dashboard.subscription.reject', id), {}, { preserveScroll: true });
     };
 
+    const [copiedTrxId, setCopiedTrxId] = useState<string | null>(null);
+    const copyTrxId = async (trx: string) => {
+        try {
+            await navigator.clipboard.writeText(trx);
+            setCopiedTrxId(trx);
+            setTimeout(() => setCopiedTrxId(null), 2000);
+        } catch {
+            /* clipboard fallback */
+        }
+    };
+
     const paymentStatusBadge = (status: SubscriptionPayment['status']) => {
         const map = {
             pending: 'bg-yellow-100 text-yellow-800',
@@ -127,18 +154,20 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                     </div>
                 </div>
 
-                {/* Superadmin — bKash Pro payment verification */}
+                {/* Superadmin — bKash Pro payment verification & account activation */}
                 {isSuperadmin && (
                     <div className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden">
-                        <div className="px-6 py-5 border-b border-line flex items-center justify-between">
+                        <div className="px-6 py-5 border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
-                                <h3 className="text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink">HaatPoint Pro Payments</h3>
+                                <h3 className="text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink flex items-center gap-2">
+                                    <FaCrown className="text-marigold" /> HaatPoint Pro Requests
+                                </h3>
                                 <p className="mt-1 text-sm text-text-soft">
-                                    bKash transactions submitted by agents. Verify each TrxID before approving.
+                                    bKash transaction IDs and user info submitted after registration. Superadmin can verify the TrxID and click Activate to enable HaatPoint Pro.
                                 </p>
                             </div>
-                            <span className={`text-xs font-mono uppercase tracking-wide px-3 py-1 rounded-full ${pendingPayments.length > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                                {pendingPayments.length} pending
+                            <span className={`self-start sm:self-auto text-xs font-mono uppercase tracking-wide px-3 py-1 rounded-full font-bold ${pendingPayments.length > 0 ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-green-100 text-green-800'}`}>
+                                {pendingPayments.length} pending verification
                             </span>
                         </div>
 
@@ -147,57 +176,161 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                                 <table className="w-full text-left text-sm">
                                     <thead className="bg-paper-dim text-text-soft">
                                         <tr className="font-mono text-[10px] uppercase tracking-wide">
-                                            <th className="px-6 py-3">Agent</th>
-                                            <th className="px-6 py-3">Contact</th>
-                                            <th className="px-6 py-3">TrxID</th>
+                                            <th className="px-6 py-3">Agent & Info</th>
+                                            <th className="px-6 py-3">KYC Details</th>
+                                            <th className="px-6 py-3">bKash TrxID</th>
                                             <th className="px-6 py-3">Amount</th>
                                             <th className="px-6 py-3">Submitted</th>
                                             <th className="px-6 py-3">Status</th>
-                                            <th className="px-6 py-3 text-right">Action</th>
+                                            <th className="px-6 py-3 text-right">Superadmin Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-line">
                                         {subscriptionPayments.map((p) => (
                                             <tr key={p.id} className="hover:bg-paper-dim/60 transition-colors">
+                                                {/* Agent Info */}
                                                 <td className="px-6 py-4">
-                                                    <p className="font-medium text-ink">{p.name}</p>
-                                                    <p className="text-xs text-text-soft">{p.email}</p>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-line bg-paper-dim">
+                                                            {p.images ? (
+                                                                <img
+                                                                    src={`/storage/${p.images}`}
+                                                                    alt={p.name}
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <div className="flex h-full w-full items-center justify-center bg-marigold/10 text-xs font-bold text-ink">
+                                                                    {p.name.charAt(0).toUpperCase()}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-ink">{p.name}</p>
+                                                            <p className="text-xs text-text-soft">{p.email}</p>
+                                                            {p.registeredAt && (
+                                                                <p className="text-[11px] text-text-soft mt-0.5">
+                                                                    Registered: {new Date(p.registeredAt).toLocaleDateString()}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-text-soft">{p.mobile || '—'}</td>
-                                                <td className="px-6 py-4 font-mono text-ink">{p.trxId || '—'}</td>
-                                                <td className="px-6 py-4 font-semibold text-ink"><FormatPrice price={p.amount} /></td>
+
+                                                {/* KYC / User Info */}
+                                                <td className="px-6 py-4 text-xs text-ink/80 space-y-1">
+                                                    <div className="flex items-center gap-1.5 text-text-soft">
+                                                        <FaPhoneAlt className="h-3 w-3 shrink-0 text-marigold" />
+                                                        <span className="font-mono text-ink font-semibold">{p.mobile || '—'}</span>
+                                                    </div>
+                                                    {p.nationalId && (
+                                                        <div className="flex items-center gap-1.5 text-text-soft">
+                                                            <FaIdCard className="h-3 w-3 shrink-0 text-blue-500" />
+                                                            <span className="font-mono text-text-soft">NID: <strong className="text-ink">{p.nationalId}</strong></span>
+                                                        </div>
+                                                    )}
+                                                    {p.address && (
+                                                        <div className="flex items-center gap-1.5 text-text-soft max-w-[200px] truncate" title={p.address}>
+                                                            <FaMapMarkerAlt className="h-3 w-3 shrink-0 text-red-500" />
+                                                            <span className="truncate">{p.address}</span>
+                                                        </div>
+                                                    )}
+                                                </td>
+
+                                                {/* bKash Transaction ID */}
+                                                <td className="px-6 py-4">
+                                                    {p.trxId ? (
+                                                        <div className="inline-flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-mono font-bold text-amber-950 shadow-sm">
+                                                            <span>{p.trxId}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => copyTrxId(p.trxId!)}
+                                                                title="Copy TrxID"
+                                                                className="text-amber-700 hover:text-amber-900 transition-colors"
+                                                            >
+                                                                {copiedTrxId === p.trxId ? (
+                                                                    <FaCheck size={11} className="text-green-600" />
+                                                                ) : (
+                                                                    <FaCopy size={11} />
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="rounded bg-paper-dim px-2 py-1 text-xs italic text-text-soft">
+                                                            Awaiting TrxID
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                {/* Amount */}
+                                                <td className="px-6 py-4">
+                                                    <p className="font-semibold text-ink"><FormatPrice price={p.amount} /></p>
+                                                    <span className="text-[10px] text-text-soft font-mono">6 months</span>
+                                                </td>
+
+                                                {/* Submitted date */}
                                                 <td className="px-6 py-4 text-xs text-text-soft">
-                                                    {p.submittedAt ? new Date(p.submittedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—'}
+                                                    {p.submittedAt ? (
+                                                        new Date(p.submittedAt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+                                                    ) : (
+                                                        '—'
+                                                    )}
                                                 </td>
+
+                                                {/* Status badge */}
                                                 <td className="px-6 py-4">
-                                                    <span className={`text-[10px] font-mono uppercase tracking-wide px-2.5 py-1 rounded-full ${paymentStatusBadge(p.status)}`}>
+                                                    <span className={`text-[10px] font-mono uppercase tracking-wide px-2.5 py-1 rounded-full font-semibold ${paymentStatusBadge(p.status)}`}>
                                                         {p.status}
                                                     </span>
                                                 </td>
+
+                                                {/* Actions */}
                                                 <td className="px-6 py-4">
                                                     {p.status === 'pending' ? (
                                                         <div className="flex items-center justify-end gap-2">
                                                             <button
                                                                 type="button"
                                                                 onClick={() => approvePayment(p.id)}
-                                                                className="rounded-sm bg-green-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-green-700"
+                                                                className="inline-flex items-center gap-1.5 rounded-md bg-green-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-green-700 hover:shadow"
                                                             >
-                                                                Approve
+                                                                <FaCheck className="h-3 w-3" /> Activate Pro
                                                             </button>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => rejectPayment(p.id)}
-                                                                className="rounded-sm border border-line px-3 py-1.5 text-xs font-bold text-ink transition-colors hover:bg-red-50 hover:text-red-700"
+                                                                className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-bold text-red-700 transition-colors hover:bg-red-100"
                                                             >
                                                                 Reject
                                                             </button>
                                                         </div>
+                                                    ) : p.status === 'approved' ? (
+                                                        <div className="flex flex-col items-end gap-1">
+                                                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-700">
+                                                                <FaCrown className="h-3 w-3 text-marigold" /> Pro Active
+                                                            </span>
+                                                            {p.subscriptionEndsAt && (
+                                                                <span className="text-[11px] text-text-soft">
+                                                                    Until {new Date(p.subscriptionEndsAt).toLocaleDateString()}
+                                                                </span>
+                                                            )}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => approvePayment(p.id)}
+                                                                className="mt-1 text-[11px] font-bold text-ink underline hover:text-marigold"
+                                                            >
+                                                                Extend (+6 Mo)
+                                                            </button>
+                                                        </div>
                                                     ) : (
-                                                        <p className="text-right text-xs text-text-soft">
-                                                            {p.status === 'approved' && p.subscriptionEndsAt
-                                                                ? `Pro until ${new Date(p.subscriptionEndsAt).toLocaleDateString()}`
-                                                                : 'Reviewed'}
-                                                        </p>
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <span className="text-xs text-red-600 font-semibold">Rejected</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => approvePayment(p.id)}
+                                                                className="rounded-md bg-green-600 px-2.5 py-1 text-xs font-bold text-white hover:bg-green-700"
+                                                            >
+                                                                Activate
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </td>
                                             </tr>
@@ -206,7 +339,7 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                                 </table>
                             ) : (
                                 <p className="px-6 py-10 text-center text-sm text-text-soft">
-                                    No HaatPoint Pro payments submitted yet.
+                                    No HaatPoint Pro payment requests yet.
                                 </p>
                             )}
                         </div>

@@ -99,9 +99,9 @@ class AgentAuthController extends StaffAuthController
      */
     protected function registrationRedirect(Request $request, $user): RedirectResponse
     {
-        if ($user instanceof Agent && $user->hasPendingSubscriptionPayment()) {
+        if ($user instanceof Agent && $user->plan === 'pro') {
             return redirect()->route('dashboard.subscription.payment')
-                ->with('success', 'Account created! Complete your bKash payment to activate HaatPoint Pro.');
+                ->with('success', 'Account registered for HaatPoint Pro! Send money to bKash 01319052507 and submit your transaction ID. If your transaction ID is correct, then your account will be activated.');
         }
 
         return parent::registrationRedirect($request, $user);

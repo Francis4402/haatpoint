@@ -114,7 +114,11 @@ export default function StaffRegister({
     post(route(`${type}.register`), {
       forceFormData: true,
       onSuccess: () => {
-        toast.success('Registration Successful! Welcome aboard!');
+        if (type === 'agent' && data.plan === 'pro') {
+          toast.success('Registration submitted! If your transaction ID is correct, then your account will be activated.');
+        } else {
+          toast.success('Registration Successful! Welcome aboard!');
+        }
       },
       onError: () => {
         toast.error('Registration Failed. Please try again.');
@@ -414,7 +418,7 @@ export default function StaffRegister({
                   </div>
                   <p className="mt-1.5 text-xs text-ink/50">
                     {data.plan === 'pro'
-                      ? 'Next step: pay ৳500 by bKash and submit the TrxID. Pro activates once verified.'
+                      ? 'Next step: Send ৳500 to bKash 01319052507 and submit the TrxID. If your transaction ID is correct, then your account will be activated.'
                       : 'Free gives you a full year. Upgrade to Pro any time from your dashboard.'}
                   </p>
                   {errors.plan && (

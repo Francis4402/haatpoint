@@ -28,6 +28,15 @@ class Agent extends Authenticatable
         return $this->attributes['role'] ?? 'agent';
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function ($agent) {
+            if (($agent->plan ?? 'free') === 'free' && empty($agent->subscription_ends_at)) {
+                $agent->subscription_ends_at = now()->addYear();
+            }
+        });
+    }
+
     /**
      * The KYC fields a vendor must supply before their store can be used.
      *

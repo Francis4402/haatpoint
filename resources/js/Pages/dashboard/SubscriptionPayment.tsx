@@ -60,7 +60,8 @@ export default function SubscriptionPayment({
       })
     : null;
 
-  const isPending = payment.status === 'pending';
+  const hasTrxId = Boolean(payment.trxId && payment.trxId.trim() !== '');
+  const isPending = payment.status === 'pending' && hasTrxId;
   const isRejected = payment.status === 'rejected';
 
   return (
@@ -88,6 +89,28 @@ export default function SubscriptionPayment({
         </header>
 
         <main className="relative z-10 mx-auto max-w-[1120px] px-6 pb-24 pt-8 sm:px-8">
+          {/* Important message for agent */}
+          <div className="mb-8 rounded-2xl border border-marigold/40 bg-marigold/10 p-5 backdrop-blur-sm">
+            <div className="flex items-start gap-3.5">
+              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marigold/20 text-marigold">
+                <FaCrown className="h-3.5 w-3.5" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-display text-base font-extrabold uppercase tracking-wide text-paper">
+                  HaatPoint Pro Activation Instructions
+                </h3>
+                <p className="mt-1 text-sm leading-relaxed text-[#E6E4DD]">
+                  Send <strong className="text-marigold">৳{payment.amount}</strong> to bKash number{' '}
+                  <strong className="text-paper font-mono underline">{payment.bkashNumber}</strong> (Send Money), then post your bKash Transaction ID below.
+                </p>
+                <div className="mt-2.5 inline-flex items-center gap-2 rounded-lg bg-marigold/20 px-3 py-1.5 text-xs font-bold text-marigold">
+                  <FaCheck className="h-3 w-3" />
+                  If your transaction ID is correct, then your account will be activated.
+                </div>
+              </div>
+            </div>
+          </div>
+
           {(flash?.success || flash?.error) && (
             <div
               className={`mb-8 flex items-center gap-3 rounded-2xl border p-4 text-sm ${
@@ -111,21 +134,21 @@ export default function SubscriptionPayment({
                   <FaCrown className="h-3 w-3 text-marigold" />
                 )}
                 <span className="font-mono text-[10px] font-bold uppercase tracking-[0.14em]">
-                  {isPending ? 'Awaiting verification' : 'HaatPoint Pro'}
+                  {isPending ? 'Awaiting superadmin verification' : 'HaatPoint Pro Checkout'}
                 </span>
               </span>
 
               <h1 className="mt-6 text-[34px] leading-[1.02] sm:text-[50px]">
                 Pay ৳{payment.amount} by bKash.
                 <br />
-                <span className="text-marigold">Then drop the TrxID.</span>
+                <span className="text-marigold">Then post your TrxID.</span>
               </h1>
 
               <p className="mt-5 max-w-[520px] text-[15px] leading-relaxed text-[#B9B7B0] sm:text-[16.5px]">
                 Hi{user?.name ? ` ${user.name}` : ''} — send{' '}
                 <strong className="text-paper">৳{payment.amount}</strong> to our bKash
-                number below, then paste the transaction ID so our team can verify it and
-                switch on Pro for {payment.months} months.
+                number <strong className="text-marigold font-mono">{payment.bkashNumber}</strong>, then post the transaction ID below so our superadmin can verify it and
+                activate HaatPoint Pro for your account.
               </p>
 
               {isPending && (
@@ -135,9 +158,11 @@ export default function SubscriptionPayment({
                     <p className="font-semibold text-paper">Payment under review</p>
                     <p className="mt-1">
                       We received TrxID{' '}
-                      <span className="font-mono text-marigold">{payment.trxId}</span>
-                      {submittedAt ? ` on ${submittedAt}` : ''}. A superadmin will approve
-                      it shortly and Pro will activate automatically.
+                      <span className="font-mono font-bold text-marigold">{payment.trxId}</span>
+                      {submittedAt ? ` on ${submittedAt}` : ''}.
+                    </p>
+                    <p className="mt-2 font-medium text-marigold">
+                      If your transaction ID is correct, then your account will be activated shortly.
                     </p>
                   </div>
                 </div>
@@ -147,10 +172,9 @@ export default function SubscriptionPayment({
                 <div className="mt-8 flex max-w-[520px] items-start gap-3 rounded-2xl border border-red-400/40 bg-red-500/10 p-4">
                   <FaExclamationTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-300" />
                   <div className="text-sm leading-relaxed text-[#E6E4DD]">
-                    <p className="font-semibold text-paper">Last payment was rejected</p>
+                    <p className="font-semibold text-paper">Last payment could not be verified</p>
                     <p className="mt-1">
-                      The TrxID we received could not be verified. Please pay again and
-                      submit a correct transaction ID.
+                      The TrxID was rejected by superadmin. Please check your bKash message and submit the correct transaction ID below. If your transaction ID is correct, then your account will be activated.
                     </p>
                   </div>
                 </div>
@@ -159,9 +183,10 @@ export default function SubscriptionPayment({
               <ol className="mt-9 space-y-4 text-sm text-[#B9B7B0]">
                 {[
                   <>Open your bKash app and choose <strong className="text-paper">Send Money</strong>.</>,
-                  <>Send <strong className="text-paper">৳{payment.amount}</strong> to <strong className="text-paper">{payment.bkashNumber}</strong>.</>,
-                  <>Copy the <strong className="text-paper">TrxID</strong> from your bKash receipt.</>,
-                  <>Paste it in the form and submit — done.</>,
+                  <>Send <strong className="text-paper">৳{payment.amount}</strong> to <strong className="text-paper font-mono">{payment.bkashNumber}</strong>.</>,
+                  <>Copy the <strong className="text-paper">TrxID</strong> from your bKash SMS or receipt.</>,
+                  <>Paste the transaction ID in the input below and click <strong className="text-paper">Post TrxID</strong>.</>,
+                  <>Superadmin verifies the transaction ID and activates your Pro account.</>,
                 ].map((step, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-marigold/20 font-mono text-[11px] font-bold text-marigold">
@@ -240,7 +265,7 @@ export default function SubscriptionPayment({
                     disabled={processing}
                     className="group inline-flex items-center gap-2 rounded-sm border border-ink bg-marigold px-5 py-3 text-sm font-bold text-white shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {isPending ? 'Update' : 'Submit'}
+                    {isPending ? 'Update TrxID' : 'Post TrxID'}
                     <FaArrowRight
                       size={13}
                       className="transition-transform duration-150 group-hover:translate-x-1"
@@ -251,10 +276,13 @@ export default function SubscriptionPayment({
                   <p className="mt-2 text-xs text-red-300">{errors.trx_id}</p>
                 )}
 
-                <p className="mt-3 text-[11px] leading-relaxed text-[#8f8d87]">
+                <p className="mt-3 text-[12px] font-medium leading-relaxed text-marigold">
+                  ★ If your transaction ID is correct, then your account will be activated.
+                </p>
+                <p className="mt-1 text-[11px] leading-relaxed text-[#8f8d87]">
                   {isPending
-                    ? 'Entered the wrong TrxID? Send the correct one and submit again.'
-                    : 'Paste the exact TrxID from your bKash message. It usually looks like a mix of letters and numbers.'}
+                    ? 'Entered the wrong TrxID? Enter the correct one and click Update.'
+                    : 'Paste the exact TrxID from your bKash SMS or receipt (e.g., 9F7A2C1B4D).'}
                 </p>
               </form>
             </div>

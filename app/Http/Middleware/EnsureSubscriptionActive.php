@@ -32,9 +32,9 @@ class EnsureSubscriptionActive
             }
 
             if ($user->isSubscriptionExpired()) {
-                // A Pro signup whose bKash payment is still under review goes
-                // straight to the payment page; everyone else sees the paywall.
-                if ($user->hasPendingSubscriptionPayment()) {
+                // A Pro signup whose bKash payment is pending or not yet approved
+                // goes straight to the payment page; everyone else sees the paywall.
+                if ($user->plan === 'pro' || $user->hasPendingSubscriptionPayment()) {
                     return redirect()->route('dashboard.subscription.payment');
                 }
 
