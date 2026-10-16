@@ -170,9 +170,16 @@ const RecentOrders = ({ orders, user }: RecentOrdersProps) => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getPaymentMethodColor(order.payment_method)}`}>
-                                        {order.payment_method?.replace(/_/g, ' ') || 'N/A'}
-                                    </span>
+                                    <div className="flex flex-col gap-1 items-start">
+                                        <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getPaymentMethodColor(order.payment_method)}`}>
+                                            {order.payment_method?.replace(/_/g, ' ') || 'N/A'}
+                                        </span>
+                                        {order.transaction_id && (
+                                            <span className="text-[10px] font-mono font-semibold text-pink-700 bg-pink-50 px-2 py-0.5 rounded border border-pink-200">
+                                                Trx: {order.transaction_id}
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         ))

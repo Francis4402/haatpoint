@@ -22,7 +22,8 @@ import {
     FaCreditCard,
     FaSearch,
     FaCheck,
-    FaTimes
+    FaTimes,
+    FaCopy,
 } from 'react-icons/fa';
 import { HiOutlineMail } from 'react-icons/hi';
 import { BiPhone } from 'react-icons/bi';
@@ -282,6 +283,8 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
     const [searchTerm, setSearchTerm] = useState(filters.search);
     const [statusFilter, setStatusFilter] = useState(filters.status);
     const [paymentFilter, setPaymentFilter] = useState(filters.payment);
+    const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+    const [copiedTrxId, setCopiedTrxId] = useState<string | null>(null);
 
     const rulesFor = (orderId: string) => orderRules?.[orderId];
 
@@ -342,6 +345,24 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                 preserveScroll: true,
             }
         );
+    };
+
+    const handleConfirmOrder = (orderId: string) => {
+        setConfirmingOrderId(orderId);
+        router.patch(
+            route('admin.orders.confirm', orderId),
+            {},
+            {
+                onFinish: () => setConfirmingOrderId(null),
+                preserveScroll: true,
+            }
+        );
+    };
+
+    const handleCopyTrx = (trx: string) => {
+        navigator.clipboard.writeText(trx);
+        setCopiedTrxId(trx);
+        setTimeout(() => setCopiedTrxId(null), 2000);
     };
 
     const isUpdating = (orderId: string, field: StatusField) =>
@@ -622,13 +643,37 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                                         locked={rulesFor(order.id)?.orderStatusLocked}
                                         lockReason={rulesFor(order.id)?.reason}
                                     />
+                                    {order.transaction_id && (
+                                        <span
+                                            title={`bKash Transaction ID: ${order.transaction_id}`}
+                                            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-mono font-bold bg-pink-50 text-pink-700 border border-pink-200"
+                                        >
+                                            <FaCreditCard className="h-2.5 w-2.5 text-pink-600" />
+                                            TrxID: {order.transaction_id}
+                                        </span>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-line/70">
                                     <span className="text-lg font-bold text-ink">
                                         <FormatPrice price={order.total} />
                                     </span>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2">
+                                        {isSuperAdminRole && order.order_status === 'pending' && (order.payment_method === 'bikash' || order.payment_method === 'bkash') && (
+                                            <button
+                                                type="button"
+                                                disabled={confirmingOrderId === order.id}
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    handleConfirmOrder(order.id);
+                                                }}
+                                                title="Confirm bKash order"
+                                                className="inline-flex items-center gap-1 rounded-lg bg-pink-600 hover:bg-pink-700 text-white px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+                                            >
+                                                <FaCheck className="h-3 w-3" />
+                                                {confirmingOrderId === order.id ? 'Confirming...' : 'Confirm'}
+                                            </button>
+                                        )}
                                         <Link
                                             href={route('orders.confirmation', order.id)}
                                             onClick={e => e.stopPropagation()}
@@ -809,6 +854,59 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                                                 </div>
 
                                                 <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+                                                    {/* bKash Transaction Verification Box */}
+                                                    {(selectedOrder.transaction_id || selectedOrder.payment_method === 'bikash' || (selectedOrder.payment_method as string) === 'bkash') && (
+                                                        <div className="rounded-2xl border border-pink-200 bg-pink-50/40 p-4 space-y-3">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-xs font-semibold uppercase tracking-wider text-pink-700 flex items-center gap-1.5">
+                                                                    <FaCreditCard className="h-3.5 w-3.5 text-pink-600" />
+                                                                    bKash Payment Verification
+                                                                </span>
+                                                                <span className="text-xs bg-pink-100 text-pink-700 px-2.5 py-0.5 rounded-full font-medium">
+                                                                    01319052507 (Send Money)
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-pink-200 shadow-sm">
+                                                                <div>
+                                                                    <div className="text-[10px] font-mono uppercase text-text-soft">Submitted Transaction ID</div>
+                                                                    <div className="text-base font-mono font-bold text-ink tracking-wider">
+                                                                        {selectedOrder.transaction_id || 'Not provided'}
+                                                                    </div>
+                                                                </div>
+                                                                {selectedOrder.transaction_id && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleCopyTrx(selectedOrder.transaction_id!)}
+                                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-pink-200 bg-pink-50 text-pink-700 hover:bg-pink-100 text-xs font-medium transition-colors cursor-pointer"
+                                                                    >
+                                                                        {copiedTrxId === selectedOrder.transaction_id ? (
+                                                                            <>
+                                                                                <FaCheck className="h-3 w-3" /> Copied
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <FaCopy className="h-3 w-3" /> Copy TrxID
+                                                                            </>
+                                                                        )}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+
+                                                            {selectedOrder.order_status === 'pending' && isSuperAdminRole && (
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={confirmingOrderId === selectedOrder.id}
+                                                                    onClick={() => handleConfirmOrder(selectedOrder.id)}
+                                                                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                                                                >
+                                                                    <FaCheck className="h-4 w-4" />
+                                                                    {confirmingOrderId === selectedOrder.id ? 'Confirming Order...' : 'Verify bKash TrxID & Confirm Order'}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
+
                                                     {/* Status controls — the only place statuses are edited. */}
                                                     <div className="rounded-2xl border border-line bg-white p-4 space-y-4">
                                                         {statusControls(selectedOrder)}
@@ -829,6 +927,13 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                                                                         {humanize(selectedOrder.payment_method)}
                                                                     </span>
                                                                 </DetailRow>
+                                                                {selectedOrder.transaction_id && (
+                                                                    <DetailRow label="TrxID">
+                                                                        <span className="font-mono font-bold text-pink-700 bg-pink-50 px-2 py-0.5 rounded border border-pink-200">
+                                                                            {selectedOrder.transaction_id}
+                                                                        </span>
+                                                                    </DetailRow>
+                                                                )}
                                                                 <DetailRow label="Quantity">{selectedOrder.item_quantity}</DetailRow>
                                                                 <DetailRow label="Weight">
                                                                     <span className="inline-flex items-center gap-1.5">

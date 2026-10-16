@@ -166,6 +166,7 @@ export interface Orders {
     tracking_number: string;
     shipping_method: string;
     payment_method: string;
+    transaction_id?: string | null;
     payment_status: string;
     order_status: string;
     notes: string;

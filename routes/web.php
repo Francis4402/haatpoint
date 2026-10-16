@@ -282,6 +282,9 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked', 'subscription']
     Route::patch('/orders/{order}', [OrdersController::class, 'update'])
         ->name('admin.orders.update');
 
+    Route::patch('/dashboard/orders/{order}/confirm', [OrdersController::class, 'confirmOrder'])
+        ->name('admin.orders.confirm');
+
     Route::get('/orders/{order}/confirmation', [OrdersController::class, 'confirmation'])->name('orders.confirmation');
 
     Route::get('/orders/{order}', [OrdersController::class, 'show'])->name('orders.show');

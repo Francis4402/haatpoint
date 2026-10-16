@@ -201,7 +201,8 @@ class OrdersController extends Controller
                 'store_name' => 'required|string',
                 'order_number' => 'required|string|unique:orders',
                 'merchant_order_id' => 'required|string',
-                'payment_method' => 'required|in:cash_on_delivery,bikash',
+                'payment_method' => 'required|in:cash_on_delivery,bikash,bkash',
+                'transaction_id' => 'required_if:payment_method,bikash,bkash|nullable|string|min:6|max:60',
                 'shipping_method' => 'required|in:pathao',
                 'delivery_type' => 'required|integer|in:12,48',
                 'item_type' => 'required|integer|in:1,2',
@@ -263,7 +264,7 @@ class OrdersController extends Controller
                 // Order Details
                 'item_quantity' => $validated['item_quantity'],
                 'item_weight' => $validated['item_weight'],
-                'amount_to_collect' => $validated['amount_to_collect'],
+                'amount_to_collect' => in_array($validated['payment_method'], ['bikash', 'bkash'], true) ? 0 : $validated['amount_to_collect'],
                 'item_description' => $validated['item_description'],
                 'store_name' => $validated['store_name'],
 
@@ -280,6 +281,7 @@ class OrdersController extends Controller
 
                 // Status
                 'payment_method' => $validated['payment_method'],
+                'transaction_id' => in_array($validated['payment_method'], ['bikash', 'bkash'], true) ? ($validated['transaction_id'] ?? null) : null,
                 'payment_status' => 'pending',
                 'order_status' => 'pending',
 
@@ -328,7 +330,7 @@ class OrdersController extends Controller
                         'special_instruction' => $validated['special_instruction'] ?? '',
                         'item_quantity' => $validated['item_quantity'],
                         'item_weight' => $validated['item_weight'],
-                        'amount_to_collect' => $validated['amount_to_collect'],
+                        'amount_to_collect' => in_array($validated['payment_method'], ['bikash', 'bkash'], true) ? 0 : $validated['amount_to_collect'],
                         'item_description' => $validated['item_description'],
                     ]);
 
@@ -350,6 +352,8 @@ class OrdersController extends Controller
             return redirect()->route('orders.confirmation', $order->id)
                 ->with('success', 'Order placed successfully!');
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to place order: ' . $e->getMessage()])->withInput();
         }
@@ -530,5 +534,24 @@ class OrdersController extends Controller
 
             return redirect()->back()->with('error', 'Failed to cancel order.');
         }
+    }
+
+    /**
+     * Confirm an order (especially after verifying bKash transaction).
+     */
+    public function confirmOrder(Orders $order)
+    {
+        $user = Auth::user();
+        if (!in_array($user->role, ['superadmin', 'admin'], true)) {
+            abort(403, 'You do not have permission to confirm this order.');
+        }
+
+        $order->order_status = 'confirmed';
+        if (in_array($order->payment_method, ['bikash', 'bkash'], true)) {
+            $order->payment_status = 'paid';
+        }
+        $order->save();
+
+        return redirect()->back()->with('success', "Order #{$order->order_number} confirmed successfully.");
     }
 }

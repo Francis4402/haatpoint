@@ -87,6 +87,7 @@ class Orders extends Model
 
         // Status
         'payment_method',
+        'transaction_id',
         'payment_status',
         'order_status',
 

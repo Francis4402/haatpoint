@@ -127,12 +127,24 @@ export default function Register() {
               HaatPoint
             </h1>
           </Link>
-          <p className="text-ink/60 mt-2 font-body">Create your account</p>
+          <p className="text-ink/60 mt-2 font-body">Create your Customer account</p>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-lg border border-ink/10 p-8">
           <FlashBanner />
+
+          {/* Agent Switcher Banner */}
+          <div className="mb-6 p-3 bg-blue-50/70 border border-blue-200 rounded-xl flex items-center justify-between text-xs text-blue-900">
+            <span className="font-medium">Want to open a store and sell products?</span>
+            <Link
+              href={route('agent.register')}
+              className="font-bold text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1 shrink-0 ml-2"
+            >
+              <span>Register as Agent</span>
+              <FaArrowRight className="h-2.5 w-2.5" />
+            </Link>
+          </div>
 
           {/* Profile Image Upload */}
           <div className="flex flex-col items-center mb-6">

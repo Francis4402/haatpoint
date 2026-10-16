@@ -120,8 +120,13 @@ export default function StaffRegister({
           toast.success('Registration Successful! Welcome aboard!');
         }
       },
-      onError: () => {
-        toast.error('Registration Failed. Please try again.');
+      onError: (errs) => {
+        if (errs && typeof errs === 'object') {
+          const firstError = Object.values(errs)[0];
+          toast.error(typeof firstError === 'string' ? firstError : 'Please fix the errors below.');
+        } else {
+          toast.error('Registration Failed. Please try again.');
+        }
       }
     });
   };
@@ -163,6 +168,20 @@ export default function StaffRegister({
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-lg border border-ink/10 p-8">
           <FlashBanner />
+
+          {/* Customer Switcher Banner */}
+          {type === 'agent' && (
+            <div className="mb-6 p-3 bg-marigold/10 border border-marigold/20 rounded-xl flex items-center justify-between text-xs text-ink">
+              <span className="font-medium">Just looking to buy products?</span>
+              <Link
+                href={route('register')}
+                className="font-bold text-marigold-dark hover:underline flex items-center gap-1 shrink-0 ml-2"
+              >
+                <span>Register as Customer</span>
+                <FaArrowRight className="h-2.5 w-2.5" />
+              </Link>
+            </div>
+          )}
 
           {/* Profile Image Upload */}
           <div className="flex flex-col items-center mb-6">
@@ -228,6 +247,21 @@ export default function StaffRegister({
             )}
           </div>
 
+          {/* Error Summary Banner */}
+          {Object.keys(errors).length > 0 && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+              <div className="flex items-center gap-2 font-semibold mb-2">
+                <FaExclamationCircle className="h-4 w-4 shrink-0 text-red-500" />
+                <span>Please fix the following validation errors:</span>
+              </div>
+              <ul className="list-disc list-inside text-xs space-y-1">
+                {Object.entries(errors).map(([field, msg]) => (
+                  <li key={field}>{msg}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <form onSubmit={submit} className="space-y-4">
             {/* Name */}
             <div>
@@ -245,7 +279,11 @@ export default function StaffRegister({
                   autoComplete="name"
                   autoFocus
                   onChange={(e) => setData('name', e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-ink/20 rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all font-body"
+                  className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
+                    errors.name
+                      ? 'border-red-500 focus:ring-red-200'
+                      : 'border-ink/20 focus:ring-marigold focus:border-transparent'
+                  }`}
                   placeholder="John Doe"
                   required
                 />
@@ -274,7 +312,11 @@ export default function StaffRegister({
                   value={data.email}
                   autoComplete="username"
                   onChange={(e) => setData('email', e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-ink/20 rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all font-body"
+                  className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
+                    errors.email
+                      ? 'border-red-500 focus:ring-red-200'
+                      : 'border-ink/20 focus:ring-marigold focus:border-transparent'
+                  }`}
                   placeholder="you@example.com"
                   required
                 />
@@ -305,7 +347,11 @@ export default function StaffRegister({
                       value={data.address}
                       autoComplete="street-address"
                       onChange={(e) => setData('address', e.target.value)}
-                      className="block w-full pl-10 pr-3 py-2.5 border border-ink/20 rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all font-body"
+                      className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
+                        errors.address
+                          ? 'border-red-500 focus:ring-red-200'
+                          : 'border-ink/20 focus:ring-marigold focus:border-transparent'
+                      }`}
                       placeholder="Shop / office address"
                       required
                     />
@@ -334,7 +380,11 @@ export default function StaffRegister({
                       value={data.mobile}
                       autoComplete="tel"
                       onChange={(e) => setData('mobile', e.target.value)}
-                      className="block w-full pl-10 pr-3 py-2.5 border border-ink/20 rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all font-body"
+                      className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
+                        errors.mobile
+                          ? 'border-red-500 focus:ring-red-200'
+                          : 'border-ink/20 focus:ring-marigold focus:border-transparent'
+                      }`}
                       placeholder="01XXXXXXXXX"
                       required
                     />
@@ -361,7 +411,11 @@ export default function StaffRegister({
                       name="national_id"
                       value={data.national_id}
                       onChange={(e) => setData('national_id', e.target.value)}
-                      className="block w-full pl-10 pr-3 py-2.5 border border-ink/20 rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all font-body"
+                      className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
+                        errors.national_id
+                          ? 'border-red-500 focus:ring-red-200'
+                          : 'border-ink/20 focus:ring-marigold focus:border-transparent'
+                      }`}
                       placeholder="10 or 17 digit National ID"
                       required
                     />
@@ -447,7 +501,11 @@ export default function StaffRegister({
                   value={data.password}
                   autoComplete="new-password"
                   onChange={(e) => setData('password', e.target.value)}
-                  className="block w-full pl-10 pr-10 py-2.5 border border-ink/20 rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all font-body"
+                  className={`block w-full pl-10 pr-10 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
+                    errors.password
+                      ? 'border-red-500 focus:ring-red-200'
+                      : 'border-ink/20 focus:ring-marigold focus:border-transparent'
+                  }`}
                   placeholder="Create a strong password"
                   required
                 />
@@ -509,7 +567,11 @@ export default function StaffRegister({
                   value={data.password_confirmation}
                   autoComplete="new-password"
                   onChange={(e) => setData('password_confirmation', e.target.value)}
-                  className="block w-full pl-10 pr-10 py-2.5 border border-ink/20 rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all font-body"
+                  className={`block w-full pl-10 pr-10 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
+                    errors.password_confirmation
+                      ? 'border-red-500 focus:ring-red-200'
+                      : 'border-ink/20 focus:ring-marigold focus:border-transparent'
+                  }`}
                   placeholder="Confirm your password"
                   required
                 />

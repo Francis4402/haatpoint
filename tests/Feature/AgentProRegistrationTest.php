@@ -156,4 +156,116 @@ class AgentProRegistrationTest extends TestCase
         $this->assertEquals('rejected', $agent->subscription_payment_status);
         $this->assertFalse($agent->isPro());
     }
+
+    public function test_agent_registration_fails_when_email_already_exists(): void
+    {
+        Agent::create([
+            'name' => 'Existing Agent',
+            'email' => 'duplicate@gmail.com',
+            'password' => 'password',
+            'national_id' => '1111111111',
+            'mobile' => '01711111111',
+            'address' => 'Dhaka',
+        ]);
+
+        $response = $this->from('/agent/register')->post('/agent/register', [
+            'name' => 'New Agent',
+            'email' => 'duplicate@gmail.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'national_id' => '2222222222',
+            'mobile' => '01722222222',
+            'address' => 'Sylhet',
+            'plan' => 'free',
+        ]);
+
+        $response->assertRedirect('/agent/register');
+        $response->assertSessionHasErrors([
+            'email' => 'This email address is already registered. Please use another email or sign in.',
+        ]);
+    }
+
+    public function test_agent_registration_fails_when_name_already_exists(): void
+    {
+        Agent::create([
+            'name' => 'Unique Agent Name',
+            'email' => 'agent1@gmail.com',
+            'password' => 'password',
+            'national_id' => '1111111111',
+            'mobile' => '01711111111',
+            'address' => 'Dhaka',
+        ]);
+
+        $response = $this->from('/agent/register')->post('/agent/register', [
+            'name' => 'Unique Agent Name',
+            'email' => 'agent2@gmail.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'national_id' => '2222222222',
+            'mobile' => '01722222222',
+            'address' => 'Sylhet',
+            'plan' => 'free',
+        ]);
+
+        $response->assertRedirect('/agent/register');
+        $response->assertSessionHasErrors([
+            'name' => 'This user name is already registered. Please choose another name.',
+        ]);
+    }
+
+    public function test_agent_registration_fails_when_mobile_already_exists(): void
+    {
+        Agent::create([
+            'name' => 'Agent Mobile One',
+            'email' => 'mobile1@gmail.com',
+            'password' => 'password',
+            'national_id' => '1111111111',
+            'mobile' => '01712345678',
+            'address' => 'Dhaka',
+        ]);
+
+        $response = $this->from('/agent/register')->post('/agent/register', [
+            'name' => 'Agent Mobile Two',
+            'email' => 'mobile2@gmail.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'national_id' => '2222222222',
+            'mobile' => '01712345678',
+            'address' => 'Sylhet',
+            'plan' => 'free',
+        ]);
+
+        $response->assertRedirect('/agent/register');
+        $response->assertSessionHasErrors([
+            'mobile' => 'This mobile number is already registered with another agent account.',
+        ]);
+    }
+
+    public function test_agent_registration_fails_when_national_id_already_exists(): void
+    {
+        Agent::create([
+            'name' => 'Agent NID One',
+            'email' => 'nid1@gmail.com',
+            'password' => 'password',
+            'national_id' => '1234567890',
+            'mobile' => '01711112222',
+            'address' => 'Dhaka',
+        ]);
+
+        $response = $this->from('/agent/register')->post('/agent/register', [
+            'name' => 'Agent NID Two',
+            'email' => 'nid2@gmail.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'national_id' => '1234567890',
+            'mobile' => '01733334444',
+            'address' => 'Sylhet',
+            'plan' => 'free',
+        ]);
+
+        $response->assertRedirect('/agent/register');
+        $response->assertSessionHasErrors([
+            'national_id' => 'This National ID is already registered with another agent account.',
+        ]);
+    }
 }

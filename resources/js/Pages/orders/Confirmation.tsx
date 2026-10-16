@@ -132,7 +132,9 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
             <div className="excel-field"><span className="excel-label">Store:</span><span className="excel-value">{order.store_name}</span></div>
             <div className="excel-field"><span className="excel-label">Store Phone:</span><span className="excel-value">{order.sender_phone}</span></div>
             <div className="excel-field"><span className="excel-label">Payment:</span><span className="excel-value">{order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 'bKash'}</span></div>
+            {order.transaction_id && <div className="excel-field"><span className="excel-label">TrxID:</span><span className="excel-value">{order.transaction_id}</span></div>}
             <div className="excel-field"><span className="excel-label">Pay Status:</span><span className="excel-value">{order.payment_status}</span></div>
+            <div className="excel-field"><span className="excel-label">Order Status:</span><span className="excel-value">{order.order_status}</span></div>
           </div>
 
           <div className="excel-section">
@@ -223,8 +225,10 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
                 Your order has been placed successfully.{' '}
                 {order.payment_method === 'cash_on_delivery' ? (
                   <>Pay <FormatPrice price={order.amount_to_collect} /> on delivery.</>
+                ) : order.order_status === 'confirmed' ? (
+                  <span className="text-green-600 font-semibold">bKash payment verified &amp; order confirmed by superadmin.</span>
                 ) : (
-                  'Payment being processed.'
+                  'bKash Transaction ID submitted. Awaiting superadmin verification and confirmation.'
                 )}
               </p>
 
@@ -318,19 +322,48 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
                     </div>
 
                     {/* Payment Method */}
-                    <div className="mt-4 pt-4 border-t border-line flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-paper-dim flex items-center justify-center mr-3 border border-line">
-                        {order.payment_method === 'cash_on_delivery'
-                          ? <FaMoneyBill className="h-5 w-5 text-marigold" />
-                          : <FaCreditCard className="h-5 w-5 text-blue-600" />}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-ink">
-                          {order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 'bKash'}
-                        </p>
-                        {order.payment_method === 'cash_on_delivery' && (
-                          <p className="text-xs text-text-soft">Pay when you receive your order</p>
-                        )}
+                    <div className="mt-4 pt-4 border-t border-line">
+                      <div className="flex items-start">
+                        <div className="w-10 h-10 rounded-full bg-paper-dim flex items-center justify-center mr-3 border border-line shrink-0">
+                          {order.payment_method === 'cash_on_delivery'
+                            ? <FaMoneyBill className="h-5 w-5 text-marigold" />
+                            : <FaCreditCard className="h-5 w-5 text-pink-600" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-ink">
+                            {order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 'bKash (Send Money)'}
+                          </p>
+                          {order.payment_method === 'cash_on_delivery' ? (
+                            <p className="text-xs text-text-soft">Pay when you receive your order</p>
+                          ) : (
+                            <div className="mt-2 space-y-1.5 text-xs">
+                              <p className="text-text-soft">
+                                Sent to bKash: <span className="font-mono font-bold text-pink-600">01319052507</span>
+                              </p>
+                              {order.transaction_id && (
+                                <p className="text-text-soft flex items-center gap-2">
+                                  <span>TrxID:</span>
+                                  <span className="font-mono font-bold text-ink bg-gray-100 px-2.5 py-0.5 rounded border border-line">
+                                    {order.transaction_id}
+                                  </span>
+                                </p>
+                              )}
+                              <div className="pt-1.5">
+                                {order.order_status === 'confirmed' ? (
+                                  <span className="inline-flex items-center text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
+                                    <FaCheckCircle className="mr-1.5 h-3.5 w-3.5 text-green-600" />
+                                    Order &amp; bKash Payment Confirmed by Superadmin
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                                    <FaClock className="mr-1.5 h-3.5 w-3.5 text-amber-600" />
+                                    Awaiting Superadmin verification and confirmation
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

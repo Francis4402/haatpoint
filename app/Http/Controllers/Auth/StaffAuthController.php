@@ -98,6 +98,14 @@ abstract class StaffAuthController extends Controller
     }
 
     /**
+     * Custom validation messages specific to this role's registration.
+     */
+    protected function registrationMessages(): array
+    {
+        return [];
+    }
+
+    /**
      * Extra attributes saved during registration specific to this role.
      */
     protected function registrationData(Request $request): array
@@ -163,7 +171,7 @@ abstract class StaffAuthController extends Controller
             // have no verification step, so this was the only chance to give
             // them a picture.
             'image' => $this->profileImageRules(),
-        ], $this->registrationRules()));
+        ], $this->registrationRules()), $this->registrationMessages());
 
         $data = array_merge([
             'name' => $request->name,

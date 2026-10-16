@@ -18,6 +18,8 @@ import {
   FaCreditCard,
   FaMoneyBillWave,
   FaStore,
+  FaCopy,
+  FaCheck,
 } from 'react-icons/fa';
 import AppLayout from '@/Layouts/AppLayout';
 import { useStore, OrderData } from '../state/cartStore';
@@ -62,14 +64,24 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [termsAccepted, setTermsAccepted] = useState(false);
 
+  const [copiedBkash, setCopiedBkash] = useState(false);
+
   const { data, setData, processing } = useForm({
     recipient_name: auth.user?.name || '',
     recipient_phone: '',
     recipient_email: auth.user?.email || '',
     recipient_address: '',
     notes: '',
-    payment_method: 'cash_on_delivery' as 'cash_on_delivery' | 'bikash'
+    payment_method: 'cash_on_delivery' as 'cash_on_delivery' | 'bikash',
+    transaction_id: '',
   });
+
+  const handleCopyBkash = () => {
+    navigator.clipboard.writeText('01319052507');
+    setCopiedBkash(true);
+    toast.success('bKash number 01319052507 copied to clipboard');
+    setTimeout(() => setCopiedBkash(false), 2000);
+  };
 
   const summary = getOrderSummary();
 
@@ -131,6 +143,14 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
     if (!pathaoCharges) errors.pathao_charges = 'Please calculate shipping charges';
     if (!termsAccepted) errors.terms = 'You must accept the terms and conditions';
 
+    if (data.payment_method === 'bikash') {
+      if (!data.transaction_id.trim()) {
+        errors.transaction_id = 'bKash Transaction ID (TrxID) is required';
+      } else if (data.transaction_id.trim().length < 6) {
+        errors.transaction_id = 'Transaction ID must be at least 6 characters';
+      }
+    }
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -183,6 +203,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
       recipient_address: data.recipient_address,
       notes: data.notes,
       payment_method: data.payment_method,
+      transaction_id: data.payment_method === 'bikash' ? data.transaction_id.trim() : undefined,
       pathao_city: selectedCity,
       pathao_city_name: getSelectedCityName(),
       pathao_zone: selectedZone,
@@ -515,27 +536,98 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                         </div>
                       </label>
 
-                      <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${
+                      <div className={`p-4 border rounded-xl transition-all ${
                         data.payment_method === 'bikash'
-                          ? 'border-pink-500 bg-pink-50'
+                          ? 'border-pink-500 bg-pink-50/50'
                           : 'border-line hover:border-marigold/50'
                       }`}>
-                        <input
-                          type="radio"
-                          name="payment_method"
-                          value="bikash"
-                          checked={data.payment_method === 'bikash'}
-                          onChange={() => setData('payment_method', 'bikash')}
-                          className="h-5 w-5 text-pink-600"
-                        />
-                        <div className="ml-4 flex-1">
-                          <div className="flex items-center">
-                            <FaCreditCard className="h-6 w-6 text-pink-600 mr-2" />
-                            <span className="font-medium text-ink">bKash</span>
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="radio"
+                            name="payment_method"
+                            value="bikash"
+                            checked={data.payment_method === 'bikash'}
+                            onChange={() => setData('payment_method', 'bikash')}
+                            className="h-5 w-5 text-pink-600 focus:ring-pink-500"
+                          />
+                          <div className="ml-4 flex-1">
+                            <div className="flex items-center">
+                              <FaCreditCard className="h-6 w-6 text-pink-600 mr-2" />
+                              <span className="font-medium text-ink">bKash (Send Money)</span>
+                            </div>
+                            <p className="text-sm text-text-soft mt-1">Pay via bKash Personal Number &amp; submit Transaction ID</p>
                           </div>
-                          <p className="text-sm text-text-soft mt-1">Pay via bKash mobile banking</p>
-                        </div>
-                      </label>
+                        </label>
+
+                        {data.payment_method === 'bikash' && (
+                          <div className="mt-4 pt-4 border-t border-pink-200 space-y-4">
+                            <div className="bg-white p-4 rounded-xl border border-pink-200 shadow-sm space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold uppercase tracking-wider text-pink-700">bKash Personal Number</span>
+                                <span className="text-xs bg-pink-100 text-pink-700 px-2.5 py-0.5 rounded-full font-medium">Send Money</span>
+                              </div>
+                              <div className="flex items-center justify-between gap-3 bg-pink-50 p-3 rounded-lg border border-pink-200">
+                                <span className="font-mono text-lg font-bold text-pink-700 tracking-wider">01319052507</span>
+                                <button
+                                  type="button"
+                                  onClick={handleCopyBkash}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-medium rounded-lg transition-colors cursor-pointer"
+                                >
+                                  {copiedBkash ? (
+                                    <>
+                                      <FaCheck className="h-3 w-3" /> Copied
+                                    </>
+                                  ) : (
+                                    <>
+                                      <FaCopy className="h-3 w-3" /> Copy
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                              <div className="text-xs text-text-soft space-y-1.5 pt-1">
+                                <p className="text-ink">
+                                  <strong>Amount to send:</strong>{' '}
+                                  <span className="text-pink-700 font-bold text-sm">
+                                    <FormatPrice price={summary.total} />
+                                  </span>
+                                </p>
+                                <div className="text-gray-600 bg-pink-50/50 p-2.5 rounded-lg border border-pink-100 space-y-1">
+                                  <p>1. Open bKash App or dial <span className="font-mono font-medium">*247#</span> and select <strong>Send Money</strong>.</p>
+                                  <p>2. Send exact amount <strong className="text-pink-700"><FormatPrice price={summary.total} /></strong> to <strong className="font-mono text-pink-700">01319052507</strong>.</p>
+                                  <p>3. Copy the <strong>Transaction ID</strong> (TrxID) and enter it below.</p>
+                                  <p>4. After submitting, <strong>superadmin will verify the transaction ID and confirm your order</strong>.</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label htmlFor="transaction_id" className="block text-xs font-semibold text-ink uppercase tracking-wider mb-1.5">
+                                bKash Transaction ID (TrxID) <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                id="transaction_id"
+                                name="transaction_id"
+                                value={data.transaction_id}
+                                onChange={(e) => setData('transaction_id', e.target.value.toUpperCase())}
+                                placeholder="e.g. 9F7A2C1B4D"
+                                className={`w-full px-4 py-2.5 bg-white border rounded-xl text-sm font-mono focus:outline-none focus:ring-2 uppercase transition-all ${
+                                  validationErrors.transaction_id
+                                    ? 'border-red-500 focus:ring-red-200'
+                                    : 'border-line focus:ring-pink-200 focus:border-pink-500'
+                                }`}
+                              />
+                              {validationErrors.transaction_id && (
+                                <p className="text-red-500 text-xs mt-1.5 font-medium">{validationErrors.transaction_id}</p>
+                              )}
+                              <p className="text-xs text-text-soft mt-1.5 flex items-center gap-1">
+                                <FaShieldAlt className="h-3.5 w-3.5 text-pink-600 shrink-0" />
+                                Superadmin will verify your TrxID before confirming this order.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {validationErrors.payment_method && (

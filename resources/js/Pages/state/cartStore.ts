@@ -34,6 +34,7 @@ export interface OrderData {
     // Additional
     notes?: string;
     payment_method: 'cash_on_delivery' | 'bikash';
+    transaction_id?: string;
 }
 
 export interface PathaoCharges {
@@ -543,7 +544,7 @@ export const useStore = create<Store>()(
                         special_instruction: orderData.notes || null,
                         item_quantity: summary.item_count,
                         item_weight: summary.total_weight,
-                        amount_to_collect: summary.total,
+                        amount_to_collect: (orderData.payment_method === 'bikash' || (orderData.payment_method as string) === 'bkash') ? 0 : summary.total,
                         item_description: 'Products order',
                         store_name: storeInfo.name,
                         subtotal: state.getBaseSubTotal(),
@@ -558,6 +559,7 @@ export const useStore = create<Store>()(
                         tracking_number: trackingNumber,
                         shipping_method: 'pathao',
                         payment_method: orderData.payment_method,
+                        transaction_id: orderData.transaction_id || null,
                         payment_status: 'pending',
                         order_status: 'pending',
                         notes: orderData.notes || null,

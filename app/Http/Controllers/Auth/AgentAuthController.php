@@ -55,10 +55,31 @@ class AgentAuthController extends StaffAuthController
     protected function registrationRules(): array
     {
         return [
+            'name' => ['required', 'string', 'max:255', 'unique:agents,name'],
             'address' => 'required|string|max:255',
-            'mobile' => ['required', 'string', 'regex:/^01[3-9]\d{8}$/'],
-            'national_id' => ['required', 'string', 'regex:/^\d{10}$|^\d{17}$/'],
+            'mobile' => ['required', 'string', 'regex:/^01[3-9]\d{8}$/', 'unique:agents,mobile'],
+            'national_id' => ['required', 'string', 'regex:/^\d{10}$|^\d{17}$/', 'unique:agents,national_id'],
             'plan' => 'nullable|in:free,pro',
+        ];
+    }
+
+    protected function registrationMessages(): array
+    {
+        return [
+            'name.required' => 'Please enter your full name / user name.',
+            'name.unique' => 'This user name is already registered. Please choose another name.',
+            'email.required' => 'Please enter your email address.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email address is already registered. Please use another email or sign in.',
+            'address.required' => 'Please enter your address.',
+            'mobile.required' => 'Please enter your mobile number.',
+            'mobile.regex' => 'Mobile number must be a valid 11-digit Bangladeshi number starting with 01.',
+            'mobile.unique' => 'This mobile number is already registered with another agent account.',
+            'national_id.required' => 'Please enter your National ID number.',
+            'national_id.regex' => 'National ID must be either 10 or 17 digits.',
+            'national_id.unique' => 'This National ID is already registered with another agent account.',
+            'password.required' => 'Please enter a password.',
+            'password.confirmed' => 'Passwords do not match.',
         ];
     }
 
