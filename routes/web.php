@@ -322,6 +322,9 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
 });
 
 Route::get('/sell', [SubscriptionController::class, 'sell'])->name('sell');
+Route::get('/pricing', function () {
+    return redirect()->to('/sell#pricing');
+})->name('pricing');
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
@@ -358,6 +361,9 @@ Route::get('/auth/{provider}/redirect/{destination?}', [SocialiteController::cla
 Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])
     ->where('provider', 'google|facebook|github')
     ->name('auth.callback');
+
+Route::get('/auth/social/choose', [SocialiteController::class, 'showAccountChoice'])->name('auth.social.choose');
+Route::post('/auth/social/complete', [SocialiteController::class, 'completeAccountChoice'])->name('auth.social.complete');
 
 Route::controller(PageController::class)->group(function () {
     Route::get('/privacy-policy', 'privacypolicy')->name('privacy.policy');

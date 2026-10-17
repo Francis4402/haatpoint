@@ -19,6 +19,7 @@ import {
   FiMail,
   FiInfo,
   FiGlobe,
+  FiDollarSign,
 } from "react-icons/fi"
 import { Dialog, Transition } from "@headlessui/react"
 import { useStore } from "../state/cartStore"
@@ -86,6 +87,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
     { name: t('nav_home', 'Home'), href: "/", icon: FiHome },
     { name: t('nav_deals', 'Deals'), href: "/hotdeals", badge: t('badge_hot', 'HOT'), icon: FiTag },
     { name: t('nav_new_arrivals', 'New Arrivals'), href: "/new-arrivals", icon: FiZap },
+    { name: t('nav_pricing', 'Pricing'), href: "/sell#pricing", icon: FiDollarSign },
     { name: t('nav_about_us', 'About Us'), href: "/aboutus", icon: FiInfo },
     { name: t('nav_contact_us', 'Contact Us'), href: "/contactus", icon: FiMail },
   ]
@@ -129,10 +131,31 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
   return (
     <>
       <header
-        className="sticky top-0 z-[100] w-full border-b border-[#E3E1DB] bg-[#FBFBF9]/90 backdrop-blur-md"
+        className="sticky top-0 z-[100] w-full border-b border-[#E3E1DB] bg-[#FBFBF9]/95 backdrop-blur-md"
         role="banner"
         aria-label="Main navigation"
       >
+        {/* Top Seller Announcement Bar */}
+        <div className="bg-ink text-paper text-xs py-2 px-4 border-b border-white/10">
+          <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 overflow-hidden text-[11px] sm:text-xs">
+              <span className="inline-flex items-center gap-1 font-mono uppercase tracking-wider text-[10px] font-bold bg-marigold px-2 py-0.5 rounded text-white shrink-0">
+                For Sellers
+              </span>
+              <span className="truncate text-[#E3E1DB]">
+                Own a shop? Sell on HaatPoint free for 1 year &bull; Pathao delivery handled &bull; Keep 100% profit
+              </span>
+            </div>
+            <Link
+              href="/sell"
+              className="shrink-0 font-bold text-marigold hover:text-white transition-colors text-[11px] sm:text-xs inline-flex items-center gap-1"
+            >
+              <span>Learn How to Sell</span>
+              <span aria-hidden="true">&rarr;</span>
+            </Link>
+          </div>
+        </div>
+
         <div className="max-w-[1600px] mx-auto px-4 md:px-8">
           <div className="flex h-16 md:h-[76px] items-center justify-between gap-4">
             {/* Left Section - Logo + nav */}
@@ -146,12 +169,12 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                 </span>
               </Link>
 
-              <nav className="hidden lg:flex ml-6 gap-1" aria-label="Main navigation">
+              <nav className="hidden lg:flex ml-3 xl:ml-6 gap-0.5 xl:gap-1" aria-label="Main navigation">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-sm transition-colors duration-150"
+                    className="flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3.5 py-2 text-sm font-semibold rounded-sm transition-colors duration-150"
                     style={{ color: '#1B1B1B' }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F2F2EE'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -255,6 +278,15 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                     {cartItems > 99 ? "99+" : cartItems}
                   </span>
                 )}
+              </Link>
+
+              {/* Sell on HaatPoint Button */}
+              <Link
+                href="/sell"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-marigold hover:bg-marigold-dark text-white text-xs font-bold shadow-hard-sm hover:-translate-y-0.5 transition-all duration-150"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                <span>Sell on HaatPoint</span>
               </Link>
 
               {/* User Dropdown */}
@@ -588,6 +620,37 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                             </div>
                           </div>
                         )}
+
+                        {/* Mobile Seller Card / Guide Hook */}
+                        <div className="px-4 mb-5">
+                          <div className="rounded-xl bg-gradient-to-br from-ink to-[#2b2b2a] text-paper p-4 border border-line shadow-hard-sm relative overflow-hidden">
+                            <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-marigold opacity-20 rounded-full blur-xl" />
+                            <div className="relative z-10">
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-wider font-bold bg-marigold text-white px-2 py-0.5 rounded-full">
+                                  Become a Seller
+                                </span>
+                                <span className="text-[10px] font-mono text-emerald-400 font-semibold">
+                                  1 Year Free
+                                </span>
+                              </div>
+                              <h4 className="font-display font-extrabold text-sm text-paper mb-1">
+                                Sell your products on HaatPoint
+                              </h4>
+                              <p className="text-[11px] text-[#B9B7B0] mb-3 leading-relaxed">
+                                Zero listing fee &bull; Pathao delivery handled &bull; Keep 100% profit
+                              </p>
+                              <Link
+                                href="/sell"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="inline-flex items-center justify-center w-full gap-2 rounded-sm bg-marigold hover:bg-marigold-dark text-white font-bold text-xs py-2 shadow-hard-sm transition-colors"
+                              >
+                                <span>Start Selling Free</span>
+                                <span aria-hidden="true">&rarr;</span>
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
 
                         {/* Navigation */}
                         <nav className="space-y-1 px-4" aria-label="Mobile navigation">

@@ -18,7 +18,7 @@ class ProfileUpdateRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        foreach (['mobile', 'national_id', 'address'] as $field) {
+        foreach (['mobile', 'phone', 'national_id', 'address', 'city_id', 'zone_id', 'area_id'] as $field) {
             $value = $this->input($field);
 
             if (is_string($value) && trim($value) === '') {
@@ -55,13 +55,7 @@ class ProfileUpdateRequest extends FormRequest
             ],
         ];
 
-        // Only agents have these columns. The rules are conditional on the
-        // signed-in model rather than merely on the input, so a customer cannot
-        // smuggle them past a User::fill() that has nowhere to put them.
-        //
-        // Mirrors VendorProfileController and Agent::missingVendorProfileFields
-        // -- all three have to agree or a value saved here is one the store
-        // gate still rejects.
+        // Only agents have KYC columns. Customers (users) have delivery address columns.
         if ($user instanceof Agent) {
             $rules += [
                 'mobile' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
@@ -78,6 +72,21 @@ class ProfileUpdateRequest extends FormRequest
                     $rules[$column][] = Rule::unique('agents', $column)->ignore($id);
                 }
             }
+        } else {
+            if ($this->has('mobile') && ! $this->has('phone')) {
+                $this->merge(['phone' => $this->input('mobile')]);
+            }
+            $rules += [
+                'phone' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
+                'mobile' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
+                'address' => ['nullable', 'string', 'max:1000'],
+                'city_id' => ['nullable', 'integer'],
+                'city_name' => ['nullable', 'string', 'max:100'],
+                'zone_id' => ['nullable', 'integer'],
+                'zone_name' => ['nullable', 'string', 'max:100'],
+                'area_id' => ['nullable', 'integer'],
+                'area_name' => ['nullable', 'string', 'max:100'],
+            ];
         }
 
         return $rules;

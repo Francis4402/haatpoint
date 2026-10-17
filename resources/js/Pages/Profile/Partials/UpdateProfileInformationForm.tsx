@@ -1,8 +1,9 @@
 import { useForm } from '@inertiajs/react';
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment, useState, useRef } from 'react';
-import { FaUserEdit, FaCheckCircle, FaExclamationTriangle, FaCamera, FaUser } from 'react-icons/fa';
-import { User } from '@/types';
+import { Fragment, useState, useRef, useEffect } from 'react';
+import { FaUserEdit, FaCheckCircle, FaExclamationTriangle, FaCamera, FaUser, FaTruck, FaMapMarkerAlt, FaCity, FaBuilding } from 'react-icons/fa';
+import axios from 'axios';
+import { User, citytypes, zonetypes, areatypes } from '@/types';
 
 interface Props {
   status?: string;
@@ -15,24 +16,134 @@ export default function UpdateProfileInformation({ status, user }: Props) {
     user.images ? `/storage/${user.images}` : null
   );
 
-    const [useStorage, setUseStorage] = useState(true);
-
+  const [useStorage, setUseStorage] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Agents carry KYC columns the other roles do not have. One form serves all
-  // of them, so the extra block is rendered conditionally rather than split
-  // into a second profile page.
+  // Agents carry KYC columns. Customers carry Pathao delivery shipping columns.
   const isAgent = user.role === 'agent';
+
+  const [cities, setCities] = useState<citytypes[]>([]);
+  const [zones, setZones] = useState<zonetypes[]>([]);
+  const [areas, setAreas] = useState<areatypes[]>([]);
 
   const { data, setData, post, errors, processing, recentlySuccessful, reset } = useForm({
     _method: 'PATCH',
     name: user.name,
     email: user.email,
-    mobile: user.mobile ?? '',
+    mobile: user.mobile ?? user.phone ?? '',
     national_id: user.national_id ?? '',
     address: user.address ?? '',
+    city_id: user.city_id ?? '',
+    city_name: user.city_name ?? '',
+    zone_id: user.zone_id ?? '',
+    zone_name: user.zone_name ?? '',
+    area_id: user.area_id ?? '',
+    area_name: user.area_name ?? '',
     image: null as File | null,
   });
+
+  useEffect(() => {
+    let active = true;
+    axios.get('/api/pathao/cities')
+      .then((res) => {
+        if (!active) return;
+        const list = res.data?.data?.data ?? [];
+        setCities(list.map((c: any) => ({
+          city_id: c.city_id,
+          city_name: c.city_name,
+        })));
+      })
+      .catch(() => {});
+
+    if (user.city_id) {
+      axios.get(`/api/pathao/zones/${user.city_id}`)
+        .then((res) => {
+          if (!active) return;
+          const list = res.data?.data?.data ?? [];
+          setZones(list.map((z: any) => ({
+            zone_id: z.zone_id,
+            zone_name: z.zone_name,
+          })));
+        })
+        .catch(() => {});
+    }
+
+    if (user.zone_id) {
+      axios.get(`/api/pathao/areas/${user.zone_id}`)
+        .then((res) => {
+          if (!active) return;
+          const list = res.data?.data?.data ?? [];
+          setAreas(list.map((a: any) => ({
+            area_id: a.area_id,
+            area_name: a.area_name,
+          })));
+        })
+        .catch(() => {});
+    }
+
+    return () => { active = false; };
+  }, [user.city_id, user.zone_id]);
+
+  const handleCityChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const cityId = e.target.value;
+    const selected = cities.find(c => String(c.city_id) === String(cityId));
+    setData(prev => ({
+      ...prev,
+      city_id: cityId ? Number(cityId) : '',
+      city_name: selected?.city_name || '',
+      zone_id: '',
+      zone_name: '',
+      area_id: '',
+      area_name: '',
+    }));
+    setZones([]);
+    setAreas([]);
+
+    if (cityId) {
+      try {
+        const res = await axios.get(`/api/pathao/zones/${cityId}`);
+        const list = res.data?.data?.data ?? [];
+        setZones(list.map((z: any) => ({
+          zone_id: z.zone_id,
+          zone_name: z.zone_name,
+        })));
+      } catch {}
+    }
+  };
+
+  const handleZoneChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const zoneId = e.target.value;
+    const selected = zones.find(z => String(z.zone_id) === String(zoneId));
+    setData(prev => ({
+      ...prev,
+      zone_id: zoneId ? Number(zoneId) : '',
+      zone_name: selected?.zone_name || '',
+      area_id: '',
+      area_name: '',
+    }));
+    setAreas([]);
+
+    if (zoneId) {
+      try {
+        const res = await axios.get(`/api/pathao/areas/${zoneId}`);
+        const list = res.data?.data?.data ?? [];
+        setAreas(list.map((a: any) => ({
+          area_id: a.area_id,
+          area_name: a.area_name,
+        })));
+      } catch {}
+    }
+  };
+
+  const handleAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const areaId = e.target.value;
+    const selected = areas.find(a => String(a.area_id) === String(areaId));
+    setData(prev => ({
+      ...prev,
+      area_id: areaId ? Number(areaId) : '',
+      area_name: selected?.area_name || '',
+    }));
+  };
 
     const getProfileImageUrl = () => {
         // Priority 1: Image preview during upload
@@ -262,6 +373,123 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                 onChange={(e) => setData('address', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 group-hover:border-gray-400 resize-y"
                 placeholder="House, road, city"
+              />
+              {errors.address && (
+                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <FaExclamationTriangle className="h-4 w-4" />
+                  {errors.address}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Customer delivery address & shipping location — customers only */}
+        {!isAgent && (
+          <div className="bg-emerald-50/50 rounded-xl p-6 border border-emerald-200/80 space-y-5">
+            <div className="flex items-center gap-2 pb-2 border-b border-emerald-200/70">
+              <FaTruck className="h-5 w-5 text-emerald-600" />
+              <div>
+                <h4 className="text-sm font-semibold text-gray-800">Delivery Address & Pathao Shipping</h4>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Used by Pathao to calculate delivery charges from the merchant's store directly to your home.
+                </p>
+              </div>
+            </div>
+
+            <div className="group">
+              <label htmlFor="user_mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                Mobile Number
+              </label>
+              <input
+                id="user_mobile"
+                type="tel"
+                value={data.mobile}
+                onChange={(e) => setData('mobile', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200"
+                placeholder="01XXXXXXXXX"
+              />
+              {errors.mobile && (
+                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <FaExclamationTriangle className="h-4 w-4" />
+                  {errors.mobile}
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="user_city_id" className="block text-sm font-medium text-gray-700 mb-2">
+                  Delivery City
+                </label>
+                <select
+                  id="user_city_id"
+                  value={data.city_id}
+                  onChange={handleCityChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 bg-white text-sm"
+                >
+                  <option value="">Select City</option>
+                  {cities.map((c) => (
+                    <option key={c.city_id} value={c.city_id}>{c.city_name}</option>
+                  ))}
+                </select>
+                {errors.city_id && (
+                  <p className="mt-2 text-sm text-red-600">{errors.city_id}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="user_zone_id" className="block text-sm font-medium text-gray-700 mb-2">
+                  Delivery Zone / Thana
+                </label>
+                <select
+                  id="user_zone_id"
+                  value={data.zone_id}
+                  onChange={handleZoneChange}
+                  disabled={!data.city_id}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 bg-white text-sm disabled:bg-gray-100"
+                >
+                  <option value="">Select Zone</option>
+                  {zones.map((z) => (
+                    <option key={z.zone_id} value={z.zone_id}>{z.zone_name}</option>
+                  ))}
+                </select>
+                {errors.zone_id && (
+                  <p className="mt-2 text-sm text-red-600">{errors.zone_id}</p>
+                )}
+              </div>
+            </div>
+
+            {areas.length > 0 && (
+              <div>
+                <label htmlFor="user_area_id" className="block text-sm font-medium text-gray-700 mb-2">
+                  Specific Area (Optional)
+                </label>
+                <select
+                  id="user_area_id"
+                  value={data.area_id}
+                  onChange={handleAreaChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 bg-white text-sm"
+                >
+                  <option value="">Select Area (Optional)</option>
+                  {areas.map((a) => (
+                    <option key={a.area_id} value={a.area_id}>{a.area_name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="group">
+              <label htmlFor="user_street_address" className="block text-sm font-medium text-gray-700 mb-2">
+                Detailed Delivery Address
+              </label>
+              <textarea
+                id="user_street_address"
+                rows={3}
+                value={data.address}
+                onChange={(e) => setData('address', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 resize-y text-sm"
+                placeholder="House #, Road #, Sector/Area, Landmark"
               />
               {errors.address && (
                 <p className="mt-2 text-sm text-red-600 flex items-center gap-1">

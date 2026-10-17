@@ -108,6 +108,45 @@ class StoreController extends Controller
                 ->withErrors(['error' => 'You can create at most 3 stores.']);
         }
 
+        if ($user instanceof Agent) {
+            // A store created by an agent MUST always use the agent's verified national ID
+            $request->merge([
+                'national_id' => $user->national_id,
+            ]);
+        }
+
+        $nationalIdRules = [
+            'required',
+            'string',
+            'regex:/^\d{10}$|^\d{17}$/',
+        ];
+
+        if ($user instanceof Agent) {
+            $nationalIdRules[] = function ($attribute, $value, $fail) use ($user) {
+                if (\App\Models\Agent::where('national_id', $value)->where('id', '!=', $user->id)->exists()) {
+                    $fail('This National ID belongs to another agent.');
+                }
+            };
+        } else {
+            $nationalIdRules[] = 'unique:stores,national_id';
+        }
+
+        $mobileRules = [
+            'required',
+            'string',
+            'regex:/^01[3-9]\d{8}$/',
+        ];
+
+        if ($user instanceof Agent) {
+            $mobileRules[] = function ($attribute, $value, $fail) use ($user) {
+                if (\App\Models\Agent::where('mobile', $value)->where('id', '!=', $user->id)->exists()) {
+                    $fail('This mobile number belongs to another agent.');
+                }
+            };
+        } else {
+            $mobileRules[] = 'unique:stores,mobile';
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|unique:stores,name',
             'storetype' => 'required|string',
@@ -115,13 +154,8 @@ class StoreController extends Controller
             'address' => 'required|string|max:255',
             'sender_city' => 'required|integer',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'national_id' => [
-                'required',
-                'string',
-                'unique:stores,national_id',
-                'regex:/^\d{10}$|^\d{17}$/',
-            ],
-            'mobile' => 'required|string|unique:stores,mobile|min:11|max:11',
+            'national_id' => $nationalIdRules,
+            'mobile' => $mobileRules,
         ]);
 
         try {
@@ -139,7 +173,7 @@ class StoreController extends Controller
                 'license' => $validated['license'] ?? null,
                 'address' => $validated['address'],
                 'sender_city' => $validated['sender_city'],
-                'national_id' => $validated['national_id'],
+                'national_id' => $user instanceof Agent ? $user->national_id : $validated['national_id'],
                 'mobile' => $validated['mobile'],
                 'logo' => null,
             ]);
@@ -298,6 +332,14 @@ class StoreController extends Controller
      */
     public function update(Request $request, Store $store)
     {
+        $user = Auth::user();
+
+        if ($user instanceof Agent) {
+            $request->merge([
+                'national_id' => $user->national_id,
+            ]);
+        }
+
         $validated = $request->validate([
             'name' => [
                 'required',
@@ -318,13 +360,25 @@ class StoreController extends Controller
                 'required',
                 'string',
                 'regex:/^\d{10}$|^\d{17}$/',
-                Rule::unique('stores', 'national_id')->ignore($store->id),
+                $user instanceof Agent
+                    ? function ($attribute, $value, $fail) use ($user) {
+                        if (\App\Models\Agent::where('national_id', $value)->where('id', '!=', $user->id)->exists()) {
+                            $fail('This National ID belongs to another agent.');
+                        }
+                    }
+                    : Rule::unique('stores', 'national_id')->ignore($store->id),
             ],
             'mobile' => [
                 'required',
                 'string',
                 'digits:11',
-                Rule::unique('stores', 'mobile')->ignore($store->id),
+                $user instanceof Agent
+                    ? function ($attribute, $value, $fail) use ($user) {
+                        if (\App\Models\Agent::where('mobile', $value)->where('id', '!=', $user->id)->exists()) {
+                            $fail('This mobile number belongs to another agent.');
+                        }
+                    }
+                    : Rule::unique('stores', 'mobile')->ignore($store->id),
             ],
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'remove_logo' => 'nullable|in:true,false,0,1',
@@ -379,7 +433,7 @@ class StoreController extends Controller
             'sender_city' => $validated['sender_city'],
             'license' => $validated['license'] ?? null,
             'mobile' => $validated['mobile'],
-            'national_id' => $validated['national_id'],
+            'national_id' => $user instanceof Agent ? $user->national_id : $validated['national_id'],
         ]);
 
         if (isset($validated['logo'])) {

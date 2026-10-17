@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link } from "@inertiajs/react";
 import {
   FaArrowRight,
@@ -125,7 +125,7 @@ export default function Hero({ user, categories }: HeroProps) {
             delivered straight to your door.
           </p>
 
-          <div className="flex flex-wrap gap-3 items-center mb-7 sm:mb-8">
+          <div className="flex flex-wrap gap-3 items-center mb-4 sm:mb-5">
             <Link
               href={route("products.index")}
               className="group inline-flex items-center gap-2 rounded-sm px-[22px] sm:px-[26px] py-[13px] sm:py-[15px] font-bold text-sm bg-marigold text-white border border-ink shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
@@ -138,6 +138,18 @@ export default function Hero({ user, categories }: HeroProps) {
               className="inline-flex items-center gap-2 rounded-sm px-[22px] sm:px-[26px] py-[13px] sm:py-[15px] font-bold text-sm bg-white border border-ink shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
             >
               Explore deals
+            </Link>
+          </div>
+
+          {/* Seller provocation pill */}
+          <div className="mb-6 sm:mb-8 flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-semibold text-text-soft">Have products to sell?</span>
+            <Link
+              href="/sell"
+              className="inline-flex items-center gap-1.5 font-bold text-marigold-dark hover:text-ink underline underline-offset-2 transition-colors bg-marigold/10 px-2.5 py-1 rounded-full border border-marigold/20"
+            >
+              <span>Become an Agent &bull; 1 Year Free</span>
+              <span aria-hidden="true">&rarr;</span>
             </Link>
           </div>
 
@@ -219,12 +231,15 @@ export default function Hero({ user, categories }: HeroProps) {
             </div>
           </div>
 
-          <div className="float-card absolute -left-3 top-5 flex items-center gap-2 rounded-full border-[1.5px] border-ink bg-white px-3 py-1.5 shadow-hard-sm sm:-left-5">
-            <FaShieldAlt className="h-3.5 w-3.5 text-marigold" />
-            <span className="font-mono text-[10px] font-bold uppercase tracking-wide text-ink">
-              Verified vendors
+          <Link
+            href="/sell"
+            className="float-card absolute -left-3 top-5 flex items-center gap-2 rounded-full border-[1.5px] border-ink bg-white px-3 py-1.5 shadow-hard-sm sm:-left-5 hover:bg-paper-dim transition-colors group cursor-pointer"
+          >
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wide text-ink group-hover:text-marigold transition-colors">
+              Sell Free &bull; 1 Year
             </span>
-          </div>
+          </Link>
 
           <div className="float-card absolute -right-2 bottom-24 w-[190px] rounded-2xl border-[1.5px] border-ink bg-white p-3 shadow-hard sm:bottom-28 sm:-right-6">
             <div className="flex items-center gap-2">

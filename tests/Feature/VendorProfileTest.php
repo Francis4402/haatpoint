@@ -217,6 +217,7 @@ class VendorProfileTest extends TestCase
                 'name' => 'My Store',
                 'storetype' => 'Retail',
                 'address' => 'House 1, Road 1, Dhaka',
+                'sender_city' => 1,
                 'national_id' => '1987654321',
                 'mobile' => '01812345678',
             ])
@@ -290,8 +291,9 @@ class VendorProfileTest extends TestCase
     {
         $agent = $this->makeAgent($this->incompleteKyc());
 
+        // An agent without a store is redirected to dashboard.agent-guide, which also shares auth props
         $this->actingAs($agent)
-            ->get(route('dashboard'))
+            ->get(route('dashboard.agent-guide'))
             ->assertInertia(fn ($page) => $page
                 ->where('auth.incompleteVendorProfile', true)
                 ->where('auth.missingVendorProfileFields', ['national_id', 'mobile', 'address'])
@@ -303,7 +305,7 @@ class VendorProfileTest extends TestCase
         $agent = $this->makeAgent($this->completeKyc());
 
         $this->actingAs($agent)
-            ->get(route('dashboard'))
+            ->get(route('dashboard.agent-guide'))
             ->assertInertia(fn ($page) => $page
                 ->where('auth.incompleteVendorProfile', false)
                 ->where('auth.missingVendorProfileFields', [])

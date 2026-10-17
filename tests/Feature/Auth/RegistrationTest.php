@@ -22,12 +22,42 @@ class RegistrationTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test.user@gmail.com',
+            'phone' => '01712345678',
+            'address' => 'House 12, Road 4, Sector 10, Uttara',
+            'city_id' => 1,
+            'city_name' => 'Dhaka',
+            'zone_id' => 298,
+            'zone_name' => '60 feet',
+            'area_id' => 3069,
+            'area_name' => '60 feet road',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertDatabaseHas('users', [
+            'email' => 'test.user@gmail.com',
+            'phone' => '01712345678',
+            'address' => 'House 12, Road 4, Sector 10, Uttara',
+            'city_id' => 1,
+            'city_name' => 'Dhaka',
+            'zone_id' => 298,
+            'zone_name' => '60 feet',
+        ]);
+    }
+
+    public function test_registration_requires_delivery_address_and_phone(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Incomplete User',
+            'email' => 'incomplete@gmail.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors(['phone', 'address', 'city_id', 'zone_id']);
+        $this->assertGuest();
     }
 
     public function test_a_non_gmail_address_is_rejected(): void
@@ -35,6 +65,10 @@ class RegistrationTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'phone' => '01712345678',
+            'address' => 'House 12, Road 4, Sector 10',
+            'city_id' => 1,
+            'zone_id' => 298,
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
@@ -99,6 +133,10 @@ class RegistrationTest extends TestCase
         $this->post('/register', [
             'name' => 'Buyer',
             'email' => 'shared@gmail.com',
+            'phone' => '01712345678',
+            'address' => 'Dhaka Delivery Address',
+            'city_id' => 1,
+            'zone_id' => 298,
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);

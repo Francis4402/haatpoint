@@ -536,4 +536,81 @@ class SocialiteRoleRoutingTest extends TestCase
         $this->assertTrue(auth('admin')->check());
         $this->assertSame('staff@example.test', auth('admin')->user()->email);
     }
+
+    public function test_choose_destination_redirects_new_user_to_account_choice_page(): void
+    {
+        $this->fakeGoogleUser('newgoogle@example.test', 'New Google User', 'g-new-123');
+
+        $response = $this->completeCallback('choose');
+
+        $response->assertRedirect(route('auth.social.choose'));
+        $this->assertNotNull(session('socialite_pending'));
+        $this->assertSame('newgoogle@example.test', session('socialite_pending')['email']);
+        $this->assertFalse(auth('web')->check());
+        $this->assertFalse(auth('agent')->check());
+    }
+
+    public function test_completing_account_choice_as_customer_creates_user(): void
+    {
+        $response = $this->withSession([
+            'socialite_pending' => [
+                'provider' => 'google',
+                'provider_id' => 'g-cust-new',
+                'email' => 'chosen.cust@example.test',
+                'name' => 'Chosen Customer',
+                'images' => 'https://example.test/pic.jpg',
+            ]
+        ])->post(route('auth.social.complete'), [
+            'role' => 'user',
+        ]);
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertDatabaseHas('users', [
+            'email' => 'chosen.cust@example.test',
+            'role' => 'user',
+        ]);
+        $this->assertTrue(auth('web')->check());
+        $this->assertFalse(auth('agent')->check());
+    }
+
+    public function test_completing_account_choice_as_agent_creates_agent(): void
+    {
+        $response = $this->withSession([
+            'socialite_pending' => [
+                'provider' => 'google',
+                'provider_id' => 'g-agent-new',
+                'email' => 'chosen.agent@example.test',
+                'name' => 'Chosen Agent',
+                'images' => 'https://example.test/pic.jpg',
+            ]
+        ])->post(route('auth.social.complete'), [
+            'role' => 'agent',
+        ]);
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertDatabaseHas('agents', [
+            'email' => 'chosen.agent@example.test',
+            'role' => 'agent',
+        ]);
+        $this->assertTrue(auth('agent')->check());
+        $this->assertFalse(auth('web')->check());
+    }
+
+    public function test_choose_destination_signs_in_existing_agent_without_choice_screen(): void
+    {
+        Agent::create([
+            'name' => 'Existing Agent',
+            'email' => 'existing.agent@example.test',
+            'password' => bcrypt('password'),
+            'role' => 'agent',
+        ]);
+
+        $this->fakeGoogleUser('existing.agent@example.test', 'Existing Agent', 'g-agent-exist');
+
+        $response = $this->completeCallback('choose');
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertTrue(auth('agent')->check());
+        $this->assertFalse(auth('web')->check());
+    }
 }

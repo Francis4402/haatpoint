@@ -43,16 +43,38 @@ class RegisteredUserController extends Controller
                     $fail('This email is already registered as an agent and cannot be used to create a customer account.');
                 }
             }],
+            'phone' => ['required', 'string', 'regex:/^01[3-9]\d{8}$/'],
+            'address' => ['required', 'string', 'max:500'],
+            'city_id' => ['required', 'integer'],
+            'city_name' => ['nullable', 'string', 'max:100'],
+            'zone_id' => ['required', 'integer'],
+            'zone_name' => ['nullable', 'string', 'max:100'],
+            'area_id' => ['nullable', 'integer'],
+            'area_name' => ['nullable', 'string', 'max:100'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             // The form has always offered a picture, but the field was never
             // read here, so the uploaded file was dropped on the floor and
             // users.images stayed NULL for every self-registered account.
             'image' => $this->profileImageRules(),
+        ], [
+            'phone.required' => 'Phone number is required for delivery.',
+            'phone.regex' => 'Please enter a valid 11-digit Bangladeshi mobile number (e.g., 01712345678).',
+            'city_id.required' => 'Please select your delivery city.',
+            'zone_id.required' => 'Please select your delivery zone.',
+            'address.required' => 'Delivery address is required so courier can deliver your orders.',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'city_id' => $request->city_id,
+            'city_name' => $request->city_name,
+            'zone_id' => $request->zone_id,
+            'zone_name' => $request->zone_name,
+            'area_id' => $request->area_id,
+            'area_name' => $request->area_name,
             'password' => Hash::make($request->password),
             'images' => $this->storeProfileImage($request->file('image')),
         ]);

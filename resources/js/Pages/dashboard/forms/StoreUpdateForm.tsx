@@ -190,8 +190,8 @@ export default function StoreUpdateForm({ auth, store }: EditStoreFormProps) {
       toast.error('License number must be less than 24 characters');
       return;
     }
-    if (!data.national_id || data.national_id.length !== 10) {
-      toast.error('National ID must be exactly 10 digits');
+    if (!data.national_id || (data.national_id.length !== 10 && data.national_id.length !== 17)) {
+      toast.error('National ID must be either 10 or 17 digits');
       return;
     }
     if (!/^\d+$/.test(data.national_id)) {
@@ -692,10 +692,10 @@ export default function StoreUpdateForm({ auth, store }: EditStoreFormProps) {
                     type="text"
                     value={data.national_id}
                     onChange={(e) => setData('national_id', e.target.value.replace(/\D/g, ''))}
-                    placeholder="Enter 10-digit National ID"
+                    placeholder="Enter 10 or 17-digit National ID"
                     className="w-full rounded-xl border border-line px-10 py-3 focus:ring-2 focus:ring-marigold bg-white text-ink placeholder:text-text-soft"
                     disabled={processing}
-                    maxLength={10}
+                    maxLength={17}
                   />
                 </div>
                 {errors.national_id && (
@@ -705,7 +705,7 @@ export default function StoreUpdateForm({ auth, store }: EditStoreFormProps) {
                   </p>
                 )}
                 <p className="text-xs text-text-soft mt-1">
-                  Must be exactly 10 digits
+                  Must be 10 or 17 digits
                 </p>
               </div>
 

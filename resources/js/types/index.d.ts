@@ -14,12 +14,18 @@ export interface User {
     email_verified_at: string;
     created_at?: string;
     /**
-     * Only exist on an agent session: the KYC columns live on `agents`, and
-     * HandleInertiaRequests shares the signed-in model as-is.
+     * Agent KYC columns or User delivery address columns
      */
+    phone?: string | null;
     mobile?: string | null;
     national_id?: string | null;
     address?: string | null;
+    city_id?: number | null;
+    city_name?: string | null;
+    zone_id?: number | null;
+    zone_name?: string | null;
+    area_id?: number | null;
+    area_name?: string | null;
 }
 
 export interface AgentSubscription {

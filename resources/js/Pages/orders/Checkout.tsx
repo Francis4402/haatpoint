@@ -68,9 +68,9 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
 
   const { data, setData, processing } = useForm({
     recipient_name: auth.user?.name || '',
-    recipient_phone: '',
+    recipient_phone: auth.user?.phone || auth.user?.mobile || '',
     recipient_email: auth.user?.email || '',
-    recipient_address: '',
+    recipient_address: auth.user?.address || '',
     notes: '',
     payment_method: 'cash_on_delivery' as 'cash_on_delivery' | 'bikash',
     transaction_id: '',
@@ -123,9 +123,13 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
   };
 
   const getEstimatedDelivery = () => {
+    if (selectedCity && store?.sender_city && Number(selectedCity) === Number(store.sender_city)) {
+      return '1-2 business days';
+    }
     const cityName = getSelectedCityName().toLowerCase();
-    if (cityName.includes('dhaka')) return '3-4 business days';
-    if (cityName.includes('chittagong') || cityName.includes('chattogram')) return '2-3 business days';
+    if (cityName.includes('dhaka') || cityName.includes('chittagong') || cityName.includes('chattogram')) {
+      return '2-3 business days';
+    }
     return '3-4 business days';
   };
 

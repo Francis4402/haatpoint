@@ -59,13 +59,13 @@ export default function CreateStoreForm({auth}: PageProps) {
   const [cities, setCities] = useState<citytypes[]>([]);
   const [loadingCities, setLoadingCities] = useState(false);
 
-  // Prefill from the agent/profile so vendors don't retype their KYC details.
+  // Prefill verified KYC details (national ID, mobile) while leaving store-specific details blank.
   const profile = (auth?.user ?? {}) as Record<string, any>;
   const initialValues = {
-    name: profile.name ?? '',
+    name: '',
     logo: null as File | null,
     storetype: '',
-    address: profile.address ?? '',
+    address: '',
     sender_city: '' as number | string,
     license: '',
     national_id: profile.national_id ?? '',
@@ -579,9 +579,16 @@ export default function CreateStoreForm({auth}: PageProps) {
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-ink mb-2 flex items-center gap-1">
-                  <FaUser className="h-4 w-4 text-marigold" />
-                  National ID Number <span className="text-red-500 ml-1">*</span>
+                <label className="text-sm font-medium text-ink mb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-1">
+                    <FaUser className="h-4 w-4 text-marigold" />
+                    National ID Number <span className="text-red-500 ml-1">*</span>
+                  </span>
+                  {profile.national_id && (
+                    <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1">
+                      <FaCheck className="h-3 w-3 text-emerald-600" /> Synced from Agent Account
+                    </span>
+                  )}
                 </label>
                 <div className="relative">
                   <FaIdCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-soft h-4 w-4" />
@@ -590,8 +597,11 @@ export default function CreateStoreForm({auth}: PageProps) {
                     value={data.national_id}
                     onChange={(e) => setData('national_id', e.target.value)}
                     placeholder="e.g., 1234567890123"
-                    className="w-full rounded-xl border border-line px-10 py-3 focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft"
+                    className={`w-full rounded-xl border border-line px-10 py-3 focus:ring-2 focus:ring-marigold focus:border-transparent text-ink placeholder:text-text-soft ${
+                      profile.national_id ? 'bg-paper-dim cursor-not-allowed font-mono text-gray-700 font-semibold' : 'bg-white'
+                    }`}
                     disabled={processing}
+                    readOnly={!!profile.national_id}
                   />
                 </div>
                 {errors.national_id && (
@@ -602,7 +612,9 @@ export default function CreateStoreForm({auth}: PageProps) {
                 )}
                 <p className="text-xs text-text-soft mt-1 flex items-center gap-1">
                   <FaInfoCircle className="h-3 w-3" />
-                  Enter your government-issued National ID number
+                  {profile.national_id
+                    ? 'Using your verified agent National ID for store ownership.'
+                    : 'Enter your government-issued National ID number'}
                 </p>
               </div>
 

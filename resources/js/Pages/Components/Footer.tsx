@@ -20,7 +20,7 @@ export default function Footer() {
       heading: "Vendors",
       links: [
         { label: "Start selling", href: route('sell') },
-        { label: "Seller pricing", href: route('sell') },
+        { label: "Seller pricing", href: '/sell#pricing' },
         { label: "Vendor dashboard", href: route('dashboard.store') },
       ]
     },

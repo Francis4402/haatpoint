@@ -167,7 +167,12 @@ export default function Welcome({
                 {featuredStores.length > 0 && (
                     <StoresSlider stores={featuredStores} />
                 )}
+            </div>
 
+            {/* Seller Guide & Provocation Section (Edge-to-Edge) */}
+            <VendorCTA />
+
+            <div className='max-w-[1240px] mx-auto px-8 space-y-20 pt-20'>
                 {/* Only render AllProducts if productsWithRatings has data */}
                 {productsWithRatings.length > 0 && (
                     <AllProducts
@@ -180,7 +185,6 @@ export default function Welcome({
                 />
                 )}
             </div>
-            <VendorCTA />
             <Footer/>
             <WhatsAppChatButton />
         </AppLayout>

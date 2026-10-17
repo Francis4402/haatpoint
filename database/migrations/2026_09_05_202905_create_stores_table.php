@@ -19,9 +19,9 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->text('address');
             $table->unsignedInteger('sender_city')->nullable();
-            $table->string('mobile')->unique();
+            $table->string('mobile')->index();
             $table->string('storetype');
-            $table->string('national_id')->unique();
+            $table->string('national_id')->index();
             $table->string('license')->nullable();
             $table->decimal('rating')->default(0);
             $table->unsignedInteger('review_count')->default(0);

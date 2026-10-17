@@ -52,6 +52,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Store::class);
     }
 
+    public function getMobileAttribute(): ?string
+    {
+        return $this->attributes['phone'] ?? null;
+    }
+
+    public function setMobileAttribute(?string $value): void
+    {
+        $this->attributes['phone'] = $value;
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -63,6 +73,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'blocked' => 'boolean',
+            'city_id' => 'integer',
+            'zone_id' => 'integer',
+            'area_id' => 'integer',
         ];
     }
 }

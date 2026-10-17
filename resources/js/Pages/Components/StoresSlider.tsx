@@ -107,7 +107,7 @@ const StoresSlider = ({ stores }: StoresSliderProps) => {
               <SwiperSlide key={store.id}>
                 <Link
                   href={`/stores/${store.id}`}
-                  className="block bg-white border border-line h-full hover:border-marigold hover:shadow-hard-sm transition-all duration-300 hover:-translate-y-1"
+                  className="block bg-white border border-line h-full rounded-2xl hover:border-marigold hover:shadow-hard-sm transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="p-6 h-full flex flex-col">
                     <div className="flex items-start gap-4 mb-4">

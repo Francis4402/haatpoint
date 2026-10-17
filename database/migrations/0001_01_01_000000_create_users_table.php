@@ -20,6 +20,14 @@ return new class extends Migration
             $table->enum('role', ['deliveryman', 'user'])->default('user');
             $table->string('google_id')->nullable()->unique();
             $table->string('images')->nullable();
+            $table->string('phone', 20)->nullable();
+            $table->text('address')->nullable();
+            $table->unsignedInteger('city_id')->nullable();
+            $table->string('city_name', 100)->nullable();
+            $table->unsignedInteger('zone_id')->nullable();
+            $table->string('zone_name', 100)->nullable();
+            $table->unsignedInteger('area_id')->nullable();
+            $table->string('area_name', 100)->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

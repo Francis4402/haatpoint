@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller
@@ -52,6 +53,13 @@ class SocialiteController extends Controller
         'superadmin' => ['model' => Admin::class, 'guard' => 'admin', 'create' => true, 'exclusive' => true],
         'admin' => ['model' => Admin::class, 'guard' => 'admin', 'create' => false, 'exclusive' => false],
         'agent' => ['model' => Agent::class, 'guard' => 'agent', 'create' => true, 'exclusive' => false],
+        'choose' => [
+            'model' => User::class,
+            'guard' => 'web',
+            'create' => true,
+            'exclusive' => false,
+            'resolves' => ['agent', 'user'],
+        ],
     ];
 
     /**
@@ -167,6 +175,16 @@ class SocialiteController extends Controller
                 } else {
                     $identity->save();
                 }
+            } elseif ($destination === 'choose') {
+                $request->session()->put('socialite_pending', [
+                    'provider' => $provider,
+                    'provider_id' => $providerId,
+                    'email' => $email,
+                    'name' => $socialUser->getName() ?? $email,
+                    'images' => $socialUser->getAvatar(),
+                ]);
+
+                return redirect()->route('auth.social.choose');
             } elseif ($config['create']) {
                 // An exclusive destination may bootstrap only once. The register
                 // page is the first gate, but a caller can reach this callback
@@ -250,5 +268,80 @@ class SocialiteController extends Controller
             return redirect()->route($loginRoute)
                 ->with('error', 'Social login failed. ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Display the account type selection page when signing up with social login.
+     */
+    public function showAccountChoice(Request $request)
+    {
+        $pending = $request->session()->get('socialite_pending');
+
+        if (! $pending) {
+            return redirect()->route('login');
+        }
+
+        return Inertia::render('Auth/SocialAccountChoice', [
+            'socialUser' => $pending,
+        ]);
+    }
+
+    /**
+     * Finalize social registration with the user's chosen account type (user or agent).
+     */
+    public function completeAccountChoice(Request $request)
+    {
+        $pending = $request->session()->get('socialite_pending');
+
+        if (! $pending) {
+            return redirect()->route('login')->with('error', 'Session expired. Please sign in with Google again.');
+        }
+
+        $validated = $request->validate([
+            'role' => 'required|in:user,agent',
+        ]);
+
+        $role = $validated['role'];
+        $email = $pending['email'];
+        $provider = $pending['provider'];
+        $providerId = $pending['provider_id'];
+
+        $config = self::DESTINATIONS[$role];
+        $model = $config['model'];
+
+        $identity = $model::query()
+            ->where('email', $email)
+            ->orWhere(fn ($q) => $q->where('provider', $provider)->where('provider_id', $providerId))
+            ->first();
+
+        if (! $identity) {
+            $identity = $model::create([
+                'name' => $pending['name'],
+                'email' => $email,
+                'password' => Hash::make(Str::random(24)),
+                'images' => $pending['images'],
+                'google_id' => $provider === 'google' ? $providerId : null,
+                'provider' => $provider,
+                'provider_id' => $providerId,
+                'email_verified_at' => now(),
+            ]);
+
+            if ($role === 'agent') {
+                User::where('email', $email)->delete();
+            }
+        }
+
+        $request->session()->forget('socialite_pending');
+
+        $this->loginOnGuard($config['guard'], $identity);
+        $request->session()->regenerate();
+
+        Log::info("Social registration completed via choice ({$provider} -> {$role})", [
+            'account_id' => $identity->getKey(),
+            'role' => $identity->role ?? null,
+            'guard' => $config['guard'],
+        ]);
+
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 }

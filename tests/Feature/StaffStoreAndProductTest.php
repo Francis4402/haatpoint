@@ -40,6 +40,7 @@ class StaffStoreAndProductTest extends TestCase
             'name' => 'Boss Store',
             'storetype' => 'Retail',
             'address' => 'House 1, Road 1, Dhaka',
+            'sender_city' => 1,
             'national_id' => '1987654321',
             'mobile' => '01812345678',
         ], $overrides);

@@ -273,6 +273,29 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
     }
   };
 
+  // Auto-select registered customer delivery location if not yet selected
+  useEffect(() => {
+    const userCity = auth?.user?.city_id ? String(auth.user.city_id) : '';
+    const userZone = auth?.user?.zone_id ? String(auth.user.zone_id) : '';
+    const userArea = auth?.user?.area_id ? String(auth.user.area_id) : '';
+
+    if (userCity && !selectedCity && cartItems.length > 0) {
+      setSelectedCity(userCity);
+      fetchZone(userCity).then(() => {
+        if (userZone) {
+          setSelectedZone(userZone);
+          if (userArea) {
+            setSelectedArea(userArea);
+            fetchArea(userZone);
+            calculatePathaoPrice(userCity, userZone, userArea);
+          } else {
+            calculatePathaoPrice(userCity, userZone);
+          }
+        }
+      });
+    }
+  }, [auth?.user?.city_id, auth?.user?.zone_id, cartItems.length]);
+
   const handleCityChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const cityId = e.target.value;
     setSelectedCity(cityId);
@@ -1094,8 +1117,11 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                                   <p className="text-[10px] sm:text-xs text-purple-700 flex items-center">
                                     <FaTruck className="h-3 w-3 mr-1" />
                                     Estimated delivery: {
-                                      getSelectedCityName().toLowerCase().includes('dhaka') ? '2-3' :
-                                      getSelectedCityName().toLowerCase().includes('chittagong') ? '2-3' : '3-5'
+                                      selectedCity && cartItems[0]?.store?.sender_city && Number(selectedCity) === Number(cartItems[0].store.sender_city)
+                                        ? '1-2'
+                                        : (getSelectedCityName().toLowerCase().includes('dhaka') || getSelectedCityName().toLowerCase().includes('chittagong') || getSelectedCityName().toLowerCase().includes('chattogram'))
+                                          ? '2-3'
+                                          : '3-5'
                                     } business days
                                   </p>
                                 </div>
