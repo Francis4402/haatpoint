@@ -23,6 +23,8 @@ class EnsureSubscriptionActive
                 'dashboard.upgrade',
                 'dashboard.subscription.payment',
                 'dashboard.subscription.payment.submit',
+                'vendor.profile.edit',
+                'vendor.profile.update',
                 'agent.logout',
                 'logout',
             ];

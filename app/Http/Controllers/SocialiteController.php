@@ -261,6 +261,11 @@ class SocialiteController extends Controller
                 'requested' => $destination,
             ]);
 
+            if ($identity instanceof Agent && ! $identity->hasCompleteVendorProfile()) {
+                return redirect()->route('vendor.profile.edit')
+                    ->with('warning', 'Please complete your vendor information before accessing the dashboard.');
+            }
+
             return redirect()->intended(route('dashboard', absolute: false));
         } catch (\Throwable $e) {
             Log::warning("Social login failed ({$provider} -> {$destination}): " . $e->getMessage());
@@ -341,6 +346,11 @@ class SocialiteController extends Controller
             'role' => $identity->role ?? null,
             'guard' => $config['guard'],
         ]);
+
+        if ($identity instanceof Agent && ! $identity->hasCompleteVendorProfile()) {
+            return redirect()->route('vendor.profile.edit')
+                ->with('warning', 'Please complete your vendor information before accessing the dashboard.');
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

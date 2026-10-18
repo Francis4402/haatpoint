@@ -60,14 +60,9 @@ class VendorProfileController extends Controller
 
         $agent->update($validated);
 
-        // Redirect to the page the vendor was trying to reach. Falls back to
-        // the profile itself when they arrived here directly, because going
-        // back after a save usually lands on the form they just left.
-        $intended = $request->query('redirect_to');
-
         return redirect()
-            ->to($intended && str_starts_with($intended, '/') ? $intended : route('vendor.profile.edit'))
-            ->with('success', 'Your vendor details have been saved.');
+            ->route('dashboard')
+            ->with('success', 'Your vendor information has been saved successfully.');
     }
 
     /**

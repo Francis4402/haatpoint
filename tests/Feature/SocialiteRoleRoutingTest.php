@@ -587,7 +587,7 @@ class SocialiteRoleRoutingTest extends TestCase
             'role' => 'agent',
         ]);
 
-        $response->assertRedirect(route('dashboard'));
+        $response->assertRedirect(route('vendor.profile.edit'));
         $this->assertDatabaseHas('agents', [
             'email' => 'chosen.agent@example.test',
             'role' => 'agent',
@@ -603,6 +603,9 @@ class SocialiteRoleRoutingTest extends TestCase
             'email' => 'existing.agent@example.test',
             'password' => bcrypt('password'),
             'role' => 'agent',
+            'mobile' => '01712345678',
+            'national_id' => '1234567890',
+            'address' => 'Dhaka, Bangladesh',
         ]);
 
         $this->fakeGoogleUser('existing.agent@example.test', 'Existing Agent', 'g-agent-exist');
@@ -612,5 +615,22 @@ class SocialiteRoleRoutingTest extends TestCase
         $response->assertRedirect(route('dashboard'));
         $this->assertTrue(auth('agent')->check());
         $this->assertFalse(auth('web')->check());
+    }
+
+    public function test_choose_destination_redirects_incomplete_existing_agent_to_vendor_profile(): void
+    {
+        Agent::create([
+            'name' => 'Incomplete Existing Agent',
+            'email' => 'incomplete.agent@example.test',
+            'password' => bcrypt('password'),
+            'role' => 'agent',
+        ]);
+
+        $this->fakeGoogleUser('incomplete.agent@example.test', 'Incomplete Existing Agent', 'g-agent-inc');
+
+        $response = $this->completeCallback('choose');
+
+        $response->assertRedirect(route('vendor.profile.edit'));
+        $this->assertTrue(auth('agent')->check());
     }
 }

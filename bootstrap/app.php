@@ -15,17 +15,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-$middleware->web(append: [
+        $middleware->web(append: [
             \App\Http\Middleware\ResolveAuthGuard::class,
+            \App\Http\Middleware\EnsureVendorProfileComplete::class,
             \App\Http\Middleware\SeoMeta::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-$middleware->alias([
+        $middleware->alias([
             'role' => \App\Http\Middleware\Role::class,
             'blocked' => \App\Http\Middleware\EnsureNotBlocked::class,
             'subscription' => \App\Http\Middleware\EnsureSubscriptionActive::class,
+            'vendor.complete' => \App\Http\Middleware\EnsureVendorProfileComplete::class,
         ]);
     })
 ->withExceptions(function (Exceptions $exceptions): void {

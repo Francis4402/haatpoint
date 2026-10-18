@@ -100,7 +100,7 @@ class VendorProfileTest extends TestCase
 
         $this->actingAs($agent)
             ->post(route('vendor.profile.update'), $this->completeKyc())
-            ->assertRedirect(route('vendor.profile.edit'))
+            ->assertRedirect(route('dashboard'))
             ->assertSessionHas('success');
 
         $agent->refresh();
@@ -291,13 +291,28 @@ class VendorProfileTest extends TestCase
     {
         $agent = $this->makeAgent($this->incompleteKyc());
 
-        // An agent without a store is redirected to dashboard.agent-guide, which also shares auth props
+        // Incomplete agents cannot access general pages, but on the vendor profile form auth props report incomplete
         $this->actingAs($agent)
-            ->get(route('dashboard.agent-guide'))
+            ->get(route('vendor.profile.edit'))
             ->assertInertia(fn ($page) => $page
                 ->where('auth.incompleteVendorProfile', true)
                 ->where('auth.missingVendorProfileFields', ['national_id', 'mobile', 'address'])
             );
+    }
+
+    public function test_an_incomplete_agent_cannot_access_other_pages_and_is_redirected_to_vendor_profile(): void
+    {
+        $agent = $this->makeAgent($this->incompleteKyc());
+
+        $this->actingAs($agent)
+            ->get(route('dashboard'))
+            ->assertRedirect(route('vendor.profile.edit'))
+            ->assertSessionHas('error');
+
+        $this->actingAs($agent)
+            ->get(route('dashboard.agent-guide'))
+            ->assertRedirect(route('vendor.profile.edit'))
+            ->assertSessionHas('error');
     }
 
     public function test_the_shared_props_report_complete_vendors(): void

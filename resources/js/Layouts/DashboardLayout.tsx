@@ -23,6 +23,7 @@ import {
   FiGlobe,
   FiSearch,
   FiCompass,
+  FiLock,
 } from 'react-icons/fi';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { User } from '@/types';
@@ -47,6 +48,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
   const [searchOpen, setSearchOpen] = useState(false);
   const { url, props } = usePage();
   const unreadMessages = (props as unknown as { unreadMessages?: number }).unreadMessages ?? 0;
+  const authProps = (props as unknown as {
+    auth?: {
+      incompleteVendorProfile?: boolean;
+      missingVendorProfileFields?: string[];
+    };
+  });
+  const isAgentIncomplete = user?.role === 'agent' && !!authProps?.auth?.incompleteVendorProfile;
   const { post } = useForm();
 
   const navigation = [
@@ -66,6 +74,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
     ] : []),
 
     ...(user.role === 'agent' ? [
+        {
+            name: 'Vendor Profile',
+            href: '/dashboard/vendor/profile',
+            icon: FiUser,
+            current: url.startsWith('/dashboard/vendor/profile')
+        },
         {
             name: 'Selling Guide',
             href: '/dashboard/agent-guide',
@@ -243,9 +257,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                     <div className="h-8 w-8 rounded-lg flex items-center justify-center">
                       <img src="/MyLogo.png" alt="Haatpoint" className="h-8 w-auto" />
                     </div>
-                    <Link href='/'>
-                      <h1 className="text-xl font-display font-extrabold uppercase text-ink">HaatPoint</h1>
-                    </Link>
+                    {isAgentIncomplete ? (
+                      <span className="text-xl font-display font-extrabold uppercase text-ink cursor-default">HaatPoint</span>
+                    ) : (
+                      <Link href='/'>
+                        <h1 className="text-xl font-display font-extrabold uppercase text-ink">HaatPoint</h1>
+                      </Link>
+                    )}
                     <button
                       type="button"
                       className="ml-auto rounded-md p-2.5 text-text-soft hover:bg-paper-dim hover:text-ink transition-colors"
@@ -259,34 +277,55 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                     <ul role="list" className="flex flex-1 flex-col gap-y-7">
                       <li>
                         <ul role="list" className="-mx-2 space-y-1">
-                          {navigation.map((item) => (
-                            <li key={item.name}>
-                              <Link
-                                href={item.href}
-                                className={`
-                                  group flex items-center gap-x-3 rounded-lg p-2.5 text-sm leading-6 font-semibold transition-all duration-200
-                                  ${item.current
-                                    ? 'bg-marigold text-white shadow-hard-sm'
-                                    : 'text-ink hover:bg-paper-dim hover:text-marigold'
-                                  }
-                                `}
-                                onClick={() => setSidebarOpen(false)}
-                              >
-                                <item.icon
-                                  className={`h-5 w-5 shrink-0 transition-colors ${
-                                    item.current
-                                      ? 'text-white'
-                                      : 'text-text-soft group-hover:text-marigold'
-                                  }`}
-                                  aria-hidden="true"
-                                />
-                                {item.name}
-                                {item.current && (
-                                  <span className="ml-auto w-1.5 h-1.5 bg-white rounded-full" />
-                                )}
-                              </Link>
-                            </li>
-                          ))}
+                          {navigation.map((item) => {
+                            const isItemDisabled = isAgentIncomplete && item.href !== '/dashboard/vendor/profile';
+
+                            if (isItemDisabled) {
+                              return (
+                                <li key={item.name}>
+                                  <div
+                                    className="group flex items-center justify-between rounded-lg p-2.5 text-sm leading-6 font-semibold opacity-40 cursor-not-allowed select-none text-text-soft"
+                                    title="Please complete your vendor information first"
+                                  >
+                                    <div className="flex items-center gap-x-3">
+                                      <item.icon className="h-5 w-5 shrink-0 text-text-soft" aria-hidden="true" />
+                                      <span>{item.name}</span>
+                                    </div>
+                                    <FiLock className="h-3.5 w-3.5 text-text-soft" />
+                                  </div>
+                                </li>
+                              );
+                            }
+
+                            return (
+                              <li key={item.name}>
+                                <Link
+                                  href={item.href}
+                                  className={`
+                                    group flex items-center gap-x-3 rounded-lg p-2.5 text-sm leading-6 font-semibold transition-all duration-200
+                                    ${item.current
+                                      ? 'bg-marigold text-white shadow-hard-sm'
+                                      : 'text-ink hover:bg-paper-dim hover:text-marigold'
+                                    }
+                                  `}
+                                  onClick={() => setSidebarOpen(false)}
+                                >
+                                  <item.icon
+                                    className={`h-5 w-5 shrink-0 transition-colors ${
+                                      item.current
+                                        ? 'text-white'
+                                        : 'text-text-soft group-hover:text-marigold'
+                                    }`}
+                                    aria-hidden="true"
+                                  />
+                                  {item.name}
+                                  {item.current && (
+                                    <span className="ml-auto w-1.5 h-1.5 bg-white rounded-full" />
+                                  )}
+                                </Link>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </li>
                     </ul>
@@ -306,9 +345,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
               <img src="/MyLogo.png" alt="Haatpoint" className="h-8 w-auto" />
             </div>
             {!isCollapsed && (
-              <Link href='/'>
-                <h1 className="text-xl font-display font-extrabold uppercase text-ink">HaatPoint</h1>
-              </Link>
+              isAgentIncomplete ? (
+                <span className="text-xl font-display font-extrabold uppercase text-ink cursor-default">HaatPoint</span>
+              ) : (
+                <Link href='/'>
+                  <h1 className="text-xl font-display font-extrabold uppercase text-ink">HaatPoint</h1>
+                </Link>
+              )
             )}
             <button
               type="button"
@@ -322,34 +365,57 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
               <li>
                 <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => (
-                    <li key={item.name}>
-                      <Link
-                        href={item.href}
-                        className={`
-                          group flex items-center gap-x-3 rounded-lg p-2.5 text-sm leading-6 font-semibold transition-all duration-200
-                          ${item.current
-                            ? 'bg-marigold text-white shadow-hard-sm'
-                            : 'text-ink hover:bg-paper-dim hover:text-marigold'
-                          }
-                          ${isCollapsed ? 'justify-center' : ''}
-                        `}
-                      >
-                        <item.icon
-                          className={`h-5 w-5 shrink-0 transition-colors ${
-                            item.current
-                              ? 'text-white'
-                              : 'text-text-soft group-hover:text-marigold'
-                          }`}
-                          aria-hidden="true"
-                        />
-                        {!isCollapsed && <span>{item.name}</span>}
-                        {item.current && !isCollapsed && (
-                          <span className="ml-auto w-1.5 h-1.5 bg-white rounded-full" />
-                        )}
-                      </Link>
-                    </li>
-                  ))}
+                  {navigation.map((item) => {
+                    const isItemDisabled = isAgentIncomplete && item.href !== '/dashboard/vendor/profile';
+
+                    if (isItemDisabled) {
+                      return (
+                        <li key={item.name}>
+                          <div
+                            className={`group flex items-center rounded-lg p-2.5 text-sm leading-6 font-semibold opacity-40 cursor-not-allowed select-none text-text-soft ${
+                              isCollapsed ? 'justify-center' : 'justify-between'
+                            }`}
+                            title="Please complete your vendor information first"
+                          >
+                            <div className={`flex items-center ${isCollapsed ? '' : 'gap-x-3'}`}>
+                              <item.icon className="h-5 w-5 shrink-0 text-text-soft" aria-hidden="true" />
+                              {!isCollapsed && <span>{item.name}</span>}
+                            </div>
+                            {!isCollapsed && <FiLock className="h-3.5 w-3.5 text-text-soft" />}
+                          </div>
+                        </li>
+                      );
+                    }
+
+                    return (
+                      <li key={item.name}>
+                        <Link
+                          href={item.href}
+                          className={`
+                            group flex items-center gap-x-3 rounded-lg p-2.5 text-sm leading-6 font-semibold transition-all duration-200
+                            ${item.current
+                              ? 'bg-marigold text-white shadow-hard-sm'
+                              : 'text-ink hover:bg-paper-dim hover:text-marigold'
+                            }
+                            ${isCollapsed ? 'justify-center' : ''}
+                          `}
+                        >
+                          <item.icon
+                            className={`h-5 w-5 shrink-0 transition-colors ${
+                              item.current
+                                ? 'text-white'
+                                : 'text-text-soft group-hover:text-marigold'
+                            }`}
+                            aria-hidden="true"
+                          />
+                          {!isCollapsed && <span>{item.name}</span>}
+                          {item.current && !isCollapsed && (
+                            <span className="ml-auto w-1.5 h-1.5 bg-white rounded-full" />
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               </li>
             </ul>
@@ -518,23 +584,36 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
 
                     {/* Menu Items */}
                     <div className="py-1">
-                      <Link
-                        href="/dashboard/profile"
-                        onClick={() => setProfileOpen(false)}
-                        className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors text-text-soft hover:bg-paper-dim hover:text-ink`}
-                      >
-                        <FiUser className="h-4 w-4 mr-3 text-text-soft" />
-                        Your Profile
-                      </Link>
+                      {user.role === 'agent' ? (
+                        <Link
+                          href="/dashboard/vendor/profile"
+                          onClick={() => setProfileOpen(false)}
+                          className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors text-text-soft hover:bg-paper-dim hover:text-ink`}
+                        >
+                          <FiUser className="h-4 w-4 mr-3 text-text-soft" />
+                          Vendor Profile
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/dashboard/profile"
+                          onClick={() => setProfileOpen(false)}
+                          className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors text-text-soft hover:bg-paper-dim hover:text-ink`}
+                        >
+                          <FiUser className="h-4 w-4 mr-3 text-text-soft" />
+                          Your Profile
+                        </Link>
+                      )}
 
-                      <Link
-                        href="/help"
-                        onClick={() => setProfileOpen(false)}
-                        className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors text-text-soft hover:bg-paper-dim hover:text-ink`}
-                      >
-                        <FiHelpCircle className="h-4 w-4 mr-3 text-text-soft" />
-                        Help & Support
-                      </Link>
+                      {!isAgentIncomplete && (
+                        <Link
+                          href="/help"
+                          onClick={() => setProfileOpen(false)}
+                          className={`flex items-center w-full px-4 py-2.5 text-sm transition-colors text-text-soft hover:bg-paper-dim hover:text-ink`}
+                        >
+                          <FiHelpCircle className="h-4 w-4 mr-3 text-text-soft" />
+                          Help & Support
+                        </Link>
+                      )}
                     </div>
 
                     {/* Logout */}
