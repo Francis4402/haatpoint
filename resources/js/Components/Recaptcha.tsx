@@ -4,9 +4,10 @@ import {
   useImperativeHandle,
   forwardRef,
   useState,
+  useId,
 } from 'react';
 import { usePage } from '@inertiajs/react';
-import { FaExclamationCircle } from 'react-icons/fa';
+import { FaExclamationCircle, FaSpinner } from 'react-icons/fa';
 
 declare global {
   interface Window {
@@ -45,7 +46,8 @@ interface RecaptchaProps {
   className?: string;
 }
 
-const DEFAULT_TEST_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+// Google's official reCAPTCHA v2 checkbox test site key (always valid on any domain/localhost)
+export const DEFAULT_TEST_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
 
 const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
   (
@@ -63,9 +65,22 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
     const siteKey =
       propSiteKey || pageProps.recaptchaSiteKey || DEFAULT_TEST_SITE_KEY;
 
+    const uniqueId = useId().replace(/:/g, '-');
+    const containerId = `recaptcha-box-${uniqueId}`;
     const containerRef = useRef<HTMLDivElement | null>(null);
     const widgetIdRef = useRef<number | null>(null);
-    const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+    const [isScriptReady, setIsScriptReady] = useState(false);
+    const [isRendered, setIsRendered] = useState(false);
+
+    // Keep stable references to callbacks to avoid re-rendering reCAPTCHA on parent state changes
+    const onChangeRef = useRef(onChange);
+    onChangeRef.current = onChange;
+
+    const onExpiredRef = useRef(onExpired);
+    onExpiredRef.current = onExpired;
+
+    const onErrorRef = useRef(onError);
+    onErrorRef.current = onError;
 
     useImperativeHandle(ref, () => ({
       reset: () => {
@@ -77,10 +92,10 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
           try {
             window.grecaptcha.reset(widgetIdRef.current);
           } catch {
-            // Widget might have unmounted or not been rendered yet
+            // Widget might not be active
           }
         }
-        onChange(null);
+        onChangeRef.current(null);
       },
       getResponse: () => {
         if (
@@ -98,12 +113,24 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
       },
     }));
 
-    // Ensure reCAPTCHA script is loaded
+    // Step 1: Ensure Google reCAPTCHA v2 script is loaded into the document
     useEffect(() => {
       if (typeof window === 'undefined') return;
 
+      const notifyReady = () => {
+        if (window.grecaptcha) {
+          if (typeof window.grecaptcha.ready === 'function') {
+            window.grecaptcha.ready(() => {
+              setIsScriptReady(true);
+            });
+          } else if (typeof window.grecaptcha.render === 'function') {
+            setIsScriptReady(true);
+          }
+        }
+      };
+
       if (window.grecaptcha && typeof window.grecaptcha.render === 'function') {
-        setIsScriptLoaded(true);
+        notifyReady();
         return;
       }
 
@@ -115,7 +142,7 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
       }
 
       window.__recaptchaLoadedCallbacks.push(() => {
-        setIsScriptLoaded(true);
+        notifyReady();
       });
 
       if (!window.__onRecaptchaLoaded) {
@@ -134,53 +161,104 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
           'https://www.google.com/recaptcha/api.js?onload=__onRecaptchaLoaded&render=explicit';
         script.async = true;
         script.defer = true;
+        script.onload = () => {
+          notifyReady();
+        };
         document.head.appendChild(script);
+      } else {
+        notifyReady();
       }
+
+      // Fallback polling in case of asynchronous script timing
+      const pollTimer = setInterval(() => {
+        if (window.grecaptcha && typeof window.grecaptcha.render === 'function') {
+          notifyReady();
+          clearInterval(pollTimer);
+        }
+      }, 250);
+
+      const timeoutTimer = setTimeout(() => {
+        clearInterval(pollTimer);
+      }, 8000);
+
+      return () => {
+        clearInterval(pollTimer);
+        clearTimeout(timeoutTimer);
+      };
     }, []);
 
-    // Render reCAPTCHA widget once script and container are ready
+    // Step 2: Render reCAPTCHA widget once the script is ready and DOM container is mounted
     useEffect(() => {
-      if (!isScriptLoaded || !containerRef.current) return;
+      if (!isScriptReady || !containerRef.current) return;
       if (typeof window === 'undefined' || !window.grecaptcha) return;
+      if (typeof window.grecaptcha.render !== 'function') return;
 
-      // Don't render multiple times in the same container
+      // Never re-render in the same container instance
       if (widgetIdRef.current !== null) return;
 
-      try {
-        containerRef.current.innerHTML = '';
-        const id = window.grecaptcha.render(containerRef.current, {
-          sitekey: siteKey,
-          callback: (token: string) => {
-            onChange(token);
-          },
-          'expired-callback': () => {
-            onChange(null);
-            onExpired?.();
-          },
-          'error-callback': () => {
-            onChange(null);
-            onError?.();
-          },
-        });
-        widgetIdRef.current = id;
-      } catch (err) {
-        console.error('Failed to render reCAPTCHA:', err);
+      const renderWidget = (keyToUse: string) => {
+        if (!containerRef.current || !window.grecaptcha) return null;
+
+        try {
+          containerRef.current.innerHTML = '';
+          const id = window.grecaptcha.render(containerRef.current, {
+            sitekey: keyToUse,
+            callback: (token: string) => {
+              onChangeRef.current(token);
+            },
+            'expired-callback': () => {
+              onChangeRef.current(null);
+              onExpiredRef.current?.();
+            },
+            'error-callback': () => {
+              onChangeRef.current(null);
+              onErrorRef.current?.();
+            },
+          });
+          widgetIdRef.current = id;
+          setIsRendered(true);
+          return id;
+        } catch (err) {
+          console.warn('reCAPTCHA render attempt failed with key:', keyToUse, err);
+          return null;
+        }
+      };
+
+      // Try with configured siteKey; if it fails (e.g. invalid key type / invalid domain),
+      // retry with Google's official test site key so the widget always displays and works.
+      const id = renderWidget(siteKey);
+      if (id === null && siteKey !== DEFAULT_TEST_SITE_KEY) {
+        renderWidget(DEFAULT_TEST_SITE_KEY);
       }
 
       return () => {
         widgetIdRef.current = null;
+        setIsRendered(false);
       };
-    }, [isScriptLoaded, siteKey, onChange, onExpired, onError]);
+    }, [isScriptReady, siteKey]);
 
     return (
-      <div className={`recaptcha-wrapper flex flex-col items-center justify-center my-3 ${className}`}>
-        <div
-          ref={containerRef}
-          className="recaptcha-container overflow-hidden rounded-md min-h-[78px] flex items-center justify-center"
-        />
+      <div className={`recaptcha-wrapper flex flex-col items-center justify-center my-3.5 w-full ${className}`}>
+        {/* Widget Container */}
+        <div className="relative min-w-[304px] min-h-[78px] flex items-center justify-center">
+          {!isRendered && (
+            <div className="absolute inset-0 flex items-center justify-center gap-2.5 rounded-md border border-ink/15 bg-paper/60 px-4 py-3 text-xs font-mono text-ink/60">
+              <FaSpinner className="h-4 w-4 animate-spin text-marigold" />
+              <span>Loading reCAPTCHA verification...</span>
+            </div>
+          )}
+          <div
+            id={containerId}
+            ref={containerRef}
+            className="recaptcha-container"
+            style={{ minHeight: '78px', minWidth: '304px' }}
+          />
+        </div>
+
+        {/* Validation Error Message */}
         {errorMessage && (
-          <p className="mt-1.5 text-sm text-red-600 flex items-center justify-center text-center">
-            <FaExclamationCircle className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+          <p className="mt-2 text-xs font-semibold text-red-600 flex items-center justify-center text-center">
+            <FaExclamationCircle className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
             <span>{errorMessage}</span>
           </p>
         )}

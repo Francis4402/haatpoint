@@ -55,12 +55,20 @@ export default function StaffLogin({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
+    if (!data.recaptcha_token) {
+      toast.error('Please complete the reCAPTCHA verification');
+      return;
+    }
     post(route(`${type}.login`), {
       onSuccess: () => {
         toast.success('Welcome back!');
       },
-      onError: () => {
-        toast.error('Invalid credentials');
+      onError: (errs) => {
+        if (errs.recaptcha_token) {
+          toast.error(errs.recaptcha_token);
+        } else {
+          toast.error('Invalid credentials');
+        }
         recaptchaRef.current?.reset();
       }
     });

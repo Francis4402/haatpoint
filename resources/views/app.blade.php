@@ -85,6 +85,9 @@
             }
         </style>
 
+        <!-- Google reCAPTCHA v2 -->
+        <script src="https://www.google.com/recaptcha/api.js?onload=__onRecaptchaLoaded&render=explicit" async defer></script>
+
         <!-- Scripts -->
         @routes
         @viteReactRefresh
