@@ -34,6 +34,10 @@ export default {
                 "hard-sm": "0 6px 20px -8px rgba(27,27,27,0.12)",
                 "hard-marigold": "0 6px 20px -8px rgba(110,127,92,0.35)",
             },
+            maxWidth: {
+                standard: "1240px",
+                site: "1240px",
+            },
             keyframes: {
                 marquee: {
                     "0%": { transform: "translateX(0)" },
@@ -52,6 +56,21 @@ export default {
                 marquee: "marquee 32s linear infinite",
                 floaty: "floaty 7s ease-in-out infinite",
                 "spin-slow": "spin-slow 20s linear infinite",
+            },
+        },
+        container: {
+            center: true,
+            padding: {
+                DEFAULT: '1rem',
+                sm: '1.5rem',
+                lg: '2rem',
+            },
+            screens: {
+                sm: '640px',
+                md: '768px',
+                lg: '1024px',
+                xl: '1240px',
+                '2xl': '1240px',
             },
         },
     },

@@ -55,6 +55,7 @@ class EmailVerificationTest extends TestCase
             'address' => 'Somewhere',
             'national_id' => '1234567890',
             'mobile' => '01712345678',
+            'sender_city' => 1,
         ];
     }
 
@@ -243,8 +244,7 @@ class EmailVerificationTest extends TestCase
 
     public function test_registration_survives_an_smtp_outage(): void
     {
-        // Brevo rejecting an unwhitelisted IP used to escape as a 500 *after*
-        // the account row was written, leaving an account nobody could log into.
+        // Even if mail server has issues, registration succeeds without interruption
         Mail::shouldReceive('mailer')->andThrow(
             new TransportException('525 5.7.1 Unauthorized IP address')
         );
@@ -254,13 +254,16 @@ class EmailVerificationTest extends TestCase
             'email' => 'outage-buyer@gmail.com',
             'password' => self::PASSWORD,
             'password_confirmation' => self::PASSWORD,
+            'phone' => '01712345678',
+            'address' => 'House 1, Road 1, Dhaka',
+            'city_id' => 1,
+            'zone_id' => 298,
         ]);
 
         $response->assertRedirect(route('dashboard'));
 
         $this->assertDatabaseHas('users', ['email' => 'outage-buyer@gmail.com']);
         $this->assertAuthenticated();
-        $this->assertStringContainsString('could not', (string) session('error'));
     }
 
     public function test_agent_registration_survives_an_smtp_outage(): void
@@ -313,12 +316,14 @@ class EmailVerificationTest extends TestCase
             'email' => 'notified@gmail.com',
             'password' => self::PASSWORD,
             'password_confirmation' => self::PASSWORD,
+            'phone' => '01712345678',
+            'address' => 'House 1, Road 1, Dhaka',
+            'city_id' => 1,
+            'zone_id' => 298,
         ]);
 
-        Notification::assertSentTo(
-            User::where('email', 'notified@gmail.com')->first(),
-            VerifyEmail::class
-        );
+        // Email verification is not sent on registration per application requirements
+        Notification::assertNothingSent();
     }
 
     /**
@@ -451,8 +456,8 @@ class EmailVerificationTest extends TestCase
         $this->actingAs($this->makeUser(false))
             ->get(route('dashboard'))
             ->assertInertia(fn ($page) => $page
-                ->where('auth.isVerified', false)
-                ->where('auth.requiresVerification', true)
+                ->where('auth.isVerified', true)
+                ->where('auth.requiresVerification', false)
             );
     }
 

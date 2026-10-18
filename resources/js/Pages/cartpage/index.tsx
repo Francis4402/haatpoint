@@ -517,7 +517,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
       <AppLayout user={auth.user} wishlist={wishlist}>
         <SeoHead />
         <div className="min-h-screen bg-paper-dim py-20">
-          <div className="max-w-[1240px] mx-auto px-8">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-8">
             <div className="bg-white rounded-2xl shadow-hard-sm p-12 text-center border border-line">
               <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-marigold/10 flex items-center justify-center">
                 <FaShoppingCart className="h-12 w-12 text-marigold" />

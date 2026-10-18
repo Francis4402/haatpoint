@@ -43,28 +43,8 @@ Route::get('/', function () {
             ->visible()
             ->orderBy('created_at', 'desc')
             ->paginate(2);
-    $reviews = Reviews::all();
+    $reviews = [];
     $wishlist = Wishlist::forOwner()->paginate(12);
-
-    $productIds = $products->pluck('id')->toArray();
-
-    $ratings = Comments::whereIn('product_id', $productIds)
-        ->whereNotNull('rating')
-        ->select('product_id', 'rating')
-        ->get();
-
-    $productRatings = [];
-
-    foreach ($products as $product) {
-        $productRatingData = $ratings->where('product_id', $product->id);
-        $averageRating = $productRatingData->avg('rating') ?? 0;
-        $ratingCount = $productRatingData->count();
-
-        $productRatings[$product->id] = [
-            'average' => round($averageRating, 1),
-            'count' => $ratingCount
-        ];
-    }
 
     $showcase = function (?string $productType, int $limit = 6) {
         $random = fn ($query) => $query
@@ -162,6 +142,14 @@ Route::get('/', function () {
         'review' => $showcaseRatings[$item->id]['count'] ?? 0,
     ];
 
+    $productRatings = [];
+    foreach ($products as $product) {
+        $productRatings[$product->id] = [
+            'average' => $showcaseRatings[$product->id]['average'] ?? 0,
+            'count' => $showcaseRatings[$product->id]['count'] ?? 0,
+        ];
+    }
+
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
@@ -179,7 +167,7 @@ Route::get('/', function () {
         'productRatings' => $productRatings,
         'reviews' => $reviews,
     ]);
-});
+})->name('home');
 
 Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])->group(function () {
     Route::get('/dashboard/categories', [CategoriesController::class, 'index'])->name('dashboard.categories');

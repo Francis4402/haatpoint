@@ -1,4 +1,4 @@
-import { useEffect, FormEventHandler, useState } from 'react';
+import { useEffect, FormEventHandler, useState, useRef } from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import {
@@ -13,6 +13,7 @@ import {
 import { toast } from 'sonner';
 import SocialButtons from '@/Components/SocialButtons';
 import FlashBanner from '@/Components/FlashBanner';
+import Recaptcha, { RecaptchaRef } from '@/Components/Recaptcha';
 
 type StaffType = 'superadmin' | 'admin' | 'agent';
 
@@ -22,11 +23,26 @@ const LABELS: Record<StaffType, string> = {
   agent: 'Agent',
 };
 
-export default function StaffLogin({ type, status, canRegister, socialDestination }: { type: StaffType, status?: string, canRegister?: boolean, socialDestination?: StaffType }) {
+export default function StaffLogin({
+  type,
+  status,
+  canRegister,
+  socialDestination,
+  recaptchaSiteKey,
+}: {
+  type: StaffType;
+  status?: string;
+  canRegister?: boolean;
+  socialDestination?: StaffType;
+  recaptchaSiteKey?: string;
+}) {
+  const recaptchaRef = useRef<RecaptchaRef>(null);
+
   const { data, setData, post, processing, errors, reset } = useForm({
     email: '',
     password: '',
     remember: false,
+    recaptcha_token: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -45,6 +61,7 @@ export default function StaffLogin({ type, status, canRegister, socialDestinatio
       },
       onError: () => {
         toast.error('Invalid credentials');
+        recaptchaRef.current?.reset();
       }
     });
   };
@@ -167,6 +184,14 @@ export default function StaffLogin({ type, status, canRegister, socialDestinatio
                 Remember me
               </label>
             </div>
+
+            {/* Google reCAPTCHA v2 Checkbox */}
+            <Recaptcha
+              ref={recaptchaRef}
+              siteKey={recaptchaSiteKey}
+              onChange={(token) => setData('recaptcha_token', token || '')}
+              errorMessage={errors.recaptcha_token}
+            />
 
             {/* Submit */}
             <button

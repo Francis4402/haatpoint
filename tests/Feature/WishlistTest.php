@@ -25,12 +25,18 @@ class WishlistTest extends TestCase
 
     private function makeAgent(string $email = 'vendor@example.com'): Agent
     {
+        static $counter = 2000;
+        $counter++;
+
         return Agent::create([
             'name' => 'Vendor',
             'email' => $email,
             'password' => bcrypt('password'),
             'role' => 'agent',
             'blocked' => false,
+            'national_id' => '123456' . str_pad((string) $counter, 4, '0', STR_PAD_LEFT),
+            'mobile' => '01812' . str_pad((string) $counter, 6, '0', STR_PAD_LEFT),
+            'address' => 'House 1, Road 1, Dhaka',
         ]);
     }
 

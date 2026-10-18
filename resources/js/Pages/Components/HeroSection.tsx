@@ -112,6 +112,7 @@ export default function Hero({ user, categories }: HeroProps) {
           </span>
 
           <h1 className="text-[38px] sm:text-[54px] lg:text-[76px] leading-[0.95]">
+            <span className="sr-only">HaatPoint - Online Shopping in Bangladesh: </span>
             Shop local.
             <br />
             <span className="text-marigold">Save more.</span>
@@ -193,19 +194,26 @@ export default function Hero({ user, categories }: HeroProps) {
               {CATEGORY_TILES.map((tile, i) => {
                 const Icon = tile.icon;
 
+                const tileHref = `/products?category=${encodeURIComponent(tile.label)}`;
+
                 return broken[i] ? (
-                  <div
+                  <Link
                     key={tile.label}
-                    className="hero-tile group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-[20px] border border-ink/10 bg-paper p-4 text-center"
+                    href={tileHref}
+                    className="hero-tile group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-[20px] border border-ink/10 bg-paper p-4 text-center hover:border-marigold transition-all duration-200"
                   >
                     <Icon className="relative h-7 w-7 text-ink/40 transition-transform duration-300 group-hover:scale-110" />
-                    <div className="relative font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/60">
+                    <div className="relative font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/60 group-hover:text-marigold transition-colors">
                       {tile.label}
                     </div>
                     <div className="relative text-[10px] text-text-soft">{tile.caption}</div>
-                  </div>
+                  </Link>
                 ) : (
-                  <div key={tile.label} className="hero-tile group relative overflow-hidden rounded-[20px] border border-ink/10 bg-paper-dim">
+                  <Link
+                    key={tile.label}
+                    href={tileHref}
+                    className="hero-tile group relative block overflow-hidden rounded-[20px] border border-ink/10 bg-paper-dim"
+                  >
                     <img
                       src={tile.img}
                       alt={tile.label}
@@ -225,7 +233,7 @@ export default function Hero({ user, categories }: HeroProps) {
                         {tile.caption}
                       </span>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>

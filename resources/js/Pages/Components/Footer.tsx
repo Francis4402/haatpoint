@@ -36,7 +36,7 @@ export default function Footer() {
 
   return (
     <footer className="pt-20 pb-7 border-t border-line">
-      <div className="max-w-[1240px] mx-auto px-8">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8 mb-12">
           <div>
             <div className="flex items-center gap-2.5 mb-3.5">

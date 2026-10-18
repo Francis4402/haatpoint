@@ -6,7 +6,7 @@ import { MdShoppingCartCheckout } from "react-icons/md";
 export default function Header() {
   return (
     <header className="sticky top-0 z-[100] bg-paper/90 backdrop-blur-md border-b border-line">
-      <div className="max-w-[1240px] mx-auto flex items-center justify-between gap-6 px-8 py-3.5">
+      <div className="max-w-[1240px] mx-auto flex items-center justify-between gap-6 px-4 sm:px-6 lg:px-8 py-3.5">
         <div className="flex items-center gap-2.5 shrink-0">
           <img src={'/MyLogo.png'} alt="Haatpoint logo" className="h-[34px] w-auto" />
           <span className="font-display font-extrabold text-[22px] tracking-[-0.01em] uppercase">

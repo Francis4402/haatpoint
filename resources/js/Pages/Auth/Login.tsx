@@ -1,4 +1,4 @@
-import { useEffect, FormEventHandler, useState, Fragment } from 'react';
+import { useEffect, FormEventHandler, useState, Fragment, useRef } from 'react';
 import { Link, useForm, Head } from '@inertiajs/react';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import {
@@ -16,12 +16,24 @@ import {
 import { toast } from 'sonner';
 import SocialButtons from '@/Components/SocialButtons';
 import FlashBanner from '@/Components/FlashBanner';
+import Recaptcha, { RecaptchaRef } from '@/Components/Recaptcha';
 
-export default function Login({ status, canResetPassword }: { status?: string, canResetPassword: boolean }) {
+export default function Login({
+  status,
+  canResetPassword,
+  recaptchaSiteKey,
+}: {
+  status?: string;
+  canResetPassword: boolean;
+  recaptchaSiteKey?: string;
+}) {
+  const recaptchaRef = useRef<RecaptchaRef>(null);
+
   const { data, setData, post, processing, errors, reset } = useForm({
     email: '',
     password: '',
     remember: false,
+    recaptcha_token: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -48,6 +60,7 @@ export default function Login({ status, canResetPassword }: { status?: string, c
       },
       onError: () => {
         toast.error('Invalid credentials');
+        recaptchaRef.current?.reset();
       }
     });
   };
@@ -176,6 +189,14 @@ export default function Login({ status, canResetPassword }: { status?: string, c
                 Remember me
               </label>
             </div>
+
+            {/* Google reCAPTCHA v2 Checkbox */}
+            <Recaptcha
+              ref={recaptchaRef}
+              siteKey={recaptchaSiteKey}
+              onChange={(token) => setData('recaptcha_token', token || '')}
+              errorMessage={errors.recaptcha_token}
+            />
 
             {/* Submit */}
             <button

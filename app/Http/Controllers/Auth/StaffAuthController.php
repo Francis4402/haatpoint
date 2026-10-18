@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Rules\GmailAddress;
+use App\Rules\Recaptcha;
 use App\Traits\ClearsOtherGuards;
 use App\Traits\StoresProfileImage;
 use Illuminate\Auth\Events\Registered;
@@ -212,6 +213,7 @@ abstract class StaffAuthController extends Controller
             // Same value the register page sends, so the Google button on the
             // login page cannot silently ask for a create=false destination.
             'socialDestination' => $this->socialDestination(),
+            'recaptchaSiteKey' => config('services.recaptcha.site_key'),
         ]);
     }
 
@@ -222,9 +224,14 @@ abstract class StaffAuthController extends Controller
      */
     public function login(Request $request): RedirectResponse
     {
+        if (! $request->has('recaptcha_token') && $request->has('g-recaptcha-response')) {
+            $request->merge(['recaptcha_token' => $request->input('g-recaptcha-response')]);
+        }
+
         $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+            'recaptcha_token' => [new Recaptcha],
         ]);
 
         $key = Str::transliterate(Str::lower($request->string('email')) . '|' . $request->ip());

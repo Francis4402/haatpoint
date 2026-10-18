@@ -1,4 +1,4 @@
-﻿// ProductCard.tsx
+// ProductCard.tsx
 import { useState, useEffect } from "react";
 import { Link } from "@inertiajs/react";
 import { FaEye, FaStar, FaRegStar, FaStarHalfAlt } from "react-icons/fa";
@@ -127,10 +127,12 @@ const ProductCard = ({
   user,
   initialAverageRating = 0,
 }: ProductCardProps) => {
+  const productRating = product.rating !== undefined ? Number(product.rating) : initialAverageRating;
   const [imageFailed, setImageFailed] = useState(false);
-  const [averageRating, setAverageRating] = useState(initialAverageRating);
-  const [loading, setLoading] = useState(true);
+  const [averageRating, setAverageRating] = useState(productRating ?? 0);
+  const [loading, setLoading] = useState(productRating === undefined);
 
+  const productUrl = `/products/${product.slug || product.id}`;
   const imageSrc = getImageSrc(product.images);
   const categoryLabel = "emoji" in product && (product as any).emoji
     ? (product as any).emoji
@@ -147,8 +149,19 @@ const ProductCard = ({
   const regularDisplayPrice = withMarkup(product.regular_price);
   const showImage = imageSrc && !imageFailed;
 
-  // Fetch real review data using the route: /products/{product}/comments
+  // Fetch real review data using the route: /products/{product}/comments only if not already provided
   useEffect(() => {
+    if (product.rating !== undefined) {
+      setAverageRating(Number(product.rating) || 0);
+      setLoading(false);
+      return;
+    }
+    if (initialAverageRating !== undefined) {
+      setAverageRating(initialAverageRating);
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
 
@@ -164,12 +177,12 @@ const ProductCard = ({
       .catch((err) => {
         console.error("Failed to fetch review data:", err);
         setLoading(false);
-        setAverageRating(initialAverageRating);
+        setAverageRating(0);
       });
     return () => {
       cancelled = true;
     };
-  }, [product.id, initialAverageRating]);
+  }, [product.id, product.rating, initialAverageRating]);
 
   // Determine if we should show the rating section
   const hasRating = averageRating > 0;
@@ -187,22 +200,24 @@ const ProductCard = ({
     >
       {/* Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-        {showImage ? (
-          <LazyProductImage
-            src={imageSrc}
-            alt={`${product.name} - Product image`}
-            onError={handleImageError}
-          />
-        ) : (
-          <div
-            className="w-full h-full flex items-center justify-center px-3 text-center transition-transform duration-500 group-hover:scale-105"
-            style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}
-          >
-            <span className="font-mono text-sm font-semibold uppercase tracking-wider text-[#1B1B1B]/70">
-              {categoryLabel}
-            </span>
-          </div>
-        )}
+        <Link href={productUrl} className="block w-full h-full" aria-label={`View ${product.name}`}>
+          {showImage ? (
+            <LazyProductImage
+              src={imageSrc}
+              alt={`${product.name} - Product image`}
+              onError={handleImageError}
+            />
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center px-3 text-center transition-transform duration-500 group-hover:scale-105"
+              style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}
+            >
+              <span className="font-mono text-sm font-semibold uppercase tracking-wider text-[#1B1B1B]/70">
+                {categoryLabel}
+              </span>
+            </div>
+          )}
+        </Link>
 
         {/* Badge - Custom badge from props */}
         {badge && (
@@ -299,7 +314,9 @@ const ProductCard = ({
 
         {/* Product Name */}
         <h3 className="font-semibold text-[14.5px] leading-snug mb-2 line-clamp-2 min-h-[44px] group-hover:text-[#6E7F5C] transition-colors">
-          {product.name}
+          <Link href={productUrl} className="hover:underline">
+            {product.name}
+          </Link>
         </h3>
 
         {/* Rating - Only show if there's a rating */}

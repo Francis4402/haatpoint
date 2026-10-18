@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\SendsVerificationEmailSafely;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
  */
 class Agent extends Authenticatable
 {
-    use HasUuids, Notifiable;
+    use HasUuids, Notifiable, SendsVerificationEmailSafely;
 
     protected $guarded = [];
 

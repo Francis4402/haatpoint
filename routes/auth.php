@@ -56,13 +56,15 @@ Route::middleware('auth:web,superadmin,admin,agent')->group(function () {
 // email. Admin and Superadmin have no verification step, and agents
 // deliberately do not verify either, so allowing either here would let an
 // account open a page that asks it to confirm an address it never had to.
-Route::middleware('auth:web')->group(function () {
-    Route::get('verify-email', EmailVerificationPromptController::class)
-        ->name('verification.notice');
-
+Route::middleware('auth:web,agent')->group(function () {
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
+});
+
+Route::middleware('auth:web')->group(function () {
+    Route::get('verify-email', EmailVerificationPromptController::class)
+        ->name('verification.notice');
 
     Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
         ->middleware('throttle:6,1')

@@ -61,6 +61,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'ziggy' => fn () => (new Ziggy())->toArray(),
             'seo' => $request->attributes->get('seo', []),
+            'recaptchaSiteKey' => config('services.recaptcha.site_key'),
             'auth' => [
                 'user' => $user,
                 'isVerified' => true,

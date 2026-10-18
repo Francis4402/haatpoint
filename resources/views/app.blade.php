@@ -17,8 +17,9 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <link rel="manifest" href="/build/manifest.json">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
+        <!-- Fonts & Performance -->
+        <link rel="dns-prefetch" href="//fonts.bunny.net">
+        <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         {{-- Canonical URL. Omitted when SeoMeta deliberately left it empty (error
@@ -92,6 +93,25 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+
+        {{-- Fallback headings and internal links for web crawlers, search bots and non-JS clients --}}
+        <noscript>
+            <div style="padding: 24px; max-width: 1200px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+                <h1>HaatPoint - Online Shopping Bangladesh | Multivendor Marketplace</h1>
+                <p>Welcome to HaatPoint, your premier online marketplace in Bangladesh. Discover thousands of genuine products across electronics, fashion, home goods, beauty and more from trusted local merchants with cash on delivery and fast nationwide delivery.</p>
+                <h2>Explore Marketplace Departments</h2>
+                <ul>
+                    <li><a href="/products">All Products</a></li>
+                    <li><a href="/hotdeals">Hot Deals &amp; Discounts</a></li>
+                    <li><a href="/new-arrivals">New Arrivals</a></li>
+                    <li><a href="/stores">Browse Verified Stores</a></li>
+                    <li><a href="/sell">Become an Agent / Seller (1 Year Free)</a></li>
+                    <li><a href="/aboutus">About HaatPoint</a></li>
+                    <li><a href="/contactus">Customer Support</a></li>
+                    <li><a href="/track-order">Track Your Order</a></li>
+                </ul>
+            </div>
+        </noscript>
 
         <!-- Google Translate Element -->
         <div id="google_translate_element" style="display:none;"></div>

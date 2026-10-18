@@ -4,6 +4,7 @@ import { Autoplay } from 'swiper/modules';
 import { useRef, useState } from "react";
 import type { Swiper as SwiperType } from 'swiper';
 import { categoryType } from '@/types';
+import { Link } from '@inertiajs/react';
 import Eyebrow from './Eyebrow';
 
 
@@ -92,8 +93,9 @@ const Categories = ({ categories }: { categories: categoryType[] }) => {
         >
           {categories.map((c) => (
             <SwiperSlide key={c.id}>
-              <div
-                className="clip-cat group flex flex-col items-center gap-2.5 text-center px-3.5 py-5 cursor-pointer bg-white border border-line transition-all duration-200 hover:border-marigold hover:-translate-y-1 hover:shadow-hard-sm h-full"
+              <Link
+                href={`/products?category=${encodeURIComponent(c.categories)}`}
+                className="clip-cat group flex flex-col items-center gap-2.5 text-center px-3.5 py-5 bg-white border border-line transition-all duration-200 hover:border-marigold hover:-translate-y-1 hover:shadow-hard-sm h-full block"
               >
                 <div className="text-xl transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
                   <LazyLoadImage
@@ -105,8 +107,10 @@ const Categories = ({ categories }: { categories: categoryType[] }) => {
                     className="w-25 h-25 object-contain"
                   />
                 </div>
-                <span className="text-xs font-bold leading-tight">{c.categories}</span>
-              </div>
+                <span className="text-xs font-bold leading-tight text-ink group-hover:text-marigold transition-colors">
+                  {c.categories}
+                </span>
+              </Link>
             </SwiperSlide>
           ))}
         </Swiper>

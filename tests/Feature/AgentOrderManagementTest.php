@@ -27,6 +27,9 @@ class AgentOrderManagementTest extends TestCase
 
     private function makeAgent(string $email): Agent
     {
+        static $seq = 100;
+        $seq++;
+
         return Agent::create([
             'name' => 'Agent ' . $email,
             'email' => $email,
@@ -34,6 +37,9 @@ class AgentOrderManagementTest extends TestCase
             'role' => 'agent',
             'blocked' => false,
             'email_verified_at' => now(),
+            'mobile' => sprintf('017%08d', $seq),
+            'national_id' => (string) (2000000000 + $seq),
+            'address' => 'Dhaka, Bangladesh',
         ]);
     }
 

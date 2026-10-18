@@ -1,4 +1,4 @@
-﻿import { useRef, useMemo } from "react";
+import { useRef, useMemo } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -100,9 +100,10 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
             <div className="w-20 h-20 mx-auto mb-4 bg-paper-dim rounded-full flex items-center justify-center">
               <FaEye className="text-3xl text-text-soft" />
             </div>
-            <h3 className="text-xl font-bold text-ink mb-2">No best sellers yet</h3>
+            <Eyebrow>Monthly Leaderboard</Eyebrow>
+            <h2 className="text-2xl font-bold text-ink mb-2">Top Selling Products</h2>
             <p className="text-text-soft max-w-md mx-auto">
-              This leaderboard only lists products that have sold more than {minSold} times. Nothing has
+              This leaderboard only lists products that have sold more than {minSold} times this month. Nothing has
               reached that yet.
             </p>
           </div>
@@ -222,8 +223,11 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                     </div>
 
                     {/* Thumbnail */}
-                    <div className="relative flex-shrink-0">
-                      <div className={`rounded-lg w-11 h-11 sm:w-14 sm:h-14 md:w-[60px] md:h-[60px] flex items-center justify-center overflow-hidden ${
+                    <Link
+                      href={`/products/${product.slug || product.id}`}
+                      className="relative flex-shrink-0 block group/thumb"
+                    >
+                      <div className={`rounded-lg w-11 h-11 sm:w-14 sm:h-14 md:w-[60px] md:h-[60px] flex items-center justify-center overflow-hidden transition-transform duration-200 group-hover/thumb:scale-105 ${
                         isFirst ? 'ring-2 ring-marigold' : ''
                       }`}>
                         <img
@@ -245,12 +249,17 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                           #1
                         </span>
                       )}
-                    </div>
+                    </Link>
 
                     {/* Info (holds everything on mobile) */}
                     <div className="min-w-0">
                       <div className="font-semibold text-sm sm:text-[15px] md:text-base mb-1.5 flex items-center gap-2">
-                        <span className="truncate">{product.name}</span>
+                        <Link
+                          href={`/products/${product.slug || product.id}`}
+                          className="truncate hover:text-marigold hover:underline transition-colors"
+                        >
+                          {product.name}
+                        </Link>
                         {isTop3 && (
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold text-white whitespace-nowrap flex-shrink-0 ${
                             isFirst ? 'bg-marigold' : 'bg-gray-500'

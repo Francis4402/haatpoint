@@ -71,7 +71,7 @@ export default function SubscriptionPayment({
       <div className="relative overflow-hidden">
         <div className="pointer-events-none absolute right-[-160px] top-[-200px] h-[520px] w-[520px] bg-marigold opacity-90 clip-cta" />
 
-        <header className="relative z-10 mx-auto flex max-w-[1120px] items-center justify-between px-6 py-6 sm:px-8">
+        <header className="relative z-10 mx-auto flex max-w-[1240px] items-center justify-between px-6 py-6 sm:px-8">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <img src="/MyLogo.png" alt="Haatpoint" className="h-9 w-auto object-contain" />
             <span className="font-display text-[22px] font-extrabold uppercase tracking-[-0.01em]">
@@ -88,7 +88,7 @@ export default function SubscriptionPayment({
           </button>
         </header>
 
-        <main className="relative z-10 mx-auto max-w-[1120px] px-6 pb-24 pt-8 sm:px-8">
+        <main className="relative z-10 mx-auto max-w-[1240px] px-6 pb-24 pt-8 sm:px-8">
           {/* Important message for agent */}
           <div className="mb-8 rounded-2xl border border-marigold/40 bg-marigold/10 p-5 backdrop-blur-sm">
             <div className="flex items-start gap-3.5">

@@ -16,6 +16,8 @@ class EnsureVendorProfileComplete
     protected array $allowedRoutes = [
         'vendor.profile.edit',
         'vendor.profile.update',
+        'profile.edit',
+        'profile.update',
         'agent.logout',
         'logout',
     ];
@@ -37,6 +39,8 @@ class EnsureVendorProfileComplete
             if (
                 ($routeName && in_array($routeName, $this->allowedRoutes, true))
                 || $request->is('dashboard/vendor/profile*')
+                || $request->is('dashboard/profile*')
+                || $request->is('profile*')
                 || $request->is('logout')
                 || $request->is('agent/logout')
             ) {

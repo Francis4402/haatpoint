@@ -113,7 +113,7 @@ const NewArrivals = ({
 
       {/* Hero */}
       <div className="bg-gradient-to-r from-marigold to-marigold-dark text-white">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] ring-1 ring-white/30">
@@ -148,7 +148,7 @@ const NewArrivals = ({
       </div>
 
       <div className="min-h-screen bg-paper-dim py-6 md:py-8">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb + toolbar */}
           <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <nav className="text-sm text-text-soft" aria-label="Breadcrumb">

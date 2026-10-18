@@ -29,7 +29,7 @@ class ProductOwnershipTest extends TestCase
             'password' => bcrypt('secret123'),
             'role' => 'agent',
             'mobile' => '018' . (string) random_int(10000000, 99999999),
-            'national_id' => (string) random_int(10000000000, 99999999999),
+            'national_id' => (string) random_int(1000000000, 9999999999),
             'address' => 'House 1, Road 1, Dhaka',
             'email_verified_at' => now(),
         ]);
@@ -54,7 +54,7 @@ class ProductOwnershipTest extends TestCase
             'storetype' => 'Retail',
             'email' => $owner->email,
             'address' => 'House 1, Road 1, Dhaka',
-            'national_id' => (string) random_int(10000000000, 99999999999),
+            'national_id' => (string) random_int(1000000000, 9999999999),
             'mobile' => '017' . (string) random_int(10000000, 99999999),
             // Not nullable in the schema, and StoreController::store writes the
             // actor's id for agents too — only agent_id distinguishes them.

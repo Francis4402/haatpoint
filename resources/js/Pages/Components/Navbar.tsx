@@ -137,7 +137,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
       >
         {/* Top Seller Announcement Bar */}
         <div className="bg-ink text-paper text-xs py-2 px-4 border-b border-white/10">
-          <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-3">
+          <div className="max-w-[1240px] mx-auto flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 overflow-hidden text-[11px] sm:text-xs">
               <span className="inline-flex items-center gap-1 font-mono uppercase tracking-wider text-[10px] font-bold bg-marigold px-2 py-0.5 rounded text-white shrink-0">
                 For Sellers
@@ -156,7 +156,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
           </div>
         </div>
 
-        <div className="max-w-[1600px] mx-auto px-4 md:px-8">
+        <div className="max-w-[1240px] mx-auto px-4 md:px-8">
           <div className="flex h-16 md:h-[76px] items-center justify-between gap-4">
             {/* Left Section - Logo + nav */}
             <div className="flex items-center gap-3 shrink-0">

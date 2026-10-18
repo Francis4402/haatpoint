@@ -34,6 +34,14 @@ class RegistrationProfileImageTest extends TestCase
             'email' => 'person@gmail.com',
             'password' => 'Password!123',
             'password_confirmation' => 'Password!123',
+            // Customer delivery fields
+            'phone' => '01812345678',
+            'city_id' => 1,
+            'city_name' => 'Dhaka',
+            'zone_id' => 298,
+            'zone_name' => '60 feet',
+            'area_id' => 3069,
+            'area_name' => '60 feet road',
             // Agent-only fields; harmless for roles that ignore them.
             'address' => '12 Test Road',
             'mobile' => '01812345678',
