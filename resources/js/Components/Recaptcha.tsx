@@ -9,23 +9,27 @@ import {
 import { usePage } from '@inertiajs/react';
 import { FaExclamationCircle, FaSpinner } from 'react-icons/fa';
 
+interface GrecaptchaInstance {
+  render: (
+    container: HTMLElement | string,
+    parameters: {
+      sitekey: string;
+      theme?: 'light' | 'dark';
+      size?: 'normal' | 'compact';
+      callback?: (token: string) => void;
+      'expired-callback'?: () => void;
+      'error-callback'?: () => void;
+    }
+  ) => number;
+  reset: (opt_widget_id?: number) => void;
+  getResponse: (opt_widget_id?: number) => string;
+  ready: (callback: () => void) => void;
+}
+
 declare global {
   interface Window {
-    grecaptcha?: {
-      render: (
-        container: HTMLElement | string,
-        parameters: {
-          sitekey: string;
-          theme?: 'light' | 'dark';
-          size?: 'normal' | 'compact';
-          callback?: (token: string) => void;
-          'expired-callback'?: () => void;
-          'error-callback'?: () => void;
-        }
-      ) => number;
-      reset: (opt_widget_id?: number) => void;
-      getResponse: (opt_widget_id?: number) => string;
-      ready: (callback: () => void) => void;
+    grecaptcha?: GrecaptchaInstance & {
+      enterprise?: GrecaptchaInstance;
     };
     __recaptchaLoadedCallbacks?: Array<() => void>;
     __onRecaptchaLoaded?: () => void;
@@ -46,8 +50,18 @@ interface RecaptchaProps {
   className?: string;
 }
 
-// Google's official reCAPTCHA v2 checkbox test site key (always valid on any domain/localhost)
+// Google's official reCAPTCHA test site key (always valid on any domain/localhost)
 export const DEFAULT_TEST_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+
+/**
+ * Returns either the enterprise reCAPTCHA API (if enterprise.js is loaded)
+ * or the standard grecaptcha API.
+ */
+function getGrecaptcha(): GrecaptchaInstance | undefined {
+  if (typeof window === 'undefined') return undefined;
+  if (!window.grecaptcha) return undefined;
+  return window.grecaptcha.enterprise || window.grecaptcha;
+}
 
 const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
   (
@@ -84,13 +98,14 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
 
     useImperativeHandle(ref, () => ({
       reset: () => {
+        const api = getGrecaptcha();
         if (
           widgetIdRef.current !== null &&
-          window.grecaptcha &&
-          typeof window.grecaptcha.reset === 'function'
+          api &&
+          typeof api.reset === 'function'
         ) {
           try {
-            window.grecaptcha.reset(widgetIdRef.current);
+            api.reset(widgetIdRef.current);
           } catch {
             // Widget might not be active
           }
@@ -98,13 +113,14 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
         onChangeRef.current(null);
       },
       getResponse: () => {
+        const api = getGrecaptcha();
         if (
           widgetIdRef.current !== null &&
-          window.grecaptcha &&
-          typeof window.grecaptcha.getResponse === 'function'
+          api &&
+          typeof api.getResponse === 'function'
         ) {
           try {
-            return window.grecaptcha.getResponse(widgetIdRef.current);
+            return api.getResponse(widgetIdRef.current);
           } catch {
             return '';
           }
@@ -113,23 +129,25 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
       },
     }));
 
-    // Step 1: Ensure Google reCAPTCHA v2 script is loaded into the document
+    // Step 1: Ensure Google reCAPTCHA enterprise / v2 script is loaded into the document
     useEffect(() => {
       if (typeof window === 'undefined') return;
 
       const notifyReady = () => {
-        if (window.grecaptcha) {
-          if (typeof window.grecaptcha.ready === 'function') {
-            window.grecaptcha.ready(() => {
+        const api = getGrecaptcha();
+        if (api) {
+          if (typeof api.ready === 'function') {
+            api.ready(() => {
               setIsScriptReady(true);
             });
-          } else if (typeof window.grecaptcha.render === 'function') {
+          } else if (typeof api.render === 'function') {
             setIsScriptReady(true);
           }
         }
       };
 
-      if (window.grecaptcha && typeof window.grecaptcha.render === 'function') {
+      const initialApi = getGrecaptcha();
+      if (initialApi && typeof initialApi.render === 'function') {
         notifyReady();
         return;
       }
@@ -171,7 +189,8 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
 
       // Fallback polling in case of asynchronous script timing
       const pollTimer = setInterval(() => {
-        if (window.grecaptcha && typeof window.grecaptcha.render === 'function') {
+        const api = getGrecaptcha();
+        if (api && typeof api.render === 'function') {
           notifyReady();
           clearInterval(pollTimer);
         }
@@ -190,18 +209,19 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
     // Step 2: Render reCAPTCHA widget once the script is ready and DOM container is mounted
     useEffect(() => {
       if (!isScriptReady || !containerRef.current) return;
-      if (typeof window === 'undefined' || !window.grecaptcha) return;
-      if (typeof window.grecaptcha.render !== 'function') return;
+      const api = getGrecaptcha();
+      if (!api || typeof api.render !== 'function') return;
 
       // Never re-render in the same container instance
       if (widgetIdRef.current !== null) return;
 
       const renderWidget = (keyToUse: string) => {
-        if (!containerRef.current || !window.grecaptcha) return null;
+        const currentApi = getGrecaptcha();
+        if (!containerRef.current || !currentApi) return null;
 
         try {
           containerRef.current.innerHTML = '';
-          const id = window.grecaptcha.render(containerRef.current, {
+          const id = currentApi.render(containerRef.current, {
             sitekey: keyToUse,
             callback: (token: string) => {
               onChangeRef.current(token);
