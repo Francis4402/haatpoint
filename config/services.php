@@ -41,4 +41,9 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'whatsapp' => [
+        'sender_number' => env('WHATSAPP_SENDER_NUMBER', '8801319052507'),
+        'webhook_url' => env('WHATSAPP_WEBHOOK_URL', null),
+    ],
+
 ];

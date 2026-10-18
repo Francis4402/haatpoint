@@ -10,6 +10,7 @@ use App\Models\OrderItems;
 use App\Models\Products;
 use App\Models\Store;
 use App\Models\Wishlist;
+use App\Services\WhatsAppNotificationService;
 use Enan\PathaoCourier\Requests\PathaoOrderRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
@@ -67,10 +68,19 @@ class OrdersController extends Controller
             $scoped->where('payment_status', $payment);
         }
 
-        $orders = $scoped->with(['orderItems', 'store'])
+        $orders = $scoped->with(['orderItems', 'store.agent'])
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
+
+        if (in_array($userRole, ['admin', 'superadmin'], true)) {
+            $orders->getCollection()->transform(function ($order) {
+                $order->whatsapp_url = WhatsAppNotificationService::getWhatsAppDirectUrl($order, $order->store);
+                $order->agent_phone = $order->store?->mobile ?? $order->store?->agent?->mobile ?? $order->sender_phone;
+                $order->whatsapp_message = WhatsAppNotificationService::buildOrderMessage($order, $order->store);
+                return $order;
+            });
+        }
 
         return Inertia::render('dashboard/adminorders/index', [
             'orders' => $orders->items(),
@@ -166,16 +176,6 @@ class OrdersController extends Controller
 
             $user = Auth::user();
             if (!$user) return back()->withErrors(['error' => 'User not authenticated']);
-
-            // A customer must confirm their email address before ordering.
-            // Agents deliberately do not verify, and admin/superadmin have no
-            // verification step, so only a User can trip this guard.
-            if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
-                return back()->withErrors([
-                    'error' => 'Please verify your email address before placing an order. '
-                        . 'We sent a verification link to ' . $user->email . '.',
-                ]);
-            }
 
             $validated = $request->validate([
                 'recipient_name' => 'required|string|max:255',
@@ -496,7 +496,7 @@ class OrdersController extends Controller
             abort(403, 'You do not have permission to view this order confirmation.');
         }
 
-        $order->load(['orderItems', 'store', 'user']);
+        $order->load(['orderItems', 'store.agent', 'user']);
         $wishlist = Wishlist::where('user_id', $user->id)->paginate(12);
 
         return Inertia::render('orders/Confirmation', [

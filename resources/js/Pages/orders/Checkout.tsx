@@ -55,10 +55,6 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
 
   const store = cartItems[0]?.store;
 
-  // A customer must confirm their email address before ordering. Agents and
-  // staff never require this, so the flag only ever arrives for a User.
-  const requiresVerification = !!auth?.requiresVerification;
-
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -161,11 +157,6 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (requiresVerification) {
-      toast.error('Please verify your email address before placing an order.');
-      return;
-    }
 
     if (!validateForm()) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -286,27 +277,6 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                     ))}
                   </ul>
                 )}
-              </div>
-            </div>
-          )}
-
-          {/* Email verification required */}
-          {requiresVerification && (
-            <div className="mb-6 bg-amber-50 border-l-4 border-amber-400 text-amber-800 px-4 py-3 rounded-xl flex items-start shadow-hard-sm">
-              <FaEnvelope className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-semibold">Verify your email to place an order</p>
-                <p className="text-sm mt-1">
-                  We sent a verification link to{' '}
-                  <span className="font-medium break-all">{auth.user?.email}</span>.
-                  Please confirm your address before completing your purchase.
-                </p>
-                <Link
-                  href={route('verification.notice')}
-                  className="inline-block mt-2 text-sm font-semibold underline underline-offset-4 hover:text-amber-900"
-                >
-                  Resend verification email
-                </Link>
               </div>
             </div>
           )}
@@ -742,7 +712,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
 
                         <button
                           type="submit"
-                          disabled={processing || isProcessing || cartItems.length === 0 || !selectedCity || !selectedZone || !pathaoCharges || !termsAccepted || requiresVerification}
+                          disabled={processing || isProcessing || cartItems.length === 0 || !selectedCity || !selectedZone || !pathaoCharges || !termsAccepted}
                           className="w-full py-4 bg-gray-900 hover:bg-marigold text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
                         >
                           <FaLock className="h-5 w-5 mr-2" />

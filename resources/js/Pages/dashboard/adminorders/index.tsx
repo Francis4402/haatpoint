@@ -24,9 +24,11 @@ import {
     FaCheck,
     FaTimes,
     FaCopy,
+    FaWhatsapp,
 } from 'react-icons/fa';
 import { HiOutlineMail } from 'react-icons/hi';
 import { BiPhone } from 'react-icons/bi';
+import { toast } from 'sonner';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import FormatPrice from '@/Pages/utils/FormatePrice';
 import Eyebrow from '@/Pages/Components/Eyebrow';
@@ -37,6 +39,9 @@ interface AdminOrderProps {
     };
     orders: (Orders & {
         order_items?: OrderItem[];
+        whatsapp_url?: string | null;
+        agent_phone?: string | null;
+        whatsapp_message?: string | null;
     })[];
     pagination: {
         page: number;
@@ -306,8 +311,10 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
      * server decides which, and says why when nothing can be changed.
      */
     const isSuperAdminRole = auth?.user?.role === 'superadmin';
+    const isAdminRole = auth?.user?.role === 'admin';
+    const isAdminOrSuperAdmin = isSuperAdminRole || isAdminRole;
     const canEditStatus =
-        isSuperAdminRole || auth?.user?.role === 'admin' || auth?.user?.role === 'agent';
+        isSuperAdminRole || isAdminRole || auth?.user?.role === 'agent';
     const canEditOrder = (orderId: string) => canEditStatus && !!rulesFor(orderId)?.canEdit;
 
     const queryFor = (patch: { search?: string; status?: string; payment?: string; page?: number }) => {
@@ -659,6 +666,19 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                                         <FormatPrice price={order.total} />
                                     </span>
                                     <div className="flex items-center gap-2">
+                                        {isAdminOrSuperAdmin && order.whatsapp_url && (
+                                            <a
+                                                href={order.whatsapp_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={e => e.stopPropagation()}
+                                                title={`হোয়াটসঅ্যাপে এজেন্টকে (${order.agent_phone || ''}) অর্ডার বিবরণ পাঠান`}
+                                                className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] hover:bg-[#20ba5a] text-white px-2.5 py-1.5 text-xs font-semibold shadow-sm transition-all hover:scale-105 cursor-pointer"
+                                            >
+                                                <FaWhatsapp className="h-3.5 w-3.5" />
+                                                <span className="hidden sm:inline">WhatsApp Agent</span>
+                                            </a>
+                                        )}
                                         {isSuperAdminRole && order.order_status === 'pending' && (order.payment_method === 'bikash' || order.payment_method === 'bkash') && (
                                             <button
                                                 type="button"
@@ -854,6 +874,55 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                                                 </div>
 
                                                 <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+                                                    {/* WhatsApp Notification to Agent (Superadmin & Admin only) */}
+                                                    {isAdminOrSuperAdmin && (selectedOrder.whatsapp_url || selectedOrder.agent_phone) && (
+                                                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 space-y-3">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+                                                                    <FaWhatsapp className="h-4 w-4 text-[#25D366]" />
+                                                                    এজেন্ট হোয়াটসঅ্যাপ নোটিফিকেশন
+                                                                </span>
+                                                                {selectedOrder.agent_phone && (
+                                                                    <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-medium">
+                                                                        এজেন্ট: {selectedOrder.agent_phone}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <p className="text-xs text-emerald-900 leading-relaxed">
+                                                                অর্ডারের পণ্য বিবরণ, মূল্য এবং পাঠাও পিকআপের জন্য প্রস্তুত রাখার নির্দেশনা সহ এজেন্টকে হোয়াটসঅ্যাপে বার্তা পাঠান।
+                                                            </p>
+
+                                                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                                                                {selectedOrder.whatsapp_url && (
+                                                                    <a
+                                                                        href={selectedOrder.whatsapp_url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold rounded-xl shadow-sm transition-all hover:shadow hover:scale-105 cursor-pointer"
+                                                                    >
+                                                                        <FaWhatsapp className="h-4 w-4" />
+                                                                        <span>Send Order to Agent on WhatsApp</span>
+                                                                    </a>
+                                                                )}
+
+                                                                {selectedOrder.whatsapp_message && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(selectedOrder.whatsapp_message!);
+                                                                            toast.success('হোয়াটসঅ্যাপ বার্তা কপি করা হয়েছে!');
+                                                                        }}
+                                                                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-emerald-200 bg-white text-emerald-800 hover:bg-emerald-100 text-xs font-medium transition-colors cursor-pointer"
+                                                                    >
+                                                                        <FaCopy className="h-3.5 w-3.5" />
+                                                                        <span>Copy Message</span>
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     {/* bKash Transaction Verification Box */}
                                                     {(selectedOrder.transaction_id || selectedOrder.payment_method === 'bikash' || (selectedOrder.payment_method as string) === 'bkash') && (
                                                         <div className="rounded-2xl border border-pink-200 bg-pink-50/40 p-4 space-y-3">

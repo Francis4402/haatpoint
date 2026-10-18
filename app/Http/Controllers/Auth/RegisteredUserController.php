@@ -79,16 +79,7 @@ class RegisteredUserController extends Controller
             'images' => $this->storeProfileImage($request->file('image')),
         ]);
 
-        event(new Registered($user));
-
         Auth::login($user);
-
-        // The account exists and is signed in either way. Only the email failed,
-        // so say so plainly instead of implying the link is already on its way.
-        if ($user->verificationMailFailed) {
-            return redirect(route('dashboard', absolute: false))
-                ->with('error', $user->verificationMailFailureMessage());
-        }
 
         return redirect(route('dashboard', absolute: false));
     }

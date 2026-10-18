@@ -40,14 +40,7 @@ class HandleInertiaRequests extends Middleware
             ?? auth('agent')->user()
             ?? auth('admin')->user();
 
-        // Only the customer (User) model implements the MustVerifyEmail
-        // contract. Agents deliberately do not verify, and Admin/Superadmin have
-        // no verification step. method_exists() does not work here: every model
-        // extending Illuminate\Foundation\Auth\User inherits hasVerifiedEmail()
-        // from the framework trait, including Admin, which must never be warned
-        // about a verification it does not have.
-        $requiresVerification = $user instanceof MustVerifyEmail
-            && ! $user->hasVerifiedEmail();
+        $requiresVerification = false;
 
         $subscription = null;
         $subscriptionExpired = false;
@@ -70,8 +63,8 @@ class HandleInertiaRequests extends Middleware
             'seo' => $request->attributes->get('seo', []),
             'auth' => [
                 'user' => $user,
-                'isVerified' => $requiresVerification ? false : true,
-                'requiresVerification' => $requiresVerification,
+                'isVerified' => true,
+                'requiresVerification' => false,
                 'incompleteVendorProfile' => $user instanceof Agent
                     && ! $user->hasCompleteVendorProfile(),
                 'missingVendorProfileFields' => $user instanceof Agent
