@@ -88,4 +88,28 @@ class RecaptchaVerificationTest extends TestCase
 
         $this->app->detectEnvironment(fn () => 'testing');
     }
+
+    public function test_socialite_redirect_requires_recaptcha_in_production(): void
+    {
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $response = $this->get('/auth/google/redirect/user');
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('error', 'Please complete the reCAPTCHA verification before signing in with Google.');
+
+        $this->app->detectEnvironment(fn () => 'testing');
+    }
+
+    public function test_socialite_callback_rejected_if_recaptcha_not_verified_in_production(): void
+    {
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $response = $this->get('/auth/google/callback');
+
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHas('error', 'Please complete the reCAPTCHA verification before signing in with Google.');
+
+        $this->app->detectEnvironment(fn () => 'testing');
+    }
 }

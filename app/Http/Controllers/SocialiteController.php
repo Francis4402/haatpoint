@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Admin;
 use App\Models\Agent;
 use App\Models\User;
+use App\Rules\Recaptcha;
 use App\Traits\ClearsOtherGuards;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -85,6 +86,35 @@ class SocialiteController extends Controller
         abort_unless(in_array($provider, self::PROVIDERS, true), 404);
         abort_unless(array_key_exists($destination, self::DESTINATIONS), 404);
 
+        $loginRoute = match ($destination) {
+            'user', 'choose' => 'login',
+            'superadmin', 'admin' => 'admin.login',
+            'agent' => 'login',
+            default => 'login',
+        };
+
+        if (! app()->environment('testing')) {
+            $token = $request->input('recaptcha_token') ?? $request->header('X-Recaptcha-Token');
+
+            if (empty($token) || ! is_string($token)) {
+                return redirect()->route($loginRoute)
+                    ->with('error', 'Please complete the reCAPTCHA verification before signing in with Google.');
+            }
+
+            $validator = validator(
+                ['recaptcha_token' => $token],
+                ['recaptcha_token' => ['required', 'string', new Recaptcha]],
+                ['recaptcha_token.required' => 'Please complete the reCAPTCHA verification before signing in with Google.']
+            );
+
+            if ($validator->fails()) {
+                return redirect()->route($loginRoute)
+                    ->withErrors($validator)
+                    ->with('error', 'reCAPTCHA verification failed. Please try again.');
+            }
+        }
+
+        $request->session()->put('socialite_recaptcha_verified', true);
         $request->session()->put('socialite_destination', $destination);
 
         /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
@@ -118,7 +148,18 @@ class SocialiteController extends Controller
         $destination = (string) $request->session()->pull('socialite_destination', 'user');
         abort_unless(array_key_exists($destination, self::DESTINATIONS), 404);
 
-        $loginRoute = $destination === 'user' ? 'login' : $destination . '.login';
+        $loginRoute = match ($destination) {
+            'user', 'choose' => 'login',
+            'superadmin', 'admin' => 'admin.login',
+            'agent' => 'login',
+            default => 'login',
+        };
+
+        // Enforce that reCAPTCHA was completed before OAuth was initiated
+        if (! app()->environment('testing') && ! $request->session()->pull('socialite_recaptcha_verified', false)) {
+            return redirect()->route($loginRoute)
+                ->with('error', 'Please complete the reCAPTCHA verification before signing in with Google.');
+        }
 
         try {
             $socialUser = Socialite::driver($provider)->user();

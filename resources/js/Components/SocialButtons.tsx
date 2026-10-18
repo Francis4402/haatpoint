@@ -1,5 +1,5 @@
-import { useState, Fragment } from 'react';
-import { FaGoogle, FaShoppingBag, FaStore, FaArrowRight, FaTimes } from 'react-icons/fa';
+import { useState, Fragment, useEffect } from 'react';
+import { FaGoogle, FaShoppingBag, FaStore, FaArrowRight, FaTimes, FaExclamationCircle } from 'react-icons/fa';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 
 type Destination = 'user' | 'superadmin' | 'admin' | 'agent' | 'choose';
@@ -11,14 +11,26 @@ const PROVIDERS = [
 interface SocialButtonsProps {
   destination?: Destination;
   allowAccountTypeChoice?: boolean;
+  recaptchaToken?: string | null;
+  onRequireRecaptcha?: () => void;
 }
 
 export default function SocialButtons({
   destination = 'user',
   allowAccountTypeChoice = true,
+  recaptchaToken,
+  onRequireRecaptcha,
 }: SocialButtonsProps) {
   const [showAccountChoice, setShowAccountChoice] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>('google');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Clear any prompt error once reCAPTCHA is completed
+  useEffect(() => {
+    if (recaptchaToken) {
+      setErrorMessage(null);
+    }
+  }, [recaptchaToken]);
 
   // Only prompt when destination is 'user' or 'choose' and allowAccountTypeChoice is true.
   // Dedicated staff/agent/admin registration already has their destination predetermined.
@@ -26,16 +38,41 @@ export default function SocialButtons({
 
   const handleProviderClick = (providerId: string) => {
     setSelectedProvider(providerId);
+
+    // Enforce reCAPTCHA completion before letting anyone sign in with Google
+    if (!recaptchaToken) {
+      setErrorMessage("Please complete the reCAPTCHA verification above before signing in with Google.");
+      onRequireRecaptcha?.();
+      return;
+    }
+
+    setErrorMessage(null);
+
     if (shouldPrompt) {
       setShowAccountChoice(true);
     } else {
-      window.location.href = route('auth.redirect', { provider: providerId, destination });
+      window.location.href = route('auth.redirect', {
+        provider: providerId,
+        destination,
+        recaptcha_token: recaptchaToken,
+      });
     }
   };
 
   const handleSelectType = (chosenDestination: 'user' | 'agent') => {
+    if (!recaptchaToken) {
+      setShowAccountChoice(false);
+      setErrorMessage("Please complete the reCAPTCHA verification above before signing in with Google.");
+      onRequireRecaptcha?.();
+      return;
+    }
+
     setShowAccountChoice(false);
-    window.location.href = route('auth.redirect', { provider: selectedProvider, destination: chosenDestination });
+    window.location.href = route('auth.redirect', {
+      provider: selectedProvider,
+      destination: chosenDestination,
+      recaptcha_token: recaptchaToken,
+    });
   };
 
   return (
@@ -62,6 +99,13 @@ export default function SocialButtons({
           </button>
         ))}
       </div>
+
+      {errorMessage && (
+        <div className="mt-2.5 p-3 rounded-lg bg-red-50 border border-red-200 text-xs font-semibold text-red-600 flex items-center justify-center text-center">
+          <FaExclamationCircle className="h-4 w-4 mr-1.5 shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
 
       {/* Account Type Selection Modal for Social Login */}
       <Transition appear show={showAccountChoice} as={Fragment}>

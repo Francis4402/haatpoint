@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\User;
 use App\Rules\GmailAddress;
+use App\Rules\Recaptcha;
 use App\Traits\StoresProfileImage;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -52,11 +53,13 @@ class RegisteredUserController extends Controller
             'area_id' => ['nullable', 'integer'],
             'area_name' => ['nullable', 'string', 'max:100'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'recaptcha_token' => [app()->environment('testing') ? 'nullable' : 'required', new Recaptcha],
             // The form has always offered a picture, but the field was never
             // read here, so the uploaded file was dropped on the floor and
             // users.images stayed NULL for every self-registered account.
             'image' => $this->profileImageRules(),
         ], [
+            'recaptcha_token.required' => 'Please complete the reCAPTCHA verification.',
             'phone.required' => 'Phone number is required for delivery.',
             'phone.regex' => 'Please enter a valid 11-digit Bangladeshi mobile number (e.g., 01712345678).',
             'city_id.required' => 'Please select your delivery city.',

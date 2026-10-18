@@ -167,12 +167,15 @@ abstract class StaffAuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . $model, new GmailAddress],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'recaptcha_token' => [app()->environment('testing') ? 'nullable' : 'required', new Recaptcha],
             // Applies to every role that reaches this method: agent, admin and
             // superadmin all share this controller, and admins and superadmins
             // have no verification step, so this was the only chance to give
             // them a picture.
             'image' => $this->profileImageRules(),
-        ], $this->registrationRules()), $this->registrationMessages());
+        ], $this->registrationRules()), array_merge([
+            'recaptcha_token.required' => 'Please complete the reCAPTCHA verification.',
+        ], $this->registrationMessages()));
 
         $data = array_merge([
             'name' => $request->name,
@@ -231,7 +234,9 @@ abstract class StaffAuthController extends Controller
         $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-            'recaptcha_token' => [new Recaptcha],
+            'recaptcha_token' => [app()->environment('testing') ? 'nullable' : 'required', new Recaptcha],
+        ], [
+            'recaptcha_token.required' => 'Please complete the reCAPTCHA verification.',
         ]);
 
         $key = Str::transliterate(Str::lower($request->string('email')) . '|' . $request->ip());

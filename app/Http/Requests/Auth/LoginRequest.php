@@ -43,7 +43,19 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-            'recaptcha_token' => [new Recaptcha],
+            'recaptcha_token' => [app()->environment('testing') ? 'nullable' : 'required', new Recaptcha],
+        ];
+    }
+
+    /**
+     * Get custom error messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'recaptcha_token.required' => 'Please complete the reCAPTCHA verification.',
         ];
     }
 

@@ -38,7 +38,7 @@ export default function StaffLogin({
 }) {
   const recaptchaRef = useRef<RecaptchaRef>(null);
 
-  const { data, setData, post, processing, errors, reset } = useForm({
+  const { data, setData, post, processing, errors, reset, setError, clearErrors } = useForm({
     email: '',
     password: '',
     remember: false,
@@ -218,7 +218,15 @@ export default function StaffLogin({
             </button>
           </form>
 
-          <SocialButtons destination={socialDestination ?? type} />
+          <SocialButtons
+            destination={socialDestination ?? type}
+            recaptchaToken={data.recaptcha_token}
+            onRequireRecaptcha={() => {
+              setError('recaptcha_token', 'Please complete the reCAPTCHA verification before signing in with Google.');
+              toast.error('Please complete the reCAPTCHA verification');
+              document.querySelector('.recaptcha-wrapper')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+          />
 
           {/* Register Link */}
           {type === 'agent' || canRegister ? (

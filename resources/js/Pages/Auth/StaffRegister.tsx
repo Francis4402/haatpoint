@@ -19,6 +19,7 @@ import {
 import { toast } from 'sonner';
 import SocialButtons from '@/Components/SocialButtons';
 import FlashBanner from '@/Components/FlashBanner';
+import Recaptcha, { RecaptchaRef } from '@/Components/Recaptcha';
 
 type StaffType = 'superadmin' | 'admin' | 'agent';
 
@@ -39,7 +40,7 @@ export default function StaffRegister({
   /** Preselected plan from the /sell pricing page (?plan=pro). */
   plan?: 'free' | 'pro';
 }) {
-  const { data, setData, post, processing, errors, reset } = useForm({
+  const { data, setData, post, processing, errors, reset, setError, clearErrors } = useForm({
     name: '',
     email: '',
     password: '',
@@ -49,7 +50,10 @@ export default function StaffRegister({
     national_id: '',
     plan,
     image: null as File | null,
+    recaptcha_token: '',
   });
+
+  const recaptchaRef = useRef<RecaptchaRef>(null);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -111,6 +115,12 @@ export default function StaffRegister({
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
+    if (!data.recaptcha_token) {
+      setError('recaptcha_token', 'Please complete the reCAPTCHA verification');
+      toast.error('Please complete the reCAPTCHA verification');
+      document.querySelector('.recaptcha-wrapper')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     post(route(`${type}.register`), {
       forceFormData: true,
       onSuccess: () => {
@@ -622,6 +632,16 @@ export default function StaffRegister({
               </label>
             </div>
 
+            {/* Google reCAPTCHA v2 Checkbox */}
+            <Recaptcha
+              ref={recaptchaRef}
+              onChange={(token) => {
+                setData('recaptcha_token', token || '');
+                if (token) clearErrors('recaptcha_token');
+              }}
+              errorMessage={errors.recaptcha_token}
+            />
+
             {/* Submit */}
             <button
               type="submit"
@@ -639,7 +659,15 @@ export default function StaffRegister({
             </button>
           </form>
 
-          <SocialButtons destination={socialDestination ?? type} />
+          <SocialButtons
+            destination={socialDestination ?? type}
+            recaptchaToken={data.recaptcha_token}
+            onRequireRecaptcha={() => {
+              setError('recaptcha_token', 'Please complete the reCAPTCHA verification before continuing with Google.');
+              toast.error('Please complete the reCAPTCHA verification');
+              document.querySelector('.recaptcha-wrapper')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+          />
 
           {/* Login Link */}
           <p className="mt-6 text-center text-sm font-body text-ink/60">
