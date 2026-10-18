@@ -176,7 +176,7 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(
         script = document.createElement('script');
         script.id = scriptId;
         script.src =
-          'https://www.google.com/recaptcha/api.js?onload=__onRecaptchaLoaded&render=explicit';
+          'https://www.google.com/recaptcha/enterprise.js?onload=__onRecaptchaLoaded&render=explicit';
         script.async = true;
         script.defer = true;
         script.onload = () => {
