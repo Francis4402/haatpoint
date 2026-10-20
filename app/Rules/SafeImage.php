@@ -21,7 +21,7 @@ class SafeImage implements ValidationRule
     public static ?array $mockLabels = null;
 
     /**
-     * Banned visual labels (e.g. bikini, revealing swimwear, lingerie).
+     * Banned visual labels (e.g. bikini, revealing swimwear, lingerie, sex toys, adult novelties).
      */
     protected array $bannedLabels = [
         'bikini',
@@ -32,6 +32,26 @@ class SafeImage implements ValidationRule
         'brassiere',
         'thong',
         'monokini',
+        'sex toy',
+        'sex toys',
+        'dildo',
+        'vibrator',
+        'fleshlight',
+        'butt plug',
+        'anal plug',
+        'anal beads',
+        'chastity device',
+        'chastity cage',
+        'penis pump',
+        'cock ring',
+        'strap-on',
+        'strapon',
+        'sex doll',
+        'blowup doll',
+        'erotic toy',
+        'adult toy',
+        'bondage',
+        'fetish',
     ];
 
     /**
@@ -136,7 +156,7 @@ class SafeImage implements ValidationRule
         $racy = $safeSearch['racy'] ?? 'UNKNOWN';
 
         if (in_array($adult, ['POSSIBLE', 'LIKELY', 'VERY_LIKELY'], true)) {
-            $fail('The uploaded image was flagged for explicit or adult content. Please upload family-friendly images.');
+            $fail('The uploaded image was flagged for explicit or adult content. Nude or sexually explicit photos are strictly forbidden.');
             return;
         }
 
@@ -145,15 +165,15 @@ class SafeImage implements ValidationRule
             return;
         }
 
-        // Bikini, lingerie, and revealing swimwear are categorized under "racy"
+        // Bikini, lingerie, sex toys, and revealing swimwear are categorized under "racy"
         if (in_array($racy, ['LIKELY', 'VERY_LIKELY'], true)) {
-            $fail('The uploaded image was flagged for bikini, revealing, or suggestive content. Please upload family-friendly images.');
+            $fail('The uploaded image was flagged for bikini, revealing, or adult suggestive content. Please upload family-friendly images.');
             return;
         }
     }
 
     /**
-     * Evaluate the Label annotations to catch bikini and swimwear specifically.
+     * Evaluate the Label annotations to catch bikini, swimwear, and sex toys specifically.
      */
     protected function evaluateLabels(array $labels, Closure $fail): void
     {
@@ -161,11 +181,11 @@ class SafeImage implements ValidationRule
             $description = strtolower($label['description'] ?? '');
             $score = (float) ($label['score'] ?? 0);
 
-            // If confidence score is 60% or higher and matches a banned visual term
-            if ($score >= 0.60) {
+            // If confidence score is 50% or higher and matches a banned visual term
+            if ($score >= 0.50) {
                 foreach ($this->bannedLabels as $banned) {
                     if (str_contains($description, $banned)) {
-                        $fail('The uploaded image contains bikini, swimwear, or revealing attire, which is not permitted. Please upload family-friendly photos.');
+                        $fail('The uploaded image contains prohibited adult novelties, sex toys, bikini, or revealing content. Please upload family-friendly photos.');
                         return;
                     }
                 }

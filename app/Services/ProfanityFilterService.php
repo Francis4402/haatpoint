@@ -5,8 +5,8 @@ namespace App\Services;
 class ProfanityFilterService
 {
     /**
-     * Unambiguous profanity roots that can match as parts of words or whole words.
-     * (e.g., "motherfucker", "fucking", "dumbass", "jackass").
+     * Unambiguous profanity and adult novelty roots that can match as parts of words or whole words.
+     * (e.g., "motherfucker", "fucking", "dumbass", "jackass", "sextoy", "vibrator").
      */
     protected array $unambiguousEnglish = [
         'fuck',
@@ -29,6 +29,30 @@ class ProfanityFilterService
         'masturbat',
         'porno',
         'dildo',
+        'vibrator',
+        'fleshlight',
+        'buttplug',
+        'butt plug',
+        'anal plug',
+        'anal beads',
+        'cockring',
+        'cock ring',
+        'penis pump',
+        'strapon',
+        'strap-on',
+        'sex toy',
+        'sex toys',
+        'sextoy',
+        'sextoys',
+        'adult toy',
+        'adult toys',
+        'erotic toy',
+        'erotic toys',
+        'sex doll',
+        'blowup doll',
+        'love doll',
+        'chastity cage',
+        'chastity device',
         'cybersex',
     ];
 
@@ -70,7 +94,7 @@ class ProfanityFilterService
     ];
 
     /**
-     * Unambiguous Bengali profanity terms in Bengali script (বাংলা).
+     * Unambiguous Bengali profanity & adult item terms in Bengali script (বাংলা).
      * These can safely match as substrings or standalone phrases.
      */
     protected array $unambiguousBengali = [
@@ -148,6 +172,16 @@ class ProfanityFilterService
         'যৌনমিলন',
         'যৌন মিলন',
         'বিকিনি',
+        'সেক্স টয়',
+        'সেক্স টয়',
+        'সেক্সটয়',
+        'সেক্সটয়',
+        'ডিলডো',
+        'ডিল্ডো',
+        'ভাইব্রেটর',
+        'সেক্স ডল',
+        'কৃত্রিম যোনি',
+        'কৃত্রিম লিঙ্গ',
     ];
 
     /**
@@ -173,7 +207,7 @@ class ProfanityFilterService
     ];
 
     /**
-     * Banglish / Romanized transliterations of Bengali and South Asian offensive slang.
+     * Banglish / Romanized transliterations of Bengali and South Asian offensive slang and adult novelties.
      */
     protected array $unambiguousBanglish = [
         'khanki',
@@ -219,6 +253,18 @@ class ProfanityFilterService
         'bsdk',
         'bikini',
         'bikiny',
+        'sex toy',
+        'sex toys',
+        'sextoy',
+        'sextoys',
+        'dildo',
+        'dildos',
+        'vibrator',
+        'vibrators',
+        'fleshlight',
+        'buttplug',
+        'butt plug',
+        'sex doll',
     ];
 
     /**
@@ -309,7 +355,7 @@ class ProfanityFilterService
     ];
 
     /**
-     * Check if the given text contains profanity or inappropriate words.
+     * Check if the given text contains profanity, adult novelties, or inappropriate words.
      */
     public function containsProfanity(?string $text): bool
     {
@@ -371,7 +417,7 @@ class ProfanityFilterService
 
             // Check unambiguous English roots
             foreach ($this->unambiguousEnglish as $bad) {
-                if (str_contains($normalized, $bad) || str_contains($compressed, $bad)) {
+                if (str_contains($normalized, $bad) || str_contains($compressed, str_replace(' ', '', $bad))) {
                     $matches[] = $bad;
                 }
             }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categories;
+use App\Rules\CleanText;
+use App\Rules\SafeImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -38,11 +40,11 @@ class CategoriesController extends Controller
     {
         try {
             $validated = $request->validate([
-                'categories' => 'required|string|max:255|unique:categories,categories',
+                'categories' => ['required', 'string', 'max:255', 'unique:categories,categories', new CleanText],
                 'brand' => 'required|json',
                 'subcategory' => 'json',
                 'sizes' => 'nullable|json',
-                'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImage],
             ]);
 
             // Decode JSON strings to arrays
@@ -121,11 +123,11 @@ class CategoriesController extends Controller
             $category = Categories::findOrFail($store);
 
             $validated = $request->validate([
-                'categories' => 'required|string|max:255|unique:categories,categories,' . $store,
+                'categories' => ['required', 'string', 'max:255', 'unique:categories,categories,' . $store, new CleanText],
                 'brand' => 'required|json',
                 'subcategory' => 'json',
                 'sizes' => 'nullable|json',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImage],
                 'remove_image' => 'nullable|boolean',
             ]);
 

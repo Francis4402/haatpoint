@@ -151,7 +151,7 @@ class StoreController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100', 'unique:stores,name', new CleanText],
-            'storetype' => 'required|string',
+            'storetype' => ['required', 'string', 'max:100', new CleanText],
             'license' => 'nullable|string|max:24',
             'address' => ['required', 'string', 'max:255', new CleanText],
             'sender_city' => 'required|integer',
@@ -350,7 +350,7 @@ class StoreController extends Controller
                 Rule::unique('stores', 'name')->ignore($store->id),
                 new CleanText,
             ],
-            'storetype' => 'required|string',
+            'storetype' => ['required', 'string', 'max:100', new CleanText],
             'address' => ['required', 'string', 'max:255', new CleanText],
             'sender_city' => 'required|integer',
             'license' => [

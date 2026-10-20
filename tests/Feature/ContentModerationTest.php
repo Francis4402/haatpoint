@@ -178,7 +178,40 @@ class ContentModerationTest extends TestCase
             $racyMessage = $msg;
         });
         $this->assertTrue($failedRacy);
-        $this->assertStringContainsString('bikini, revealing, or suggestive', $racyMessage);
+        $this->assertStringContainsString('bikini, revealing, or adult suggestive', $racyMessage);
+
+        // 6. Sex toy image label flagged (e.g. Dildo / Vibrator / Sex toy)
+        SafeImage::$mockAnnotation = null;
+        SafeImage::$mockLabels = [
+            ['description' => 'Dildo', 'score' => 0.92],
+            ['description' => 'Sex toy', 'score' => 0.89],
+        ];
+
+        $failedSexToy = false;
+        $sexToyMessage = '';
+        $rule->validate('images.0', 'dummy_sextoy.jpg', function ($msg) use (&$failedSexToy, &$sexToyMessage) {
+            $failedSexToy = true;
+            $sexToyMessage = $msg;
+        });
+        $this->assertTrue($failedSexToy);
+        $this->assertStringContainsString('sex toys', $sexToyMessage);
+
+        // 7. Nude profile photo flagged
+        SafeImage::$mockLabels = null;
+        SafeImage::$mockAnnotation = [
+            'adult' => 'VERY_LIKELY',
+            'violence' => 'VERY_UNLIKELY',
+            'racy' => 'VERY_LIKELY',
+        ];
+
+        $failedNude = false;
+        $nudeMessage = '';
+        $rule->validate('image', 'dummy_nude_avatar.jpg', function ($msg) use (&$failedNude, &$nudeMessage) {
+            $failedNude = true;
+            $nudeMessage = $msg;
+        });
+        $this->assertTrue($failedNude);
+        $this->assertStringContainsString('Nude or sexually explicit photos are strictly forbidden', $nudeMessage);
 
         // Reset mock annotation & labels
         SafeImage::$mockAnnotation = null;
@@ -337,5 +370,78 @@ class ContentModerationTest extends TestCase
         ]);
 
         $responseDesc->assertSessionHasErrors(['description']);
+    }
+
+    public function test_product_creation_rejects_sex_toys_and_adult_items(): void
+    {
+        $user = User::factory()->create();
+        $store = Store::create([
+            'user_id' => $user->id,
+            'name' => 'Shop ' . uniqid(),
+            'email' => uniqid() . '@example.com',
+            'address' => 'Dhaka',
+            'mobile' => '017' . rand(10000000, 99999999),
+            'storetype' => 'general',
+            'national_id' => '1234567890' . rand(1000, 9999),
+            'is_active' => true,
+        ]);
+
+        // 1. English "Sex Toys" name
+        $responseSexToy = $this->actingAs($user)->post(route('products.store'), [
+            'store_id' => $store->id,
+            'name' => 'Silicone Vibrator and Dildo Set',
+            'slug' => 'silicone-vibrator-dildo-set',
+            'category' => 'Adult Novelties',
+            'quantity' => 5,
+            'regular_price' => 1500,
+            'description' => 'Rechargeable adult toy for personal pleasure',
+            'item_weight' => 0.5,
+            'product_type' => 'regular',
+        ]);
+        $responseSexToy->assertSessionHasErrors(['name']);
+
+        // 2. Bangla "সেক্স টয়" category
+        $responseBanglaSexToy = $this->actingAs($user)->post(route('products.store'), [
+            'store_id' => $store->id,
+            'name' => 'Pleasure Device',
+            'slug' => 'pleasure-device',
+            'category' => 'সেক্স টয়',
+            'quantity' => 5,
+            'regular_price' => 1500,
+            'description' => 'Electric adult massage product',
+            'item_weight' => 0.5,
+            'product_type' => 'regular',
+        ]);
+        $responseBanglaSexToy->assertSessionHasErrors(['category']);
+
+        // 3. Butt plug in description
+        $responsePlug = $this->actingAs($user)->post(route('products.store'), [
+            'store_id' => $store->id,
+            'name' => 'Metallic Decor Novelty',
+            'slug' => 'metallic-decor-novelty',
+            'category' => 'General',
+            'quantity' => 5,
+            'regular_price' => 1500,
+            'description' => 'Crystal butt plug with silicone base',
+            'item_weight' => 0.5,
+            'product_type' => 'regular',
+        ]);
+        $responsePlug->assertSessionHasErrors(['description']);
+    }
+
+    public function test_store_creation_rejects_sex_shop_storetype(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('stores.store'), [
+            'name' => 'Pleasure Paradise BD',
+            'storetype' => 'Sex Toy Store',
+            'address' => 'Gulshan 2, Dhaka',
+            'sender_city' => 1,
+            'national_id' => '1234567890',
+            'mobile' => '01712345678',
+        ]);
+
+        $response->assertSessionHasErrors(['storetype']);
     }
 }
