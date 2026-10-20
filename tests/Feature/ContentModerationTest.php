@@ -36,18 +36,31 @@ class ContentModerationTest extends TestCase
     {
         $service = app(ProfanityFilterService::class);
 
-        // Bengali script
+        // Bengali script profanity
         $this->assertTrue($service->containsProfanity('তুই একটা বোকাচোদা'));
         $this->assertTrue($service->containsProfanity('এই মাগি টা ভালো না'));
+        $this->assertTrue($service->containsProfanity('খানকির পোলা ডেলিভারি দে'));
+        $this->assertTrue($service->containsProfanity('বালের প্রোডাক্ট দিছে'));
+        $this->assertTrue($service->containsProfanity('এই বাল পছন্দ হয়নি'));
+
+        // Spaced Bengali evasion attempts
+        $this->assertTrue($service->containsProfanity('বো কা চো দা'));
+        $this->assertTrue($service->containsProfanity('ম া গ ী'));
 
         // Banglish transliteration
         $this->assertTrue($service->containsProfanity('tui ekta bokachoda'));
         $this->assertTrue($service->containsProfanity('kuttar baccha dokan'));
         $this->assertTrue($service->containsProfanity('madarchod seller'));
+        $this->assertTrue($service->containsProfanity('baler service'));
+        $this->assertTrue($service->containsProfanity('haramjada seller'));
 
-        // Safe Bengali words
+        // Safe Bengali words (MUST NOT be false-flagged)
         $this->assertFalse($service->containsProfanity('খুব সুন্দর প্রোডাক্ট, ধন্যবাদ'));
         $this->assertFalse($service->containsProfanity('অসাধারণ সার্ভিস ও দ্রুত ডেলিভারি'));
+        $this->assertFalse($service->containsProfanity('ইকবাল হোসেন এর দোকান'));
+        $this->assertFalse($service->containsProfanity('সুন্দর বালিশ কাভার'));
+        $this->assertFalse($service->containsProfanity('প্লাস্টিক বালতি ২০ লিটার'));
+        $this->assertFalse($service->containsProfanity('বালক ও বালিকা পোশাক'));
     }
 
     public function test_profanity_filter_handles_leetspeak_and_symbol_obfuscation(): void
@@ -172,6 +185,15 @@ class ContentModerationTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['comment']);
+
+        // Bengali bad word in comment
+        $responseBengali = $this->actingAs($user)->post(route('comments.store'), [
+            'product_id' => $product->id,
+            'comment' => 'একদম বালের প্রোডাক্ট দিছে, ফালতু সেলার',
+            'rating' => 1,
+        ]);
+
+        $responseBengali->assertSessionHasErrors(['comment']);
     }
 
     public function test_comment_submission_accepts_clean_text(): void

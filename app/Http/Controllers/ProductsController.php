@@ -101,8 +101,8 @@ class ProductsController extends Controller
             'slug' => 'required|string|max:255|unique:products,slug',   // ✅ validate slug
             'store_id' => ['nullable', Rule::exists('stores', 'id')],
             'category' => 'required|string|max:255',
-            'subcategory' => 'nullable|string',                          // ✅ nullable
-            'brand' => 'nullable|string',                                // ✅ nullable
+            'subcategory' => ['nullable', 'string', new CleanText],                          // ✅ nullable
+            'brand' => ['nullable', 'string', new CleanText],                                // ✅ nullable
             'quantity' => 'required|integer|min:0',
             'regular_price' => 'required|numeric|min:0|max:1000000',
             'sale_price' => 'nullable|numeric|min:0|max:1000000|lt:regular_price',
@@ -374,8 +374,8 @@ class ProductsController extends Controller
             'name' => ['required', 'string', 'max:255', new CleanText],
             'slug' => 'required|string|max:255|unique:products,slug,'.$product->id,
             'category' => 'required|string|max:255',
-            'subcategory' => 'nullable|string',
-            'brand' => 'nullable|string',
+            'subcategory' => ['nullable', 'string', new CleanText],
+            'brand' => ['nullable', 'string', new CleanText],
             'quantity' => 'required|integer|min:0',
             'regular_price' => 'required|numeric|min:0|max:1000000',
             'sale_price' => 'nullable|numeric|min:0|max:1000000|lt:regular_price',

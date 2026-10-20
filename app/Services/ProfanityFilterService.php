@@ -60,49 +60,100 @@ class ProfanityFilterService
     ];
 
     /**
-     * Bengali profanity terms in Bengali script (বাংলা).
+     * Unambiguous Bengali profanity terms in Bengali script (বাংলা).
+     * These can safely match as substrings or standalone phrases.
      */
-    protected array $bengaliWords = [
+    protected array $unambiguousBengali = [
         'মাগি',
         'মাগী',
+        'মাগির',
+        'মাগীর',
+        'মাগিবাজ',
         'খানকি',
         'খাঙ্কি',
-        'খাঙ্কির',
         'খানকির',
+        'খাঙ্কির',
+        'খানকির পোলা',
+        'খানকির ছেলে',
+        'খাঙ্কির পুত',
         'বেশ্যা',
+        'বেশ্যার',
         'চোদা',
         'চোদ',
         'চুদা',
         'চুদ',
         'চোদনা',
         'চুদে',
+        'চুদাই',
+        'চুদতে',
+        'চুদাচুদি',
         'ভোদা',
         'ভোদাই',
-        'বাল',
-        'বাড়া',
-        'বাড়া',
+        'ভোদানি',
         'শুয়োরের বাচ্চা',
         'শুয়োরের বাচ্চা',
+        'শূয়োরের বাচ্চা',
+        'শুয়ারের বাচ্চা',
         'কুত্তার বাচ্চা',
+        'কুত্তার পোলা',
         'মাদারচোদ',
+        'মাদারচুদ',
+        'মাদারচোত',
         'বোনচোদ',
         'বাইনচোদ',
+        'বইনচোদ',
+        'বেইঞ্চোদ',
         'বোকাতোদা',
         'বোকাচোদা',
+        'বকাচোদা',
+        'বোকাচুদা',
         'হারামজাদা',
         'হারামযাদা',
+        'হারামজাদি',
         'হারামি',
         'হারামী',
+        'হারামখোর',
         'হোগা',
+        'হোগামারা',
+        'হোগার',
         'ল্যাওড়া',
         'ল্যাওড়া',
         'ল্যাওরা',
         'লুচ্চা',
+        'লুচ্চামি',
         'পুংটা',
+        'পুংটামি',
         'রান্ডি',
         'রাঁড়ি',
+        'রাঁড়ী',
+        'রান্ডির',
         'পতিতা',
+        'ভাতারখাকী',
+        'ভাতারখাকি',
+        'চুতিয়া',
+        'চুতিয়া',
+    ];
+
+    /**
+     * Bounded Bengali profanity terms that require Bengali word boundaries
+     * to avoid false positives (e.g. "বালক", "বালিকা", "বালতি", "বালিশ", "ইকবাল").
+     */
+    protected array $boundedBengali = [
+        'বাল',
+        'বালের',
+        'বালে',
+        'বালটা',
+        'বাড়া',
+        'বাড়া',
+        'বাড়ার',
+        'বাড়ার',
         'গু মার',
+        'গুদ',
+        'গুদে',
+        'গুদের',
+        'ধোন',
+        'ধোনের',
+        'ধোনমারানি',
     ];
 
     /**
@@ -111,23 +162,45 @@ class ProfanityFilterService
     protected array $unambiguousBanglish = [
         'khanki',
         'khankir',
+        'khankirpola',
+        'khankir pola',
+        'khankir chele',
+        'khankir put',
         'madarchod',
         'maderchod',
         'motherchod',
+        'modarchod',
+        'madarchud',
         'bhenchod',
         'bonchod',
+        'boinchod',
         'banchod',
         'bainchod',
+        'beinchod',
         'bokachoda',
+        'boka choda',
         'bokachuda',
+        'boka chuda',
         'chodna',
+        'chudachudi',
+        'chudani',
+        'chudina',
         'suorer baccha',
         'suorer bacha',
+        'shuorer baccha',
+        'shuorer bacha',
         'kuttar baccha',
         'kuttar bacha',
+        'kuttar pola',
         'haramjada',
+        'haramjadi',
+        'haramzadi',
+        'haramkhor',
+        'hogamara',
+        'vatarkhaki',
         'bhosdike',
         'bhosdi',
+        'bsdk',
     ];
 
     /**
@@ -136,24 +209,43 @@ class ProfanityFilterService
      */
     protected array $boundedBanglish = [
         'magi',
+        'magir',
+        'magibaaj',
+        'magibaj',
         'chod',
         'choda',
         'chudi',
         'boda',
         'bodai',
+        'bodani',
         'baal',
         'bal',
+        'baaler',
+        'baler',
         'bara',
+        'barar',
         'randi',
+        'randir',
         'gandu',
+        'gaandu',
         'harami',
         'hoga',
         'lawra',
+        'loura',
         'lodaa',
         'loda',
+        'lauda',
         'chutiya',
+        'chootiya',
         'gud',
+        'gude',
+        'guder',
+        'dhon',
+        'dhoner',
         'luccha',
+        'luchha',
+        'luchami',
+        'pungta',
     ];
 
     /**
@@ -211,10 +303,23 @@ class ProfanityFilterService
     {
         $matches = [];
 
-        // 1. Check Bengali words in original text (preserves UTF-8 characters)
+        // 1. Check Bengali words in original and compressed text (preserves UTF-8 characters)
         $lowerOriginal = mb_strtolower($text, 'UTF-8');
-        foreach ($this->bengaliWords as $bengali) {
-            if (mb_strpos($lowerOriginal, $bengali) !== false) {
+        // Space/punctuation stripped version for Bengali evasion (e.g., "বো কা চো দা" -> "বোকাচোদা")
+        $bengaliCompressed = preg_replace('/[\s\.\-_*#~^,;:!?]/u', '', $lowerOriginal);
+
+        // Unambiguous Bengali check
+        foreach ($this->unambiguousBengali as $bengali) {
+            $bengaliNoSpace = preg_replace('/\s+/u', '', $bengali);
+            if (mb_strpos($lowerOriginal, $bengali) !== false || mb_strpos($bengaliCompressed, $bengaliNoSpace) !== false) {
+                $matches[] = $bengali;
+            }
+        }
+
+        // Bounded Bengali check (prevents "বালক", "বালিকা", "বালতি", "বালিশ", "ইকবাল")
+        foreach ($this->boundedBengali as $bengali) {
+            $pattern = '/(?<![\p{Bengali}])' . preg_quote($bengali, '/') . '(?![\p{Bengali}])/u';
+            if (preg_match($pattern, $lowerOriginal)) {
                 $matches[] = $bengali;
             }
         }
