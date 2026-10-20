@@ -187,7 +187,7 @@ const Categories = ({ auth, categories: initialCategories }: PageProps<{ categor
             <Head title="Categories Management" />
 
             <div>
-                <div className="max-w-[1240px] mx-auto">
+                <div className="container">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                         <div>

@@ -344,7 +344,7 @@ const ContactUsPage = ({ auth, wishlist, flash }: Props) => {
       <SeoHead />
 
       <div className="min-h-screen bg-paper-dim py-20">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container">
           {/* Success Modal */}
           <Transition appear show={showSuccessModal} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={() => setShowSuccessModal(false)}>

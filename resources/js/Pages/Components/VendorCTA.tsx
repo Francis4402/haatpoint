@@ -57,7 +57,7 @@ export default function VendorCTA() {
         <div className="absolute right-[-120px] top-[-160px] w-[460px] h-[460px] bg-marigold opacity-90 clip-cta pointer-events-none" />
         <div className="absolute left-[-100px] bottom-[-140px] w-[340px] h-[340px] bg-marigold/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div ref={ref} className="relative z-10 max-w-[1240px] mx-auto px-6 sm:px-8">
+        <div ref={ref} className="relative z-10 container">
           {/* Header */}
           <div className="max-w-[700px] mb-12">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 backdrop-blur-sm mb-4">

@@ -549,7 +549,7 @@ const Products = ({ products, auth, wishlist, productRatings = {}, filters }: Pr
                 }} />
 
             <div className="min-h-screen bg-[#F2F2EE] py-20">
-                <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="container">
                     {/* Header */}
                     <div className="flex justify-between items-end flex-wrap gap-4 mb-9">
                         <div>

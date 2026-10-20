@@ -102,7 +102,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
       {/* Hero */}
       <section className="relative overflow-hidden bg-ink text-paper">
         <div className="absolute right-[-140px] top-[-180px] h-[460px] w-[460px] bg-marigold opacity-90 clip-cta" />
-        <div className="relative z-10 mx-auto max-w-[1240px] px-6 py-20 sm:px-8 sm:py-28">
+        <div className="relative z-10 container py-20 sm:py-28">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 backdrop-blur-sm">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-marigold" />
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.14em]">
@@ -153,7 +153,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
       </section>
 
       {/* Benefits */}
-      <section className="mx-auto max-w-[1240px] px-6 py-20 sm:px-8">
+      <section className="container py-20">
         <div className="max-w-[560px]">
           <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-marigold">
             Why HaatPoint
@@ -181,7 +181,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
 
       {/* Pricing */}
       <section id="pricing" className="bg-paper-dim py-20">
-        <div className="mx-auto max-w-[1240px] px-6 sm:px-8">
+        <div className="container">
           <div className="mx-auto max-w-[620px] text-center">
             <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-marigold">
               Pricing
@@ -286,7 +286,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
       </section>
 
       {/* Steps */}
-      <section className="mx-auto max-w-[1240px] px-6 py-20 sm:px-8">
+      <section className="container py-20">
         <div className="max-w-[560px]">
           <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-marigold">
             How it works
@@ -321,7 +321,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
       </section>
 
       {/* Final CTA */}
-      <section className="mx-auto max-w-[1240px] px-6 py-20 sm:px-8">
+      <section className="container py-20">
         <div className="relative overflow-hidden rounded-3xl border-[1.5px] border-ink bg-marigold px-8 py-14 text-center shadow-hard-lg sm:px-12">
           <h2 className="mx-auto max-w-[640px] text-[30px] text-white sm:text-[42px]">
             Ready to open your shop?

@@ -341,7 +341,7 @@ const ProductDetailsPage = ({
         ]} />
 
       <div className="min-h-screen bg-paper-dim py-20">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container">
           {/* Breadcrumb */}
           <nav className="flex mb-8 text-sm">
             <ol className="flex items-center space-x-2 flex-wrap">

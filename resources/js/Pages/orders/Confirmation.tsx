@@ -207,7 +207,7 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
       {/* Screen View */}
       <div className="screen-content">
         <div className="min-h-screen bg-paper-dim py-20">
-          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="container">
 
             {/* Success Header */}
             <div className="text-center mb-12">

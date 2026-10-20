@@ -55,7 +55,7 @@ export default function NotFound({ status = 404 }: { status?: number }) {
         <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-marigold/10 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -left-24 h-96 w-96 rounded-full bg-marigold/10 blur-3xl pointer-events-none" />
 
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="container text-center">
           <div className="flex justify-center mb-6">
             <div className="w-20 h-20 rounded-2xl bg-marigold/15 border border-marigold/30 flex items-center justify-center">
               <BiSolidError className="h-10 w-10 text-marigold" aria-hidden="true" />

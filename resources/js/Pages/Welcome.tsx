@@ -138,7 +138,7 @@ export default function Welcome({
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
             </SeoHead>
-            <div className='max-w-[1240px] mx-auto px-4 md:px-8 space-y-20'>
+            <div className='container space-y-20'>
                 <HeroSection user={auth.user} categories={categories} />
 
                 {categories && categories.length > 0 && (
@@ -173,7 +173,7 @@ export default function Welcome({
             {/* Seller Guide & Provocation Section (Edge-to-Edge) */}
             <VendorCTA />
 
-            <div className='max-w-[1240px] mx-auto px-4 md:px-8 space-y-20 pt-20'>
+            <div className='container space-y-20 pt-20'>
                 {/* Only render AllProducts if productsWithRatings has data */}
                 {productsWithRatings.length > 0 && (
                     <AllProducts

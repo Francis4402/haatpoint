@@ -157,7 +157,7 @@ export default function StoreShow({
         }} />
 
       <div className="bg-paper-dim min-h-screen py-12">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container">
           {/* Breadcrumb */}
           <nav className="flex items-center space-x-2 text-sm mb-8">
             <Link href="/" className="text-text-soft hover:text-marigold transition-colors">Home</Link>

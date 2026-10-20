@@ -149,7 +149,7 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
             <SeoHead />
 
             <div className="min-h-screen bg-paper-dim py-20">
-                <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="container">
                     {/* Header */}
                     <div className="text-center mb-12">
                         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-marigold/10 mb-4">

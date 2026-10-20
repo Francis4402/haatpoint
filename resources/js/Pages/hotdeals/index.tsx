@@ -364,7 +364,7 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
 
             {/* Hero Banner */}
             <div className="bg-gradient-to-r from-marigold to-marigold-dark text-white">
-                <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div className="container py-12">
                     <div className="flex flex-col md:flex-row items-center justify-between">
                         <div className="text-center md:text-left mb-6 md:mb-0">
                             <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
@@ -389,7 +389,7 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
             </div>
 
             <div className="min-h-screen bg-paper-dim py-8">
-                <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="container">
                     {/* Header with Search */}
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                         <div>

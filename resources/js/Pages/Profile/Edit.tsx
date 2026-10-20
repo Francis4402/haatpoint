@@ -71,7 +71,7 @@ export default function Edit({ auth, status }: PageProps) {
       <Head title="Profile Settings" />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="container">
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
