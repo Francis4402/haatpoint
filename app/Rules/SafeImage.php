@@ -16,6 +16,25 @@ class SafeImage implements ValidationRule
     public static ?array $mockAnnotation = null;
 
     /**
+     * Whether testing mode forces label annotations (used in tests).
+     */
+    public static ?array $mockLabels = null;
+
+    /**
+     * Banned visual labels (e.g. bikini, revealing swimwear, lingerie).
+     */
+    protected array $bannedLabels = [
+        'bikini',
+        'swimsuit',
+        'swimwear',
+        'undergarment',
+        'lingerie',
+        'brassiere',
+        'thong',
+        'monokini',
+    ];
+
+    /**
      * Run the validation rule.
      *
      * @param  \Closure(string): \Illuminate\Translation\PotentiallyTranslatedString  $fail
@@ -23,8 +42,13 @@ class SafeImage implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         // 1. Check for mock annotation in test suite
-        if (static::$mockAnnotation !== null) {
-            $this->evaluateSafeSearch(static::$mockAnnotation, $fail);
+        if (static::$mockAnnotation !== null || static::$mockLabels !== null) {
+            if (static::$mockAnnotation !== null) {
+                $this->evaluateSafeSearch(static::$mockAnnotation, $fail);
+            }
+            if (static::$mockLabels !== null) {
+                $this->evaluateLabels(static::$mockLabels, $fail);
+            }
             return;
         }
 
@@ -56,7 +80,7 @@ class SafeImage implements ValidationRule
             return;
         }
 
-        // 5. Send image bytes to Google Cloud Vision SafeSearch detection endpoint
+        // 5. Send image bytes to Google Cloud Vision SafeSearch & Label detection endpoints
         try {
             $imageContent = file_get_contents($filePath);
             if ($imageContent === false) {
@@ -73,6 +97,7 @@ class SafeImage implements ValidationRule
                             ],
                             'features' => [
                                 ['type' => 'SAFE_SEARCH_DETECTION'],
+                                ['type' => 'LABEL_DETECTION', 'maxResults' => 10],
                             ],
                         ],
                     ],
@@ -90,6 +115,11 @@ class SafeImage implements ValidationRule
             if (is_array($safeSearch)) {
                 $this->evaluateSafeSearch($safeSearch, $fail);
             }
+
+            $labels = $response->json('responses.0.labelAnnotations');
+            if (is_array($labels)) {
+                $this->evaluateLabels($labels, $fail);
+            }
         } catch (\Throwable $e) {
             Log::error('Google Vision SafeSearch exception: ' . $e->getMessage());
             // Graceful fail-open so transient network issues don't crash the upload flow
@@ -105,7 +135,7 @@ class SafeImage implements ValidationRule
         $violence = $safeSearch['violence'] ?? 'UNKNOWN';
         $racy = $safeSearch['racy'] ?? 'UNKNOWN';
 
-        if (in_array($adult, ['LIKELY', 'VERY_LIKELY'], true)) {
+        if (in_array($adult, ['POSSIBLE', 'LIKELY', 'VERY_LIKELY'], true)) {
             $fail('The uploaded image was flagged for explicit or adult content. Please upload family-friendly images.');
             return;
         }
@@ -115,9 +145,31 @@ class SafeImage implements ValidationRule
             return;
         }
 
-        if ($racy === 'VERY_LIKELY') {
-            $fail('The uploaded image was flagged for inappropriate or suggestive content. Please upload family-friendly images.');
+        // Bikini, lingerie, and revealing swimwear are categorized under "racy"
+        if (in_array($racy, ['LIKELY', 'VERY_LIKELY'], true)) {
+            $fail('The uploaded image was flagged for bikini, revealing, or suggestive content. Please upload family-friendly images.');
             return;
+        }
+    }
+
+    /**
+     * Evaluate the Label annotations to catch bikini and swimwear specifically.
+     */
+    protected function evaluateLabels(array $labels, Closure $fail): void
+    {
+        foreach ($labels as $label) {
+            $description = strtolower($label['description'] ?? '');
+            $score = (float) ($label['score'] ?? 0);
+
+            // If confidence score is 60% or higher and matches a banned visual term
+            if ($score >= 0.60) {
+                foreach ($this->bannedLabels as $banned) {
+                    if (str_contains($description, $banned)) {
+                        $fail('The uploaded image contains bikini, swimwear, or revealing attire, which is not permitted. Please upload family-friendly photos.');
+                        return;
+                    }
+                }
+            }
         }
     }
 }

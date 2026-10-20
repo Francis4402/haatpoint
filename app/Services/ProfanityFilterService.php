@@ -29,13 +29,23 @@ class ProfanityFilterService
         'masturbat',
         'porno',
         'dildo',
+        'cybersex',
     ];
 
     /**
      * Exact words that require word boundaries (\b) to avoid false positives.
-     * (e.g., prevent "asset", "classic", "cocktail", "title", "analysis").
+     * (e.g., prevent "asset", "classic", "unisex", "cocktail", "title", "analysis").
      */
     protected array $boundedEnglish = [
+        'sex',
+        'sexy',
+        'sexual',
+        'sexxx',
+        'sexi',
+        'bikini',
+        'thong',
+        'intercourse',
+        'erotic',
         'ass',
         'asshole',
         'dick',
@@ -132,6 +142,12 @@ class ProfanityFilterService
         'ভাতারখাকি',
         'চুতিয়া',
         'চুতিয়া',
+        'সেক্স',
+        'সেক্সি',
+        'যৌন',
+        'যৌনমিলন',
+        'যৌন মিলন',
+        'বিকিনি',
     ];
 
     /**
@@ -201,6 +217,8 @@ class ProfanityFilterService
         'bhosdike',
         'bhosdi',
         'bsdk',
+        'bikini',
+        'bikiny',
     ];
 
     /**
@@ -208,6 +226,10 @@ class ProfanityFilterService
      * (e.g., prevent "bal" matching "balance", "gud" matching "guidance").
      */
     protected array $boundedBanglish = [
+        'sex',
+        'sexy',
+        'sexi',
+        'sexxx',
         'magi',
         'magir',
         'magibaaj',
@@ -249,7 +271,7 @@ class ProfanityFilterService
     ];
 
     /**
-     * Regex patterns for masked profanities (e.g., f*ck, b*tch, sh*t, c*nt, d*ck).
+     * Regex patterns for masked profanities (e.g., f*ck, b*tch, s*x, sh*t, c*nt, d*ck).
      */
     protected array $maskedPatterns = [
         '/\bf[\*_\-\.\#\^\s]+ck\b/i',
@@ -262,6 +284,9 @@ class ProfanityFilterService
         '/\b(?:@|a)[\*_\-\.\#\^\s]*sshole\b/i',
         '/\bm[\*_\-\.\#\^\s]+gi\b/i',
         '/\bkh[\*_\-\.\#\^\s]+nki\b/i',
+        '/\bs[\*_\-\.\#\^\s]+x\b/i',
+        '/\bs[\*_\-\.\#\^\s]+e[\*_\-\.\#\^\s]+x\b/i',
+        '/\bb[\*_\-\.\#\^\s]+k[\*_\-\.\#\^\s]+n[\*_\-\.\#\^\s]+i\b/i',
     ];
 
     /**
@@ -324,7 +349,7 @@ class ProfanityFilterService
             }
         }
 
-        // 2. Check explicitly masked patterns (e.g. f*ck, b*tch, sh*t)
+        // 2. Check explicitly masked patterns (e.g. f*ck, b*tch, sh*t, s*x)
         foreach ($this->maskedPatterns as $pattern) {
             if (preg_match($pattern, $text)) {
                 $matches[] = 'masked_profanity';

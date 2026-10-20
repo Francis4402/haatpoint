@@ -24,12 +24,18 @@ class ContentModerationTest extends TestCase
         $this->assertTrue($service->containsProfanity('This is fucking unacceptable'));
         $this->assertTrue($service->containsProfanity('You are a bitch'));
         $this->assertTrue($service->containsProfanity('Shut up asshole'));
+        $this->assertTrue($service->containsProfanity('This store sells sex products'));
+        $this->assertTrue($service->containsProfanity('Hot and sexy girl'));
+        $this->assertTrue($service->containsProfanity('s*x item'));
+        $this->assertTrue($service->containsProfanity('bikini swimwear'));
 
-        // Does NOT flag safe words containing substrings like "ass"
+        // Does NOT flag safe words containing substrings like "ass" or "sex"
         $this->assertFalse($service->containsProfanity('This is a classic leather wallet'));
         $this->assertFalse($service->containsProfanity('Digital asset and inventory management'));
         $this->assertFalse($service->containsProfanity('Glass bottle 500ml'));
         $this->assertFalse($service->containsProfanity('Beautiful cotton dress with buttons'));
+        $this->assertFalse($service->containsProfanity('Unisex winter cotton hoodie'));
+        $this->assertFalse($service->containsProfanity('Unisex sunglasses UV protection'));
     }
 
     public function test_profanity_filter_detects_bengali_and_banglish(): void
@@ -141,8 +147,42 @@ class ContentModerationTest extends TestCase
         $this->assertTrue($failedViolence);
         $this->assertStringContainsString('violent or graphic content', $violenceMessage);
 
-        // Reset mock annotation
+        // 4. Bikini / revealing swimwear label flagged
         SafeImage::$mockAnnotation = null;
+        SafeImage::$mockLabels = [
+            ['description' => 'Bikini', 'score' => 0.95],
+            ['description' => 'Undergarment', 'score' => 0.88],
+        ];
+
+        $failedBikini = false;
+        $bikiniMessage = '';
+        $rule->validate('image', 'dummy_bikini.jpg', function ($msg) use (&$failedBikini, &$bikiniMessage) {
+            $failedBikini = true;
+            $bikiniMessage = $msg;
+        });
+        $this->assertTrue($failedBikini);
+        $this->assertStringContainsString('bikini', $bikiniMessage);
+
+        // 5. Racy content (suggestive / scantily clad / swimsuit) flagged
+        SafeImage::$mockLabels = null;
+        SafeImage::$mockAnnotation = [
+            'adult' => 'VERY_UNLIKELY',
+            'violence' => 'VERY_UNLIKELY',
+            'racy' => 'LIKELY',
+        ];
+
+        $failedRacy = false;
+        $racyMessage = '';
+        $rule->validate('image', 'dummy_racy.jpg', function ($msg) use (&$failedRacy, &$racyMessage) {
+            $failedRacy = true;
+            $racyMessage = $msg;
+        });
+        $this->assertTrue($failedRacy);
+        $this->assertStringContainsString('bikini, revealing, or suggestive', $racyMessage);
+
+        // Reset mock annotation & labels
+        SafeImage::$mockAnnotation = null;
+        SafeImage::$mockLabels = null;
     }
 
     private function createProduct(User $user, Store $store): Products
