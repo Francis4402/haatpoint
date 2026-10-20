@@ -88,7 +88,8 @@ class SocialiteController extends Controller
 
         $loginRoute = match ($destination) {
             'user', 'choose' => 'login',
-            'superadmin', 'admin' => 'admin.login',
+            'superadmin' => 'superadmin.login',
+            'admin' => 'admin.login',
             'agent' => 'login',
             default => 'login',
         };
@@ -150,7 +151,8 @@ class SocialiteController extends Controller
 
         $loginRoute = match ($destination) {
             'user', 'choose' => 'login',
-            'superadmin', 'admin' => 'admin.login',
+            'superadmin' => 'superadmin.login',
+            'admin' => 'admin.login',
             'agent' => 'login',
             default => 'login',
         };

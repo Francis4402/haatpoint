@@ -9,6 +9,8 @@ use App\Models\Comments;
 use App\Models\Products;
 use App\Models\Store;
 use App\Models\Wishlist;
+use App\Rules\CleanText;
+use App\Rules\SafeImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -95,7 +97,7 @@ class ProductsController extends Controller
         $store = ($requestedStore ? $stores->firstWhere('id', $requestedStore) : null) ?? $stores->first();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255', new CleanText],
             'slug' => 'required|string|max:255|unique:products,slug',   // ✅ validate slug
             'store_id' => ['nullable', Rule::exists('stores', 'id')],
             'category' => 'required|string|max:255',
@@ -104,11 +106,11 @@ class ProductsController extends Controller
             'quantity' => 'required|integer|min:0',
             'regular_price' => 'required|numeric|min:0|max:1000000',
             'sale_price' => 'nullable|numeric|min:0|max:1000000|lt:regular_price',
-            'description' => 'required|string',
+            'description' => ['required', 'string', new CleanText],
             'inStock' => 'nullable',
             'color' => 'nullable|max:1000',
             'size' => 'nullable|max:1000',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'images.*' => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120', new SafeImage],
             'images' => 'max:5',
             'item_weight' => 'required|numeric|min:0.1',
             'product_type' => 'required|in:regular,featured,trending,top-selling,new-arrival',
@@ -369,7 +371,7 @@ class ProductsController extends Controller
         $this->abortUnlessOwnsProduct($product);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255', new CleanText],
             'slug' => 'required|string|max:255|unique:products,slug,'.$product->id,
             'category' => 'required|string|max:255',
             'subcategory' => 'nullable|string',
@@ -377,11 +379,11 @@ class ProductsController extends Controller
             'quantity' => 'required|integer|min:0',
             'regular_price' => 'required|numeric|min:0|max:1000000',
             'sale_price' => 'nullable|numeric|min:0|max:1000000|lt:regular_price',
-            'description' => 'required|string',
+            'description' => ['required', 'string', new CleanText],
             'inStock' => 'nullable',
             'color' => 'nullable|string|max:1000',
             'size' => 'nullable|string|max:1000',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'images.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:4096', new SafeImage],
             'images' => 'nullable|array|max:5',
             'images_to_remove' => 'nullable|string',
             'item_weight' => 'required|numeric|min:0.1',

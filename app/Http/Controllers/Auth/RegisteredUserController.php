@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\User;
+use App\Rules\CleanText;
 use App\Rules\GmailAddress;
 use App\Rules\Recaptcha;
 use App\Traits\StoresProfileImage;
@@ -38,14 +39,14 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255', new CleanText],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class, new GmailAddress, function ($attribute, $value, $fail) {
                 if (Agent::where('email', $value)->exists()) {
                     $fail('This email is already registered as an agent and cannot be used to create a customer account.');
                 }
             }],
             'phone' => ['required', 'string', 'regex:/^01[3-9]\d{8}$/'],
-            'address' => ['required', 'string', 'max:500'],
+            'address' => ['required', 'string', 'max:500', new CleanText],
             'city_id' => ['required', 'integer'],
             'city_name' => ['nullable', 'string', 'max:100'],
             'zone_id' => ['required', 'integer'],

@@ -748,6 +748,7 @@ export default function Register() {
 
           <SocialButtons
             destination="user"
+            allowAccountTypeChoice={true}
             recaptchaToken={data.recaptcha_token}
             onRequireRecaptcha={() => {
               setError('recaptcha_token', 'Please complete the reCAPTCHA verification before continuing with Google.');

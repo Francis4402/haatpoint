@@ -9,6 +9,8 @@ use App\Models\Orders;
 use App\Models\Products;
 use App\Models\Store;
 use App\Models\Wishlist;
+use App\Rules\CleanText;
+use App\Rules\SafeImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -148,12 +150,12 @@ class StoreController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|unique:stores,name',
+            'name' => ['required', 'string', 'max:100', 'unique:stores,name', new CleanText],
             'storetype' => 'required|string',
             'license' => 'nullable|string|max:24',
-            'address' => 'required|string|max:255',
+            'address' => ['required', 'string', 'max:255', new CleanText],
             'sender_city' => 'required|integer',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048', new SafeImage],
             'national_id' => $nationalIdRules,
             'mobile' => $mobileRules,
         ]);
@@ -346,9 +348,10 @@ class StoreController extends Controller
                 'string',
                 'max:100',
                 Rule::unique('stores', 'name')->ignore($store->id),
+                new CleanText,
             ],
             'storetype' => 'required|string',
-            'address' => 'required|string|max:255',
+            'address' => ['required', 'string', 'max:255', new CleanText],
             'sender_city' => 'required|integer',
             'license' => [
                 'nullable',
@@ -380,7 +383,7 @@ class StoreController extends Controller
                     }
                     : Rule::unique('stores', 'mobile')->ignore($store->id),
             ],
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120', new SafeImage],
             'remove_logo' => 'nullable|in:true,false,0,1',
         ]);
 

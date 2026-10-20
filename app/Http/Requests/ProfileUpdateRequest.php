@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Models\Agent;
+use App\Rules\CleanText;
 use App\Rules\GmailAddress;
+use App\Rules\SafeImage;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -39,7 +41,8 @@ class ProfileUpdateRequest extends FormRequest
         $id = $user?->getAuthIdentifier();
 
         $rules = [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', new CleanText],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120', new SafeImage],
             'email' => [
                 'required',
                 'string',
@@ -60,7 +63,7 @@ class ProfileUpdateRequest extends FormRequest
             $rules += [
                 'mobile' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
                 'national_id' => ['nullable', 'string', 'regex:/^\d{10}$|^\d{17}$/'],
-                'address' => ['nullable', 'string', 'max:1000'],
+                'address' => ['nullable', 'string', 'max:1000', new CleanText],
             ];
 
             // The unique index on both columns would otherwise surface as a
@@ -79,7 +82,7 @@ class ProfileUpdateRequest extends FormRequest
             $rules += [
                 'phone' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
                 'mobile' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
-                'address' => ['nullable', 'string', 'max:1000'],
+                'address' => ['nullable', 'string', 'max:1000', new CleanText],
                 'city_id' => ['nullable', 'integer'],
                 'city_name' => ['nullable', 'string', 'max:100'],
                 'zone_id' => ['nullable', 'integer'],

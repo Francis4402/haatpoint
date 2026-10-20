@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Rules\SafeImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -43,7 +44,7 @@ trait StoresProfileImage
     /** Validation rule for the profile picture field. */
     protected function profileImageRules(): array
     {
-        return ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'];
+        return ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048', new SafeImage];
     }
 
     /**

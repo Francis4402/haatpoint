@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Rules\CleanText;
 use App\Rules\GmailAddress;
 use App\Rules\Recaptcha;
 use App\Traits\ClearsOtherGuards;
@@ -164,7 +165,7 @@ abstract class StaffAuthController extends Controller
         $model = $this->model();
 
         $request->validate(array_merge([
-            'name' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255', new CleanText],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . $model, new GmailAddress],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'recaptcha_token' => [app()->environment('testing') ? 'nullable' : 'required', new Recaptcha],

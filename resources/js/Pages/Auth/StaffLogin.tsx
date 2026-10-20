@@ -220,6 +220,7 @@ export default function StaffLogin({
 
           <SocialButtons
             destination={socialDestination ?? type}
+            allowAccountTypeChoice={false}
             recaptchaToken={data.recaptcha_token}
             onRequireRecaptcha={() => {
               setError('recaptcha_token', 'Please complete the reCAPTCHA verification before signing in with Google.');

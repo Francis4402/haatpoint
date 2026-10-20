@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Agent;
+use App\Rules\CleanText;
+use App\Rules\SafeImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -47,11 +49,11 @@ class VendorProfileController extends Controller
         // but saving their details is exactly what they should be able to do,
         // so this is not gated here.
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', new CleanText],
             'mobile' => ['required', 'string', 'regex:/^01[3-9]\d{8}$/'],
             'national_id' => ['required', 'string', 'regex:/^\d{10}$|^\d{17}$/'],
-            'address' => ['required', 'string', 'max:1000'],
-            'images' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'address' => ['required', 'string', 'max:1000', new CleanText],
+            'images' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120', new SafeImage],
         ]);
 
         if ($request->hasFile('images')) {

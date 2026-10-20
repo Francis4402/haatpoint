@@ -17,7 +17,7 @@ interface SocialButtonsProps {
 
 export default function SocialButtons({
   destination = 'user',
-  allowAccountTypeChoice = true,
+  allowAccountTypeChoice = false,
   recaptchaToken,
   onRequireRecaptcha,
 }: SocialButtonsProps) {

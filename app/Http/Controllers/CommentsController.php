@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comments;
-use App\Models\Store;
-use Illuminate\Http\Request;
 use App\Models\Products;
+use App\Models\Store;
+use App\Rules\CleanText;
+use Illuminate\Http\Request;
 
 class CommentsController extends Controller
 {
@@ -49,7 +50,7 @@ class CommentsController extends Controller
 
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|min:3|max:1000',
+            'comment' => ['nullable', 'string', 'min:3', 'max:1000', new CleanText],
         ]);
 
         $owner = Comments::currentOwner();
@@ -114,7 +115,7 @@ class CommentsController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'comment' => 'nullable|string|min:3|max:1000',
+            'comment' => ['nullable', 'string', 'min:3', 'max:1000', new CleanText],
             'rating' => 'nullable|integer|min:1|max:5',
         ]);
 
@@ -201,7 +202,7 @@ class CommentsController extends Controller
         }
 
         $request->validate([
-            'comment' => 'nullable|string|min:3|max:1000',
+            'comment' => ['nullable', 'string', 'min:3', 'max:1000', new CleanText],
             'rating' => 'nullable|integer|min:1|max:5',
         ]);
 
