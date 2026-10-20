@@ -8,9 +8,11 @@ use App\Http\Requests\UpdateCustomersRequest;
 use App\Models\Admin;
 use App\Models\Agent;
 use App\Models\User;
+use App\Rules\CleanText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class CustomersController extends Controller
@@ -256,10 +258,54 @@ class CustomersController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update customer / agent / admin profile information.
      */
-    public function update(UpdateCustomersRequest $request, Customers $customers)
+    public function update(Request $request, string $type, string $customerId): RedirectResponse
     {
-        //
+        $customer = $this->resolveCustomer($type, $customerId);
+
+        if ($type === 'admin' && $customer->role === 'superadmin' && $request->user()->role !== 'superadmin') {
+            abort(403, 'Unauthorized.');
+        }
+
+        if ($type === 'agent') {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255', new CleanText],
+                'email' => ['required', 'email', 'max:255', Rule::unique('agents')->ignore($customer->id)],
+                'mobile' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/', Rule::unique('agents')->ignore($customer->id)],
+                'national_id' => ['nullable', 'string', 'regex:/^\d{10}$|^\d{17}$/', Rule::unique('agents')->ignore($customer->id)],
+                'address' => ['nullable', 'string', 'max:1000', new CleanText],
+                'plan' => ['nullable', 'in:free,pro'],
+            ]);
+
+            if (isset($validated['plan']) && $validated['plan'] === 'pro' && $customer->plan !== 'pro') {
+                $validated['subscription_ends_at'] = now()->addYear();
+            }
+
+            $customer->update($validated);
+        } elseif ($type === 'user') {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255', new CleanText],
+                'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($customer->id)],
+                'mobile' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
+                'phone' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
+                'address' => ['nullable', 'string', 'max:1000', new CleanText],
+            ]);
+
+            if (isset($validated['mobile']) && !isset($validated['phone'])) {
+                $validated['phone'] = $validated['mobile'];
+            }
+
+            $customer->update($validated);
+        } elseif ($type === 'admin') {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255', new CleanText],
+                'email' => ['required', 'email', 'max:255', Rule::unique('admins')->ignore($customer->id)],
+            ]);
+
+            $customer->update($validated);
+        }
+
+        return redirect()->back()->with('success', "{$customer->name}'s profile has been updated successfully.");
     }
 }

@@ -250,6 +250,12 @@ export interface CustomerType {
   role: 'superadmin' | 'admin' | 'agent' | 'deliveryman' | 'user';
   email_verified_at: string | null;
   blocked?: boolean;
+  mobile?: string | null;
+  phone?: string | null;
+  national_id?: string | null;
+  address?: string | null;
+  plan?: 'free' | 'pro' | string | null;
+  subscription_ends_at?: string | null;
   created_at: string;
   updated_at: string;
 

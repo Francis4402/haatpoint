@@ -21,6 +21,8 @@ class User extends Authenticatable
      */
     protected $guarded = [];
 
+    protected $appends = ['mobile'];
+
     /**
      * The attributes that should be hidden for serialization.
      *

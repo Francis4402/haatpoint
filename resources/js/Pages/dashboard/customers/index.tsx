@@ -1,7 +1,8 @@
 // Customers.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, router } from '@inertiajs/react';
+import { Dialog, Transition } from '@headlessui/react';
 import {
   FaUsers,
   FaPlus,
@@ -40,6 +41,64 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
     customer: CustomerType;
     action: 'admin' | 'agent' | 'user' | 'block' | 'unblock' | 'delete';
   } | null>(null);
+
+  const [editingCustomer, setEditingCustomer] = useState<CustomerType | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    mobile: '',
+    national_id: '',
+    address: '',
+    plan: 'free',
+  });
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    if (selectedCustomer) {
+      const updated = customers.find(c => c.id === selectedCustomer.id);
+      if (updated) {
+        setSelectedCustomer(updated);
+      }
+    }
+  }, [customers]);
+
+  const openEditModal = (customer: CustomerType) => {
+    setEditingCustomer(customer);
+    setEditForm({
+      name: customer.name || '',
+      email: customer.email || '',
+      mobile: customer.mobile || customer.phone || customer.profile?.phone || '',
+      national_id: customer.national_id || '',
+      address: customer.address || customer.profile?.address || '',
+      plan: customer.plan || 'free',
+    });
+    setEditErrors({});
+  };
+
+  const handleUpdateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCustomer) return;
+
+    setIsUpdating(true);
+    setEditErrors({});
+
+    const type = resourceType(editingCustomer.role);
+    router.put(`/dashboard/customers/${type}/${editingCustomer.id}`, editForm, {
+      preserveScroll: true,
+      onSuccess: () => {
+        setEditingCustomer(null);
+        setIsUpdating(false);
+      },
+      onError: (errors) => {
+        setEditErrors(errors);
+        setIsUpdating(false);
+      },
+      onFinish: () => {
+        setIsUpdating(false);
+      },
+    });
+  };
 
   const actionMeta = {
     admin: {
@@ -388,6 +447,19 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                                     )}
                                   </div>
                                 </div>
+                                {showActions && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openEditModal(customer);
+                                    }}
+                                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-paper-dim text-ink border border-line text-xs font-semibold hover:bg-marigold/10 hover:text-marigold transition-all duration-300"
+                                  >
+                                    <FaEdit className="h-3 w-3" />
+                                    Edit
+                                  </button>
+                                )}
                                 {isAdminOrSuperAdmin && customer.role === 'agent' && (
                                   <button
                                     type="button"
@@ -466,18 +538,20 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                                     <FaEnvelope className="h-3 w-3 mr-2" />
                                     <span>{customer.email}</span>
                                   </div>
-                                  {customer.profile?.phone && (
+                                  {(customer.mobile || customer.phone || customer.profile?.phone) && (
                                     <div className="flex items-center text-sm text-text-soft">
                                       <FaPhone className="h-3 w-3 mr-2" />
-                                      <span>{customer.profile.phone}</span>
+                                      <span>{customer.mobile || customer.phone || customer.profile?.phone}</span>
                                     </div>
                                   )}
                                 </div>
-                                {customer.profile?.city && (
+                                {(customer.address || customer.profile?.city) && (
                                   <div>
                                     <div className="flex items-center text-sm text-text-soft">
-                                      <FaMapMarkerAlt className="h-3 w-3 mr-2" />
-                                      <span>{customer.profile.city}, {customer.profile.country}</span>
+                                      <FaMapMarkerAlt className="h-3 w-3 mr-2 shrink-0" />
+                                      <span className="truncate max-w-[200px]">
+                                        {customer.address || `${customer.profile?.city || ''}${customer.profile?.country ? ', ' + customer.profile.country : ''}`}
+                                      </span>
                                     </div>
                                   </div>
                                 )}
@@ -617,24 +691,56 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                                 <p className="text-xs text-text-soft">Email Address</p>
                               </div>
                             </div>
-                            {selectedCustomer.profile?.phone && (
+                            {(selectedCustomer.mobile || selectedCustomer.phone || selectedCustomer.profile?.phone) && (
                               <div className="flex items-center p-3 bg-paper-dim rounded-xl">
-                                <FaPhone className="h-4 w-4 text-text-soft mr-3" />
+                                <FaPhone className="h-4 w-4 text-text-soft mr-3 shrink-0" />
                                 <div>
-                                  <p className="font-medium text-ink">{selectedCustomer.profile.phone}</p>
-                                  <p className="text-xs text-text-soft">Phone Number</p>
+                                  <p className="font-medium text-ink">
+                                    {selectedCustomer.mobile || selectedCustomer.phone || selectedCustomer.profile?.phone}
+                                  </p>
+                                  <p className="text-xs text-text-soft">Mobile / Phone Number</p>
                                 </div>
                               </div>
                             )}
-                            {selectedCustomer.profile?.address && (
-                              <div className="flex items-start p-3 bg-paper-dim rounded-xl">
-                                <FaMapMarkerAlt className="h-4 w-4 text-text-soft mr-3 mt-1" />
+                            {selectedCustomer.national_id && (
+                              <div className="flex items-center p-3 bg-paper-dim rounded-xl">
+                                <FaUserShield className="h-4 w-4 text-text-soft mr-3 shrink-0" />
                                 <div>
-                                  <p className="font-medium text-ink">{selectedCustomer.profile.address}</p>
-                                  <p className="text-xs text-text-soft">
-                                    {selectedCustomer.profile.city}, {selectedCustomer.profile.country}
-                                  </p>
+                                  <p className="font-medium text-ink">{selectedCustomer.national_id}</p>
+                                  <p className="text-xs text-text-soft">National ID (NID)</p>
                                 </div>
+                              </div>
+                            )}
+                            {(selectedCustomer.address || selectedCustomer.profile?.address) && (
+                              <div className="flex items-start p-3 bg-paper-dim rounded-xl">
+                                <FaMapMarkerAlt className="h-4 w-4 text-text-soft mr-3 mt-1 shrink-0" />
+                                <div>
+                                  <p className="font-medium text-ink">{selectedCustomer.address || selectedCustomer.profile?.address}</p>
+                                  {selectedCustomer.profile?.city && (
+                                    <p className="text-xs text-text-soft">
+                                      {selectedCustomer.profile.city}, {selectedCustomer.profile.country}
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-text-soft">Address</p>
+                                </div>
+                              </div>
+                            )}
+                            {selectedCustomer.role === 'agent' && (
+                              <div className="flex items-center justify-between p-3 bg-paper-dim rounded-xl">
+                                <div className="flex items-center">
+                                  <FaStar className="h-4 w-4 text-marigold mr-3 shrink-0" />
+                                  <div>
+                                    <p className="font-medium text-ink capitalize">{selectedCustomer.plan || 'free'} Plan</p>
+                                    <p className="text-xs text-text-soft">Subscription Tier</p>
+                                  </div>
+                                </div>
+                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${
+                                  selectedCustomer.plan === 'pro'
+                                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                    : 'bg-gray-100 text-gray-700 border border-gray-300'
+                                }`}>
+                                  {selectedCustomer.plan || 'free'}
+                                </span>
                               </div>
                             )}
                           </div>
@@ -702,13 +808,14 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                       {canManageCustomer(selectedCustomer) && (
                         <div className="pt-4 border-t border-line">
                           <div className="grid grid-cols-2 gap-3">
-                            <Link
-                              href={`/dashboard/customers/${selectedCustomer.id}/edit`}
+                            <button
+                              type="button"
+                              onClick={() => openEditModal(selectedCustomer)}
                               className="text-center px-4 py-2.5 bg-paper-dim text-ink rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 font-medium border border-line"
                             >
                               <FaEdit className="inline mr-1" />
                               Edit Profile
-                            </Link>
+                            </button>
                             <Link
                               href={`/dashboard/orders?customer=${selectedCustomer.id}`}
                               className="text-center px-4 py-2.5 bg-paper-dim text-ink rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 font-medium border border-line"
@@ -819,6 +926,213 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
         })()}
         variant={actionCandidate ? actionMeta[actionCandidate.action].variant : 'info'}
       />
+
+      {/* Edit Profile Modal */}
+      <Transition appear show={editingCustomer !== null} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => !isUpdating && setEditingCustomer(null)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-hard-sm border border-line transition-all">
+                  <div className="flex items-center justify-between pb-4 mb-4 border-b border-line">
+                    <div>
+                      <Dialog.Title as="h3" className="text-lg font-bold text-ink">
+                        Edit {editingCustomer?.role === 'agent' ? 'Agent' : editingCustomer?.role === 'admin' || editingCustomer?.role === 'superadmin' ? 'Admin' : 'Customer'} Profile
+                      </Dialog.Title>
+                      <p className="text-xs text-text-soft mt-0.5">
+                        Update profile & KYC records for {editingCustomer?.name}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => !isUpdating && setEditingCustomer(null)}
+                      className="p-1 rounded-lg text-text-soft hover:text-ink hover:bg-paper-dim transition-colors"
+                    >
+                      <FaTimes className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleUpdateSubmit} className="space-y-4">
+                    {/* Name */}
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-ink mb-1">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                        required
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-line bg-paper-dim focus:bg-white focus:outline-none focus:ring-2 focus:ring-marigold transition-all"
+                      />
+                      {editErrors.name && (
+                        <p className="mt-1 text-xs text-red-600">{editErrors.name}</p>
+                      )}
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-ink mb-1">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        value={editForm.email}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                        required
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-line bg-paper-dim focus:bg-white focus:outline-none focus:ring-2 focus:ring-marigold transition-all"
+                      />
+                      {editErrors.email && (
+                        <p className="mt-1 text-xs text-red-600">{editErrors.email}</p>
+                      )}
+                    </div>
+
+                    {/* Mobile / Phone (Agents & Users) */}
+                    {editingCustomer && editingCustomer.role !== 'superadmin' && (
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-ink mb-1">
+                          Mobile Number {editingCustomer.role === 'agent' ? '(01XXXXXXXXX)' : ''}
+                        </label>
+                        <input
+                          type="text"
+                          value={editForm.mobile}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, mobile: e.target.value }))}
+                          placeholder="01700000000"
+                          className="w-full px-3 py-2 text-sm rounded-xl border border-line bg-paper-dim focus:bg-white focus:outline-none focus:ring-2 focus:ring-marigold transition-all"
+                        />
+                        {editErrors.mobile && (
+                          <p className="mt-1 text-xs text-red-600">{editErrors.mobile}</p>
+                        )}
+                        {editErrors.phone && (
+                          <p className="mt-1 text-xs text-red-600">{editErrors.phone}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* National ID (Agents) */}
+                    {editingCustomer?.role === 'agent' && (
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-ink mb-1">
+                          National ID (NID)
+                        </label>
+                        <input
+                          type="text"
+                          value={editForm.national_id}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, national_id: e.target.value }))}
+                          placeholder="10 or 17 digit NID number"
+                          className="w-full px-3 py-2 text-sm rounded-xl border border-line bg-paper-dim focus:bg-white focus:outline-none focus:ring-2 focus:ring-marigold transition-all"
+                        />
+                        {editErrors.national_id && (
+                          <p className="mt-1 text-xs text-red-600">{editErrors.national_id}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Address (Agents & Users) */}
+                    {editingCustomer && editingCustomer.role !== 'superadmin' && (
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-ink mb-1">
+                          Address
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={editForm.address}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
+                          placeholder="Street, area, city address"
+                          className="w-full px-3 py-2 text-sm rounded-xl border border-line bg-paper-dim focus:bg-white focus:outline-none focus:ring-2 focus:ring-marigold transition-all resize-none"
+                        />
+                        {editErrors.address && (
+                          <p className="mt-1 text-xs text-red-600">{editErrors.address}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Subscription Plan (Agents only) */}
+                    {editingCustomer?.role === 'agent' && (
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-ink mb-1">
+                          Subscription Plan
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setEditForm(prev => ({ ...prev, plan: 'free' }))}
+                            className={`p-3 rounded-xl border text-left transition-all ${
+                              editForm.plan === 'free'
+                                ? 'border-marigold bg-marigold/10 ring-2 ring-marigold/30'
+                                : 'border-line bg-paper-dim hover:bg-paper-dim/80'
+                            }`}
+                          >
+                            <p className="text-sm font-bold text-ink">Free Plan</p>
+                            <p className="text-xs text-text-soft mt-0.5">Basic vendor features</p>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditForm(prev => ({ ...prev, plan: 'pro' }))}
+                            className={`p-3 rounded-xl border text-left transition-all ${
+                              editForm.plan === 'pro'
+                                ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-500/30'
+                                : 'border-line bg-paper-dim hover:bg-paper-dim/80'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-bold text-ink">Pro Plan</p>
+                              <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-amber-500 text-white">PRO</span>
+                            </div>
+                            <p className="text-xs text-text-soft mt-0.5">Full featured access</p>
+                          </button>
+                        </div>
+                        {editErrors.plan && (
+                          <p className="mt-1 text-xs text-red-600">{editErrors.plan}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex justify-end gap-3 pt-4 border-t border-line">
+                      <button
+                        type="button"
+                        onClick={() => !isUpdating && setEditingCustomer(null)}
+                        disabled={isUpdating}
+                        className="px-4 py-2 rounded-xl text-sm font-medium text-ink bg-paper-dim hover:bg-line transition-colors disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isUpdating}
+                        className="px-5 py-2 rounded-xl text-sm font-medium text-white bg-marigold hover:bg-marigold/90 focus:outline-none focus:ring-2 focus:ring-marigold/40 shadow-sm transition-all disabled:opacity-50 inline-flex items-center gap-2"
+                      >
+                        {isUpdating ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
+                  </form>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </DashboardLayout>
   );
 };

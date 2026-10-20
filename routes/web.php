@@ -192,6 +192,10 @@ Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])
         ->middleware('role:superadmin')
         ->where('type', 'user|agent|admin');
 
+    Route::put('/dashboard/customers/{type}/{customer}', [CustomersController::class, 'update'])
+        ->name('dashboard.customer.update')
+        ->where('type', 'user|agent|admin');
+
     Route::put('/dashboard/categories/update/{id}', [CategoriesController::class, 'update'])->name('dashboard.updatecategory');
 
     Route::patch('/dashboard/stores/{id}/toggle-active', [StoreController::class, 'toggleActive'])
