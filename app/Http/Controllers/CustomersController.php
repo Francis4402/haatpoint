@@ -7,11 +7,14 @@ use App\Http\Requests\StoreCustomersRequest;
 use App\Http\Requests\UpdateCustomersRequest;
 use App\Models\Admin;
 use App\Models\Agent;
+use App\Models\Products;
+use App\Models\Store;
 use App\Models\User;
 use App\Rules\CleanText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -192,7 +195,7 @@ class CustomersController extends Controller
         DB::transaction(function () use ($type, $customer): void {
             match ($type) {
                 'user' => $this->detachUserIdentity($customer),
-                'agent' => $this->detachAgentIdentity($customer),
+                'agent' => $this->deleteAgentWithStoresAndProducts($customer),
                 'admin' => $this->detachAdminIdentity($customer),
                 default => abort(404),
             };
@@ -218,6 +221,7 @@ class CustomersController extends Controller
         DB::table('orders')->where('user_id', $user->id)->update(['user_id' => null]);
         DB::table('products')->where('user_id', $user->id)->update(['user_id' => null]);
         DB::table('stores')->where('user_id', $user->id)->update(['user_id' => null]);
+        $this->deleteFileSafely($user->images);
     }
 
     private function detachAdminIdentity(Admin $admin): void
@@ -225,12 +229,89 @@ class CustomersController extends Controller
         DB::table('orders')->where('user_id', $admin->id)->update(['user_id' => null]);
         DB::table('products')->where('user_id', $admin->id)->update(['user_id' => null]);
         DB::table('stores')->where('user_id', $admin->id)->update(['user_id' => null]);
+        $this->deleteFileSafely($admin->images);
     }
 
-    private function detachAgentIdentity(Agent $agent): void
+    /**
+     * Delete an agent along with all their stores, products, and associated images from disk.
+     */
+    private function deleteAgentWithStoresAndProducts(Agent $agent): void
     {
-        DB::table('stores')->where('agent_id', $agent->id)->update(['agent_id' => null]);
+        // 1. Detach buyer orders where agent was the customer
         DB::table('orders')->where('agent_id', $agent->id)->update(['agent_id' => null]);
+
+        // 2. Find and delete all stores belonging to this agent (with their products & images)
+        $stores = Store::where('agent_id', $agent->id)->get();
+        foreach ($stores as $store) {
+            $this->deleteStore($store);
+        }
+
+        // 3. Clean up any orphaned products directly created by this agent
+        $orphanedProducts = Products::where('user_id', $agent->id)->get();
+        foreach ($orphanedProducts as $product) {
+            $this->deleteProductImages($product);
+            $product->delete();
+        }
+
+        // 4. Delete the agent avatar image
+        $this->deleteFileSafely($agent->images);
+    }
+
+    /**
+     * Delete a store along with its logo, products, and product images.
+     */
+    private function deleteStore(Store $store): void
+    {
+        // Delete store logo from disk
+        $this->deleteFileSafely($store->logo);
+
+        // Delete all products belonging to this store and their images from disk
+        $products = Products::where('store_id', $store->id)->get();
+        foreach ($products as $product) {
+            $this->deleteProductImages($product);
+            $product->delete();
+        }
+
+        // Delete the store record
+        $store->delete();
+    }
+
+    /**
+     * Delete all images belonging to a product from public disk storage.
+     */
+    private function deleteProductImages(Products $product): void
+    {
+        if (!$product->images) {
+            return;
+        }
+
+        $images = json_decode($product->images, true);
+
+        if (is_array($images)) {
+            foreach ($images as $imagePath) {
+                if (is_string($imagePath)) {
+                    $this->deleteFileSafely($imagePath);
+                }
+            }
+        } elseif (is_string($product->images)) {
+            $this->deleteFileSafely($product->images);
+        }
+    }
+
+    /**
+     * Safely delete a file from the public storage disk.
+     */
+    private function deleteFileSafely(?string $path): void
+    {
+        if (!$path) {
+            return;
+        }
+
+        $cleanPath = ltrim(str_replace(['/storage/', storage_path('app/public/')], '', $path), '/');
+
+        if ($cleanPath !== '' && Storage::disk('public')->exists($cleanPath)) {
+            Storage::disk('public')->delete($cleanPath);
+        }
     }
 
     /**

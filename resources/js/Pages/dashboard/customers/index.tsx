@@ -921,6 +921,9 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
         message={(() => {
           if (!actionCandidate) return '';
           const { customer, action } = actionCandidate;
+          if (action === 'delete' && customer.role === 'agent') {
+            return `Are you sure you want to permanently delete agent ${customer.name}? All of their stores, products, and associated images will also be permanently deleted from the system.`;
+          }
           const verb = actionMeta[action].verb;
           return `Are you sure you want to ${verb} ${customer.name}? ${actionMeta[action].message}`;
         })()}
