@@ -679,7 +679,7 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                                                 <span className="hidden sm:inline">WhatsApp Agent</span>
                                             </a>
                                         )}
-                                        {isSuperAdminRole && order.order_status === 'pending' && (order.payment_method === 'bikash' || order.payment_method === 'bkash') && (
+                                        {isSuperAdminRole && order.order_status === 'pending' && (order.transaction_id || order.payment_method === 'bikash' || order.payment_method === 'bkash') && (
                                             <button
                                                 type="button"
                                                 disabled={confirmingOrderId === order.id}

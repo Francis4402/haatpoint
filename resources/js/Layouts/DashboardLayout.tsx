@@ -24,6 +24,7 @@ import {
   FiSearch,
   FiCompass,
   FiLock,
+  FiCheck,
 } from 'react-icons/fi';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { User } from '@/types';
@@ -45,9 +46,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const { url, props } = usePage();
-  const unreadMessages = (props as unknown as { unreadMessages?: number }).unreadMessages ?? 0;
+  const notifications = (props as unknown as {
+    notifications?: {
+      unreadMessages: number;
+      pendingOrders: number;
+      total: number;
+    };
+    unreadMessages?: number;
+    unreadOrders?: number;
+  }).notifications ?? {
+    unreadMessages: (props as any).unreadMessages ?? 0,
+    pendingOrders: (props as any).unreadOrders ?? 0,
+    total: ((props as any).unreadMessages ?? 0) + ((props as any).unreadOrders ?? 0),
+  };
+  const unreadMessages = notifications.unreadMessages;
+  const pendingOrders = notifications.pendingOrders;
+  const totalNotifications = notifications.total;
+  const ordersHref = (user?.role === 'admin' || user?.role === 'superadmin') ? '/dashboard/admin/orders' : '/dashboard/orders';
+
   const authProps = (props as unknown as {
     auth?: {
       incompleteVendorProfile?: boolean;
@@ -96,7 +115,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
             name: 'Orders',
             href: '/dashboard/orders',
             icon: FiShoppingCart,
-            current: url.startsWith('/dashboard/orders')
+            current: url.startsWith('/dashboard/orders'),
+            badge: pendingOrders,
         },
         {
             name: 'Stores',
@@ -120,7 +140,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
             name: 'Messages',
             href: '/dashboard/messages',
             icon: FiMessageSquare,
-            current: url.startsWith('/dashboard/messages')
+            current: url.startsWith('/dashboard/messages'),
+            badge: unreadMessages,
         },
         {
             name: 'Analytics',
@@ -153,7 +174,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
             name: 'Orders',
             href: '/dashboard/admin/orders',
             icon: FiShoppingCart,
-            current: url.startsWith('/dashboard/admin/orders')
+            current: url.startsWith('/dashboard/admin/orders'),
+            badge: pendingOrders,
         },
         {
             name: 'Stores',
@@ -171,7 +193,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
             name: 'Messages',
             href: '/dashboard/messages',
             icon: FiMessageSquare,
-            current: url.startsWith('/dashboard/messages')
+            current: url.startsWith('/dashboard/messages'),
+            badge: unreadMessages,
         },
         {
             name: 'Payments',
@@ -208,13 +231,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
             name: 'Orders',
             href: '/dashboard/orders',
             icon: FiShoppingCart,
-            current: url.startsWith('/dashboard/orders')
+            current: url.startsWith('/dashboard/orders'),
+            badge: pendingOrders,
         },
         {
             name: 'Messages',
             href: '/dashboard/messages',
             icon: FiMessageSquare,
-            current: url.startsWith('/dashboard/messages')
+            current: url.startsWith('/dashboard/messages'),
+            badge: unreadMessages,
         },
     ] : []),
   ];
@@ -318,8 +343,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                                     }`}
                                     aria-hidden="true"
                                   />
-                                  {item.name}
-                                  {item.current && (
+                                  <span>{item.name}</span>
+                                  {typeof (item as any).badge === 'number' && (item as any).badge > 0 && (
+                                    <span className="ml-auto inline-flex items-center justify-center rounded-full bg-red-500 text-white font-bold px-2 py-0.5 text-xs shadow-sm ring-1 ring-white">
+                                      {(item as any).badge > 99 ? '99+' : (item as any).badge}
+                                    </span>
+                                  )}
+                                  {item.current && !((item as any).badge > 0) && (
                                     <span className="ml-auto w-1.5 h-1.5 bg-white rounded-full" />
                                   )}
                                 </Link>
@@ -400,16 +430,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                             ${isCollapsed ? 'justify-center' : ''}
                           `}
                         >
-                          <item.icon
-                            className={`h-5 w-5 shrink-0 transition-colors ${
-                              item.current
-                                ? 'text-white'
-                                : 'text-text-soft group-hover:text-marigold'
-                            }`}
-                            aria-hidden="true"
-                          />
+                          <div className="relative shrink-0">
+                            <item.icon
+                              className={`h-5 w-5 shrink-0 transition-colors ${
+                                item.current
+                                  ? 'text-white'
+                                  : 'text-text-soft group-hover:text-marigold'
+                              }`}
+                              aria-hidden="true"
+                            />
+                            {isCollapsed && typeof (item as any).badge === 'number' && (item as any).badge > 0 && (
+                              <span className="absolute -top-1.5 -right-1.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-paper" />
+                            )}
+                          </div>
                           {!isCollapsed && <span>{item.name}</span>}
-                          {item.current && !isCollapsed && (
+                          {!isCollapsed && typeof (item as any).badge === 'number' && (item as any).badge > 0 && (
+                            <span className="ml-auto inline-flex items-center justify-center rounded-full bg-red-500 text-white font-bold px-2 py-0.5 text-xs shadow-sm ring-1 ring-white">
+                              {(item as any).badge > 99 ? '99+' : (item as any).badge}
+                            </span>
+                          )}
+                          {item.current && !isCollapsed && !((item as any).badge > 0) && (
                             <span className="ml-auto w-1.5 h-1.5 bg-white rounded-full" />
                           )}
                         </Link>
@@ -502,18 +542,140 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                 </div>
               </div>
 
-              <Link
-                href="/dashboard/messages"
-                className="-m-2.5 p-2.5 text-text-soft hover:text-ink relative transition-colors hover:bg-paper-dim rounded-lg"
-                aria-label={`${unreadMessages} unread messages`}
-              >
-                <FiBell className="h-6 w-6" aria-hidden="true" />
-                {unreadMessages > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-5 w-5 bg-marigold rounded-full text-xs text-white flex items-center justify-center font-bold ring-2 ring-paper">
-                    {unreadMessages > 99 ? '99+' : unreadMessages}
-                  </span>
+              {/* Notification bell dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNotificationsOpen(!notificationsOpen);
+                    setProfileOpen(false);
+                  }}
+                  className="-m-2.5 p-2.5 text-text-soft hover:text-ink relative transition-colors hover:bg-paper-dim rounded-lg focus:outline-none"
+                  aria-label={`${totalNotifications} notifications`}
+                >
+                  <FiBell className="h-6 w-6" aria-hidden="true" />
+                  {totalNotifications > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 px-1 bg-red-500 rounded-full text-[11px] text-white flex items-center justify-center font-bold ring-2 ring-paper shadow-sm">
+                      {totalNotifications > 99 ? '99+' : totalNotifications}
+                    </span>
+                  )}
+                </button>
+
+                {notificationsOpen && (
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setNotificationsOpen(false)}
+                  />
                 )}
-              </Link>
+
+                <Transition
+                  show={notificationsOpen}
+                  as={Fragment}
+                  enter="transition ease-out duration-100"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
+                >
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right bg-white rounded-2xl shadow-xl border border-line focus:outline-none z-50 overflow-hidden">
+                    <div className="px-4 py-3 bg-gradient-to-r from-gray-900 to-gray-800 text-white flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FiBell className="h-4 w-4 text-marigold" />
+                        <span className="font-display font-bold uppercase text-sm tracking-wider">Notifications</span>
+                      </div>
+                      {totalNotifications > 0 ? (
+                        <span className="bg-marigold text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                          {totalNotifications} new
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">All clear</span>
+                      )}
+                    </div>
+
+                    <div className="p-3 space-y-2 max-h-80 overflow-y-auto">
+                      {pendingOrders > 0 && (
+                        <Link
+                          href={ordersHref}
+                          onClick={() => setNotificationsOpen(false)}
+                          className="flex items-start gap-3 p-3 rounded-xl bg-amber-50/60 hover:bg-amber-100/60 border border-amber-200/70 transition-colors group"
+                        >
+                          <div className="p-2 rounded-lg bg-marigold/10 text-marigold shrink-0 mt-0.5">
+                            <FiShoppingCart className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className="text-xs font-bold text-ink">
+                                {user.role === 'admin' || user.role === 'superadmin'
+                                  ? `${pendingOrders} Pending Order(s) to Confirm`
+                                  : user.role === 'agent'
+                                  ? `${pendingOrders} Pending Store Order(s)`
+                                  : `${pendingOrders} Active / Pending Order(s)`}
+                              </p>
+                              <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
+                            </div>
+                            <p className="text-[11px] text-text-soft mt-0.5">
+                              {user.role === 'admin' || user.role === 'superadmin'
+                                ? 'Verify bKash TrxID & confirm these orders'
+                                : user.role === 'agent'
+                                ? 'New customer orders awaiting action'
+                                : 'Check your latest order status'}
+                            </p>
+                          </div>
+                        </Link>
+                      )}
+
+                      {unreadMessages > 0 && (
+                        <Link
+                          href="/dashboard/messages"
+                          onClick={() => setNotificationsOpen(false)}
+                          className="flex items-start gap-3 p-3 rounded-xl bg-blue-50/60 hover:bg-blue-100/60 border border-blue-200/70 transition-colors group"
+                        >
+                          <div className="p-2 rounded-lg bg-blue-100 text-blue-600 shrink-0 mt-0.5">
+                            <FiMessageSquare className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className="text-xs font-bold text-ink">
+                                {unreadMessages} Unread Message{unreadMessages > 1 ? 's' : ''}
+                              </p>
+                              <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                            </div>
+                            <p className="text-[11px] text-text-soft mt-0.5">
+                              Click to view customer questions &amp; contact inquiries
+                            </p>
+                          </div>
+                        </Link>
+                      )}
+
+                      {totalNotifications === 0 && (
+                        <div className="py-6 text-center text-text-soft">
+                          <FiCheck className="h-8 w-8 text-green-500 mx-auto mb-2 opacity-80" />
+                          <p className="text-sm font-medium text-ink">No new notifications</p>
+                          <p className="text-xs text-text-soft mt-0.5">You're completely caught up!</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="px-4 py-2.5 bg-paper-dim border-t border-line flex items-center justify-between text-xs">
+                      <Link
+                        href={ordersHref}
+                        onClick={() => setNotificationsOpen(false)}
+                        className="font-medium text-ink hover:text-marigold transition-colors"
+                      >
+                        View Orders
+                      </Link>
+                      <Link
+                        href="/dashboard/messages"
+                        onClick={() => setNotificationsOpen(false)}
+                        className="font-medium text-ink hover:text-marigold transition-colors"
+                      >
+                        View Messages
+                      </Link>
+                    </div>
+                  </div>
+                </Transition>
+              </div>
 
               <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-line" aria-hidden="true" />
 

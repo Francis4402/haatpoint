@@ -202,7 +202,7 @@ class OrdersController extends Controller
                 'order_number' => 'required|string|unique:orders',
                 'merchant_order_id' => 'required|string',
                 'payment_method' => 'required|in:cash_on_delivery,bikash,bkash',
-                'transaction_id' => 'required_if:payment_method,bikash,bkash|nullable|string|min:6|max:60',
+                'transaction_id' => 'required|string|min:6|max:60',
                 'shipping_method' => 'required|in:pathao',
                 'delivery_type' => 'required|integer|in:12,48',
                 'item_type' => 'required|integer|in:1,2',
@@ -231,6 +231,10 @@ class OrdersController extends Controller
             if (!$store->is_active) return back()->withErrors(['error' => 'This store is currently inactive and cannot accept orders.']);
 
             $isAgent = $user instanceof Agent;
+
+            $amountToCollect = in_array($validated['payment_method'], ['bikash', 'bkash'], true)
+                ? 0
+                : max(0, (float) $validated['subtotal'] - (float) ($validated['discount_amount'] ?? 0));
 
             $order = Orders::create([
                 // IDs
@@ -264,7 +268,7 @@ class OrdersController extends Controller
                 // Order Details
                 'item_quantity' => $validated['item_quantity'],
                 'item_weight' => $validated['item_weight'],
-                'amount_to_collect' => in_array($validated['payment_method'], ['bikash', 'bkash'], true) ? 0 : $validated['amount_to_collect'],
+                'amount_to_collect' => $amountToCollect,
                 'item_description' => $validated['item_description'],
                 'store_name' => $validated['store_name'],
 
@@ -281,7 +285,7 @@ class OrdersController extends Controller
 
                 // Status
                 'payment_method' => $validated['payment_method'],
-                'transaction_id' => in_array($validated['payment_method'], ['bikash', 'bkash'], true) ? ($validated['transaction_id'] ?? null) : null,
+                'transaction_id' => trim($validated['transaction_id']),
                 'payment_status' => 'pending',
                 'order_status' => 'pending',
 
@@ -330,7 +334,7 @@ class OrdersController extends Controller
                         'special_instruction' => $validated['special_instruction'] ?? '',
                         'item_quantity' => $validated['item_quantity'],
                         'item_weight' => $validated['item_weight'],
-                        'amount_to_collect' => in_array($validated['payment_method'], ['bikash', 'bkash'], true) ? 0 : $validated['amount_to_collect'],
+                        'amount_to_collect' => $amountToCollect,
                         'item_description' => $validated['item_description'],
                     ]);
 

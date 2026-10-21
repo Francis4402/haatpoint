@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use App\Models\Agent;
 use App\Models\Contact;
+use App\Models\Orders;
+use App\Models\Store;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -80,6 +82,45 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'notifications' => function () use ($request) {
+                $user = $request->user()
+                    ?? auth('agent')->user()
+                    ?? auth('admin')->user();
+
+                if (!$user) {
+                    return [
+                        'unreadMessages' => 0,
+                        'pendingOrders' => 0,
+                        'total' => 0,
+                    ];
+                }
+
+                $role = $user->role ?? 'user';
+
+                // Unread messages
+                $messageQuery = Contact::query()->where('is_read', false);
+                if (!in_array($role, ['admin', 'superadmin'], true)) {
+                    $messageQuery->where('user_id', $user->id);
+                }
+                $unreadMessages = $messageQuery->count();
+
+                // Pending/Active orders
+                $pendingOrders = 0;
+                if (in_array($role, ['admin', 'superadmin'], true)) {
+                    $pendingOrders = Orders::where('order_status', 'pending')->count();
+                } elseif ($role === 'agent') {
+                    $storeIds = Store::where('agent_id', $user->id)->pluck('id');
+                    $pendingOrders = Orders::whereIn('store_id', $storeIds)->where('order_status', 'pending')->count();
+                } else {
+                    $pendingOrders = Orders::where('user_id', $user->id)->whereIn('order_status', ['pending', 'processing', 'confirmed'])->count();
+                }
+
+                return [
+                    'unreadMessages' => $unreadMessages,
+                    'pendingOrders' => $pendingOrders,
+                    'total' => $unreadMessages + $pendingOrders,
+                ];
+            },
             'unreadMessages' => function () use ($request) {
                 $user = $request->user()
                     ?? auth('agent')->user()
@@ -94,6 +135,23 @@ class HandleInertiaRequests extends Middleware
                 }
 
                 return $query->where('is_read', false)->count();
+            },
+            'unreadOrders' => function () use ($request) {
+                $user = $request->user()
+                    ?? auth('agent')->user()
+                    ?? auth('admin')->user();
+
+                if (!$user) return 0;
+
+                $role = $user->role ?? 'user';
+                if (in_array($role, ['admin', 'superadmin'], true)) {
+                    return Orders::where('order_status', 'pending')->count();
+                } elseif ($role === 'agent') {
+                    $storeIds = Store::where('agent_id', $user->id)->pluck('id');
+                    return Orders::whereIn('store_id', $storeIds)->where('order_status', 'pending')->count();
+                } else {
+                    return Orders::where('user_id', $user->id)->whereIn('order_status', ['pending', 'processing', 'confirmed'])->count();
+                }
             },
         ];
     }
