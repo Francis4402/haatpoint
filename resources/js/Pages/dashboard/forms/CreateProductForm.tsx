@@ -409,7 +409,7 @@ export default function CreateProductForm({auth, store, stores = [], categories}
         <meta name="keywords" content="shop, products, create product, ecommerce" />
       </Head>
 
-      <div className="container p-4 md:p-6">
+      <div className="max-w-[1240px] mx-auto p-4 md:p-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>

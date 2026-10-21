@@ -657,7 +657,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
 
         {/* Main content area */}
         <main className="py-6">
-          <div className="container">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
             <IncompleteVendorProfileBanner />
             <SubscriptionBanner />
             {children}

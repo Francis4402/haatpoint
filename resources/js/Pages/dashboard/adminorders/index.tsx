@@ -467,7 +467,7 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
         <DashboardLayout user={auth.user}>
             <Head title="Orders Management" />
 
-            <div className="container">
+            <div className="max-w-[1240px] mx-auto">
                 {/* Status updates are silent otherwise, because the
                     success/error flash was never surfaced to the SPA. */}
                 {(flash?.success || flash?.error) && (
