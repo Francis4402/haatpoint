@@ -150,7 +150,7 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComple
                                 </p>
                             </div>
                             <Link
-                                href={route('dashboard.createstore')}
+                                href={route('dashboard.createstore', { from: 'agent-guide' })}
                                 className="inline-flex items-center gap-2 bg-marigold hover:bg-marigold-dark text-white font-bold rounded-xl px-6 py-3 shadow-hard-sm transition-all duration-300 hover:-translate-y-0.5"
                             >
                                 <FaStore className="h-5 w-5" />
@@ -180,7 +180,7 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComple
                         </div>
                     )}
 
-                    <StoreGuideCard step={2} title="Upload Your First Product" done={productDone} optional={!productDone && true}>
+                    <StoreGuideCard step={2} title="Create Products" done={productDone} optional={!productDone && true}>
                         List an item your store sells — add photos, a category, a brand, sizes/colors,
                         a price and your stock quantity. This step is optional and can be skipped for now.
                     </StoreGuideCard>
@@ -188,7 +188,7 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComple
                     {!productDone ? (
                         <div className="bg-white rounded-2xl border border-line p-6 md:p-8 shadow-hard-sm flex flex-col items-start gap-4 justify-center">
                             <div>
-                                <h3 className="font-display font-bold text-ink text-lg">Add your first product</h3>
+                                <h3 className="font-display font-bold text-ink text-lg">Create Products</h3>
                                 <p className="text-sm text-text-soft mt-1">
                                     The fastest way to start selling. You can publish more products
                                     any time from your dashboard.
@@ -196,11 +196,11 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComple
                             </div>
                             <div className="flex flex-wrap gap-3">
                                 <Link
-                                    href={route('dashboard.createproduct')}
+                                    href={route('dashboard.products')}
                                     className={`inline-flex items-center gap-2 font-bold rounded-xl px-6 py-3 shadow-hard-sm transition-all duration-300 hover:-translate-y-0.5 ${storeDone ? 'bg-marigold hover:bg-marigold-dark text-white' : 'bg-neutral-200 text-neutral-400 pointer-events-none'}`}
                                 >
                                     <FaBoxOpen className="h-5 w-5" />
-                                    Upload Your First Product
+                                    Create Products
                                 </Link>
                                 <Link
                                     href={route('dashboard')}
@@ -224,15 +224,24 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComple
                                 You're all set!
                             </div>
                             <p className="text-sm text-text-soft">
-                                Your first product is live. Keep adding products and watch your orders grow.
+                                Your product is live. Keep adding products and watch your orders grow.
                             </p>
-                            <Link
-                                href={route('dashboard')}
-                                className="inline-flex items-center justify-center gap-2 bg-marigold hover:bg-marigold-dark text-white font-bold rounded-xl px-6 py-3 shadow-hard-sm transition-all duration-300 hover:-translate-y-0.5 w-fit"
-                            >
-                                <FiShoppingBag className="h-5 w-5" />
-                                Go to Dashboard
-                            </Link>
+                            <div className="flex flex-wrap gap-3">
+                                <Link
+                                    href={route('dashboard.products')}
+                                    className="inline-flex items-center justify-center gap-2 bg-marigold hover:bg-marigold-dark text-white font-bold rounded-xl px-6 py-3 shadow-hard-sm transition-all duration-300 hover:-translate-y-0.5"
+                                >
+                                    <FaBoxOpen className="h-5 w-5" />
+                                    Create Products
+                                </Link>
+                                <Link
+                                    href={route('dashboard')}
+                                    className="inline-flex items-center justify-center gap-2 bg-white border border-line text-ink font-bold rounded-xl px-6 py-3 shadow-hard-sm transition-all duration-300 hover:-translate-y-0.5"
+                                >
+                                    <FiShoppingBag className="h-5 w-5" />
+                                    Go to Dashboard
+                                </Link>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -270,7 +279,7 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComple
                                 Uploading a product
                             </h3>
                             <ol className="space-y-3 text-sm text-text-soft list-decimal list-inside">
-                                <li>Go to <strong className="text-ink">Upload Your First Product</strong>.</li>
+                                <li>Go to <strong className="text-ink">Create Products</strong>.</li>
                                 <li>Pick which <strong className="text-ink">store</strong> the product belongs to.</li>
                                 <li>Fill in the <strong className="text-ink">name</strong> and a clear
                                     <strong className="text-ink"> description</strong>.</li>

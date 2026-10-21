@@ -101,6 +101,18 @@ export interface storeType {
     is_active: boolean;
     created_at: string;
     updated_at: string;
+    user_id?: string | null;
+    agent_id?: string | null;
+    author_name?: string;
+    owner_name?: string;
+    user?: User | any;
+    agent?: any;
+    stats?: {
+        totalProducts?: number;
+        totalOrders?: number;
+        totalRevenue?: number;
+        averageRating?: number;
+    };
 }
 
 export interface categoryType {

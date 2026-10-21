@@ -1,8 +1,10 @@
 // Store.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
+import { Dialog, Transition } from '@headlessui/react';
+import axios from 'axios';
 import {
   FaStore,
   FaEdit,
@@ -30,8 +32,12 @@ import {
   FaToggleOff,
   FaBan,
   FaCheckCircle,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaInfoCircle,
 } from 'react-icons/fa';
-import { Orders, Product, storeType, User } from '@/types';
+import { citytypes, Orders, Product, storeType, User } from '@/types';
 import FormatPrice from '@/Pages/utils/FormatePrice';
 import DeleteConfirmationDialog from '@/Pages/buttons/DeleteConfirmationDialog';
 import Eyebrow from '@/Pages/Components/Eyebrow';
@@ -53,12 +59,35 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
   const [statusFilter, setStatusFilter] = useState('all'); // New: 'all', 'active', 'inactive'
   const [sortBy, setSortBy] = useState('newest');
   const [selectedStore, setSelectedStore] = useState<storeType | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [storeToDelete, setStoreToDelete] = useState<string | null>(null);
   const [showMoreActions, setShowMoreActions] = useState<string | null>(null);
   const [isToggling, setIsToggling] = useState<string | null>(null);
+  const [cities, setCities] = useState<citytypes[]>([]);
 
   const isAdmin = auth.user.role === 'admin' || auth.user.role === 'superadmin';
+
+  useEffect(() => {
+    let active = true;
+    axios.get('/api/pathao/cities')
+      .then((res) => {
+        if (!active) return;
+        const list = res.data?.data?.data ?? [];
+        setCities(list.map((city: any) => ({
+          city_id: city.city_id,
+          city_name: city.city_name,
+        })));
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const getCityName = (cityId?: number | null) => {
+    if (!cityId) return 'Not set';
+    const match = cities.find(c => c.city_id === Number(cityId));
+    return match ? `${match.city_name} (City ID: ${cityId})` : `City ID: ${cityId}`;
+  };
 
   // Helper function to check if store is active (handles boolean, string, and null)
   const isStoreActive = (store: storeType): boolean => {
@@ -205,7 +234,7 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
   };
 
   const handleViewProducts = (id: string) => {
-    router.visit(route('dashboard.storeproducts', id));
+    router.visit(route('dashboard.products', { store_id: id }));
   };
 
   const handleViewAnalytics = (id: string) => {
@@ -534,6 +563,8 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                       const storeStats = (store as any).stats || {};
                       const storeCreatedAt = (store as any).created_at || new Date().toISOString();
                       const storeUser = (store as any).user || {};
+                      const storeAgent = (store as any).agent || {};
+                      const storeOwnerName = store.owner_name || storeAgent.name || storeUser.name || (store as any).author_name || 'Owner';
                       const isActive = isStoreActive(store);
 
                       return (
@@ -542,7 +573,10 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                           className={`border border-line rounded-xl p-4 hover:shadow-hard-sm transition-all duration-300 cursor-pointer ${
                             selectedStore?.id === store.id ? 'ring-2 ring-marigold bg-marigold/5' : ''
                           } ${!isActive ? 'bg-gray-50 opacity-75' : ''}`}
-                          onClick={() => setSelectedStore(store)}
+                          onClick={() => {
+                            setSelectedStore(store);
+                            setShowDetailModal(true);
+                          }}
                         >
                           <div className="flex items-start gap-4">
                             <div className="flex-shrink-0">
@@ -669,18 +703,44 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                                 </div>
                               </div>
 
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 pt-3 border-t border-line gap-2">
-                                {storeUser.name && (
-                                  <div className="flex items-center">
-                                    <FaUsers className="h-3 w-3 text-text-soft mr-2" />
-                                    <span className="text-xs text-text-soft">
-                                      Owner: <span className="font-medium text-ink">{storeUser.name}</span>
-                                    </span>
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 pt-3 border-t border-line gap-3">
+                                <div className="flex items-center flex-wrap gap-3">
+                                  {storeOwnerName && (
+                                    <div className="flex items-center">
+                                      <FaUsers className="h-3 w-3 text-text-soft mr-1.5" />
+                                      <span className="text-xs text-text-soft">
+                                        Owner: <span className="font-semibold text-ink">{storeOwnerName}</span>
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="flex items-center text-xs text-text-soft">
+                                    <FaCalendarAlt className="h-3 w-3 mr-1" />
+                                    <span>Created {new Date(storeCreatedAt).toLocaleDateString()}</span>
                                   </div>
-                                )}
-                                <div className="flex items-center text-xs text-text-soft">
-                                  <FaCalendarAlt className="h-3 w-3 mr-1" />
-                                  <span>Created {new Date(storeCreatedAt).toLocaleDateString()}</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedStore(store);
+                                      setShowDetailModal(true);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-paper-dim hover:bg-neutral-200 text-ink rounded-lg text-xs font-semibold transition-colors border border-line"
+                                  >
+                                    <FaInfoCircle className="h-3.5 w-3.5 text-marigold" />
+                                    View Details
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleViewProducts(store.id);
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-marigold/10 hover:bg-marigold text-marigold-dark hover:text-white rounded-lg text-xs font-semibold transition-colors border border-marigold/30"
+                                  >
+                                    <FaEye className="h-3.5 w-3.5" />
+                                    View Products
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -697,7 +757,7 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
             <div className="space-y-6">
               {selectedStore ? (
                 <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 sticky top-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink flex items-center gap-2">
                       <FaStore className="h-5 w-5 text-marigold" />
                       Store Details
@@ -705,13 +765,23 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                     <button
                       onClick={() => setSelectedStore(null)}
                       className="p-1 text-text-soft hover:text-ink rounded-lg hover:bg-paper-dim transition-colors"
+                      title="Close"
                     >
                       <FaTimes className="h-5 w-5" />
                     </button>
                   </div>
 
+                  {/* View Full Info Modal Trigger */}
+                  <button
+                    onClick={() => setShowDetailModal(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-marigold hover:bg-marigold-dark text-white rounded-xl font-bold text-sm transition-all shadow-hard-sm mb-6"
+                  >
+                    <FaInfoCircle className="h-4 w-4" />
+                    View All Store Information
+                  </button>
+
                   <div className="text-center mb-6">
-                    <div className="w-24 h-24 rounded-xl overflow-hidden border-4 border-line shadow-hard-sm mx-auto mb-4">
+                    <div className="w-24 h-24 rounded-xl overflow-hidden border-4 border-line shadow-hard-sm mx-auto mb-4 bg-white">
                       <img
                         src={selectedStore.logo ? `/storage/${selectedStore.logo}` : 'https://placehold.co/400x400/e2e8f0/64748b?text=Store'}
                         alt={selectedStore.name}
@@ -721,7 +791,7 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                         }}
                       />
                     </div>
-                    <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
                       <h4 className="text-xl font-bold text-ink">{selectedStore.name}</h4>
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         isStoreActive(selectedStore)
@@ -737,36 +807,55 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                       </span>
                       {selectedStore.license && (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-paper-dim text-text-soft border border-line">
-                          <FaIdCard className="h-3 w-3 mr-1" />
+                          <FaIdCard className="h-3 w-3 mr-1 text-marigold" />
                           Verified
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <h5 className="text-xs font-mono text-text-soft uppercase tracking-wide mb-2 flex items-center gap-2">
-                        <FaIdCard className="h-4 w-4" />
-                        License Information
+                  <div className="space-y-4 text-sm">
+                    {/* Contact & Location */}
+                    <div className="p-3 bg-paper-dim rounded-xl border border-line space-y-2">
+                      <h5 className="text-xs font-mono text-text-soft uppercase tracking-wide flex items-center gap-1.5 font-bold">
+                        <FaMapMarkerAlt className="h-3.5 w-3.5 text-marigold" />
+                        Contact & Location
                       </h5>
-                      <div className="p-3 bg-paper-dim rounded-xl border border-line">
-                        <p className="font-medium text-ink text-center">{selectedStore.license || 'No license provided'}</p>
-                        <p className="text-xs text-text-soft text-center mt-1">Business License</p>
+                      <div className="text-xs space-y-1 text-ink">
+                        <p><span className="text-text-soft">Mobile:</span> <strong className="font-semibold">{selectedStore.mobile || 'N/A'}</strong></p>
+                        <p><span className="text-text-soft">Email:</span> <strong className="font-semibold">{selectedStore.email || 'N/A'}</strong></p>
+                        <p><span className="text-text-soft">Address:</span> {selectedStore.address || 'N/A'}</p>
+                        <p><span className="text-text-soft">City:</span> {getCityName(selectedStore.sender_city)}</p>
                       </div>
                     </div>
 
-                    <div>
-                      <h5 className="text-xs font-mono text-text-soft uppercase tracking-wide mb-2 flex items-center gap-2">
-                        <FaUsers className="h-4 w-4" />
+                    {/* KYC & Identification */}
+                    <div className="p-3 bg-paper-dim rounded-xl border border-line space-y-2">
+                      <h5 className="text-xs font-mono text-text-soft uppercase tracking-wide flex items-center gap-1.5 font-bold">
+                        <FaIdCard className="h-3.5 w-3.5 text-marigold" />
+                        Identification
+                      </h5>
+                      <div className="text-xs space-y-1 text-ink">
+                        <p><span className="text-text-soft">National ID:</span> <span className="font-mono font-semibold">{selectedStore.national_id || 'N/A'}</span></p>
+                        <p><span className="text-text-soft">License:</span> <span className="font-mono">{selectedStore.license || 'None'}</span></p>
+                      </div>
+                    </div>
+
+                    {/* Store Owner */}
+                    <div className="p-3 bg-paper-dim rounded-xl border border-line space-y-2">
+                      <h5 className="text-xs font-mono text-text-soft uppercase tracking-wide flex items-center gap-1.5 font-bold">
+                        <FaUsers className="h-3.5 w-3.5 text-marigold" />
                         Store Owner
                       </h5>
-                      <div className="p-3 bg-paper-dim rounded-xl border border-line">
-                        <p className="font-medium text-ink text-center">{selectedStore.email || 'No email'}</p>
-                        <p className="text-xs text-text-soft text-center mt-1">Contact Email</p>
+                      <div className="text-xs space-y-1 text-ink">
+                        <p><span className="text-text-soft">Name:</span> <strong>{selectedStore.owner_name || (selectedStore as any).agent?.name || (selectedStore as any).user?.name || (selectedStore as any).author_name || 'N/A'}</strong></p>
+                        <p><span className="text-text-soft">Role:</span> {selectedStore.agent_id ? 'Agent / Vendor' : ((selectedStore as any).user?.role || 'Store Owner')}</p>
+                        <p><span className="text-text-soft">Owner Mobile:</span> {(selectedStore as any).agent?.mobile || (selectedStore as any).user?.mobile || selectedStore.mobile || 'N/A'}</p>
+                        <p><span className="text-text-soft">Owner Email:</span> {(selectedStore as any).agent?.email || (selectedStore as any).user?.email || selectedStore.email || 'N/A'}</p>
                       </div>
                     </div>
 
+                    {/* Store Performance */}
                     <div>
                       <h5 className="text-xs font-mono text-text-soft uppercase tracking-wide mb-2 flex items-center gap-2">
                         <FaChartLine className="h-4 w-4" />
@@ -775,11 +864,11 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                       <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
                           <p className="text-xs text-blue-600 font-medium">Products</p>
-                          <p className="text-xl font-bold text-ink">{(selectedStore as any).stats?.totalProducts || 0}</p>
+                          <p className="text-xl font-bold text-ink">{products.filter(p => p.store_id === selectedStore.id).length || (selectedStore as any).stats?.totalProducts || 0}</p>
                         </div>
                         <div className="p-3 bg-green-50 rounded-xl border border-green-100">
                           <p className="text-xs text-green-600 font-medium">Orders</p>
-                          <p className="text-xl font-bold text-ink">{(selectedStore as any).stats?.totalOrders || 0}</p>
+                          <p className="text-xl font-bold text-ink">{orders.filter(o => o.store_id === selectedStore.id).length || (selectedStore as any).stats?.totalOrders || 0}</p>
                         </div>
                         <div className="p-3 bg-purple-50 rounded-xl border border-purple-100">
                           <p className="text-xs text-purple-600 font-medium">Revenue</p>
@@ -800,11 +889,11 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                         Timeline
                       </h5>
                       <div className="space-y-2 p-3 bg-paper-dim rounded-xl border border-line">
-                        <div className="flex justify-between text-sm">
+                        <div className="flex justify-between text-xs">
                           <span className="text-text-soft">Created Date</span>
                           <span className="font-medium text-ink">{new Date((selectedStore as any).created_at || new Date()).toLocaleDateString()}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
+                        <div className="flex justify-between text-xs">
                           <span className="text-text-soft">Last Updated</span>
                           <span className="font-medium text-ink">{new Date((selectedStore as any).updated_at || new Date()).toLocaleDateString()}</span>
                         </div>
@@ -831,26 +920,26 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                             ) : isStoreActive(selectedStore) ? (
                               <>
                                 <FaBan className="h-4 w-4 mr-2" />
-                                Deactivate Store
+                                Deactivate
                               </>
                             ) : (
                               <>
                                 <FaCheckCircle className="h-4 w-4 mr-2" />
-                                Activate Store
+                                Activate
                               </>
                             )}
                           </button>
                         )}
                         <button
                           onClick={() => handleViewProducts(selectedStore.id)}
-                          className="flex items-center justify-center px-4 py-2.5 bg-paper-dim text-ink rounded-xl hover:bg-marigold/10 hover:text-marigold transition-colors font-medium text-sm border border-line"
+                          className={`flex items-center justify-center px-4 py-2.5 bg-marigold text-white rounded-xl hover:bg-marigold-dark transition-colors font-bold text-sm shadow-sm ${!isAdmin ? 'col-span-2' : ''}`}
                         >
                           <FaEye className="h-4 w-4 mr-2" />
                           View Products
                         </button>
                         <button
                           onClick={() => handleViewAnalytics(selectedStore.id)}
-                          className="flex items-center justify-center px-4 py-2.5 bg-paper-dim text-ink rounded-xl hover:bg-marigold/10 hover:text-marigold transition-colors font-medium text-sm border border-line col-span-2"
+                          className="flex items-center justify-center px-4 py-2.5 bg-paper-dim text-ink rounded-xl hover:bg-neutral-200 transition-colors font-medium text-sm border border-line col-span-2"
                         >
                           <FaChartLine className="h-4 w-4 mr-2" />
                           View Analytics
@@ -968,6 +1057,277 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
           </div>
         </div>
       </div>
+
+      {/* Store Details Modal */}
+      <Transition appear show={showDetailModal && selectedStore !== null} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setShowDetailModal(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white p-6 sm:p-8 text-left align-middle shadow-2xl border border-line transition-all">
+                  {selectedStore && (() => {
+                    const isActive = isStoreActive(selectedStore);
+                    const storeProductsCount = products.filter(p => p.store_id === selectedStore.id).length || (selectedStore as any).stats?.totalProducts || 0;
+                    const storeOrdersCount = orders.filter(o => o.store_id === selectedStore.id).length || (selectedStore as any).stats?.totalOrders || 0;
+                    const storeRevenue = (selectedStore as any).stats?.totalRevenue || 0;
+                    const ownerName = selectedStore.owner_name || (selectedStore as any).agent?.name || (selectedStore as any).user?.name || (selectedStore as any).author_name || 'N/A';
+                    const ownerRole = selectedStore.agent_id ? 'Agent / Vendor' : ((selectedStore as any).user?.role || 'Store Owner');
+                    const ownerPhone = (selectedStore as any).agent?.mobile || (selectedStore as any).user?.mobile || selectedStore.mobile || 'N/A';
+                    const ownerEmail = (selectedStore as any).agent?.email || (selectedStore as any).user?.email || selectedStore.email || 'N/A';
+
+                    return (
+                      <div className="space-y-6">
+                        {/* Header */}
+                        <div className="flex items-start justify-between pb-4 border-b border-line gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-line shadow-hard-sm shrink-0 bg-white">
+                              <img
+                                src={selectedStore.logo ? `/storage/${selectedStore.logo}` : 'https://placehold.co/400x400/e2e8f0/64748b?text=Store'}
+                                alt={selectedStore.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'https://placehold.co/400x400/e2e8f0/64748b?text=Store';
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="text-2xl font-display font-extrabold text-ink">{selectedStore.name}</h3>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                                  isActive
+                                    ? 'bg-green-100 text-green-800 border border-green-200'
+                                    : 'bg-red-100 text-red-800 border border-red-200'
+                                }`}>
+                                  {isActive ? 'Active' : 'Inactive'}
+                                </span>
+                              </div>
+                              <div className="flex items-center flex-wrap gap-2 mt-1.5">
+                                <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium border ${getStoreTypeColor(selectedStore.storetype)}`}>
+                                  <FaBuilding className="h-3 w-3 mr-1" />
+                                  {selectedStore.storetype}
+                                </span>
+                                {selectedStore.license && (
+                                  <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium bg-paper-dim text-text-soft border border-line">
+                                    <FaIdCard className="h-3 w-3 mr-1 text-marigold" />
+                                    Trade Licensed
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setShowDetailModal(false)}
+                            className="p-2 text-text-soft hover:text-ink rounded-xl hover:bg-paper-dim transition-colors"
+                          >
+                            <FaTimes className="h-5 w-5" />
+                          </button>
+                        </div>
+
+                        {/* Performance Highlights */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-100 text-center">
+                            <p className="text-xs text-blue-700 font-medium">Products</p>
+                            <p className="text-xl font-bold text-ink mt-0.5">{storeProductsCount}</p>
+                          </div>
+                          <div className="p-3 bg-green-50/70 rounded-xl border border-green-100 text-center">
+                            <p className="text-xs text-green-700 font-medium">Orders</p>
+                            <p className="text-xl font-bold text-ink mt-0.5">{storeOrdersCount}</p>
+                          </div>
+                          <div className="p-3 bg-purple-50/70 rounded-xl border border-purple-100 text-center">
+                            <p className="text-xs text-purple-700 font-medium">Revenue</p>
+                            <p className="text-xl font-bold text-ink mt-0.5">
+                              <FormatPrice price={storeRevenue} />
+                            </p>
+                          </div>
+                          <div className="p-3 bg-orange-50/70 rounded-xl border border-orange-100 text-center">
+                            <p className="text-xs text-orange-700 font-medium">Rating</p>
+                            <p className="text-xl font-bold text-ink mt-0.5 flex items-center justify-center gap-1">
+                              <FaStar className="h-3.5 w-3.5 text-amber-500" />
+                              {Number(selectedStore.rating || 0).toFixed(1)}
+                              <span className="text-xs font-normal text-text-soft">({selectedStore.review_count || 0})</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Store Info Cards Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Store Contact & Address */}
+                          <div className="p-4 bg-paper-dim/60 rounded-xl border border-line space-y-3">
+                            <h4 className="text-xs font-mono text-text-soft uppercase tracking-wider font-bold flex items-center gap-2">
+                              <FaMapMarkerAlt className="text-marigold" />
+                              Location & Contact
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                              <div>
+                                <span className="text-text-soft text-xs block">Store Mobile / Phone:</span>
+                                <span className="font-semibold text-ink flex items-center gap-1.5">
+                                  <FaPhone className="h-3 w-3 text-text-soft" />
+                                  {selectedStore.mobile || 'N/A'}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-text-soft text-xs block">Store Email:</span>
+                                <span className="font-semibold text-ink flex items-center gap-1.5">
+                                  <FaEnvelope className="h-3 w-3 text-text-soft" />
+                                  {selectedStore.email || 'N/A'}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-text-soft text-xs block">Full Physical Address:</span>
+                                <span className="font-medium text-ink">{selectedStore.address || 'N/A'}</span>
+                              </div>
+                              <div>
+                                <span className="text-text-soft text-xs block">Shipping Sender City:</span>
+                                <span className="font-medium text-ink">{getCityName(selectedStore.sender_city)}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Legal & KYC Details */}
+                          <div className="p-4 bg-paper-dim/60 rounded-xl border border-line space-y-3">
+                            <h4 className="text-xs font-mono text-text-soft uppercase tracking-wider font-bold flex items-center gap-2">
+                              <FaIdCard className="text-marigold" />
+                              Legal & KYC Identification
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                              <div>
+                                <span className="text-text-soft text-xs block">National ID (NID):</span>
+                                <span className="font-mono font-semibold text-ink">{selectedStore.national_id || 'N/A'}</span>
+                              </div>
+                              <div>
+                                <span className="text-text-soft text-xs block">Trade / Business License:</span>
+                                <span className="font-mono font-semibold text-ink">{selectedStore.license || 'Not provided'}</span>
+                              </div>
+                              <div>
+                                <span className="text-text-soft text-xs block">Store ID (UUID):</span>
+                                <span className="font-mono text-xs text-text-soft break-all">{selectedStore.id}</span>
+                              </div>
+                              <div>
+                                <span className="text-text-soft text-xs block">Created Date:</span>
+                                <span className="font-medium text-ink">
+                                  {new Date((selectedStore as any).created_at || new Date()).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Owner Details */}
+                          <div className="p-4 bg-paper-dim/60 rounded-xl border border-line space-y-3 md:col-span-2">
+                            <h4 className="text-xs font-mono text-text-soft uppercase tracking-wider font-bold flex items-center gap-2">
+                              <FaUsers className="text-marigold" />
+                              Store Owner Information
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                              <div>
+                                <span className="text-text-soft text-xs block">Owner Name:</span>
+                                <span className="font-bold text-ink">{ownerName}</span>
+                              </div>
+                              <div>
+                                <span className="text-text-soft text-xs block">Account Type:</span>
+                                <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-marigold/10 text-marigold-dark border border-marigold/20 mt-0.5">
+                                  {ownerRole}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-text-soft text-xs block">Owner Contact:</span>
+                                <span className="font-medium text-ink">{ownerPhone}</span>
+                              </div>
+                              <div>
+                                <span className="text-text-soft text-xs block">Owner Email:</span>
+                                <span className="font-medium text-ink truncate block" title={ownerEmail}>{ownerEmail}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Modal Action Buttons */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-line">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {isAdmin && (
+                              <>
+                                <button
+                                  onClick={() => handleToggleActive(selectedStore.id)}
+                                  disabled={isToggling === selectedStore.id}
+                                  className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                                    isActive
+                                      ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                                      : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200'
+                                  }`}
+                                >
+                                  {isToggling === selectedStore.id ? 'Updating...' : isActive ? 'Deactivate Store' : 'Activate Store'}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setShowDetailModal(false);
+                                    handleEditStore(selectedStore.name);
+                                  }}
+                                  className="inline-flex items-center px-4 py-2 bg-paper-dim hover:bg-line text-ink rounded-xl text-sm font-semibold transition-colors border border-line"
+                                >
+                                  <FaEdit className="mr-1.5 h-3.5 w-3.5" />
+                                  Edit Store
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => {
+                                setShowDetailModal(false);
+                                handleViewAnalytics(selectedStore.id);
+                              }}
+                              className="inline-flex items-center px-4 py-2 bg-paper-dim hover:bg-line text-ink rounded-xl text-sm font-semibold transition-colors border border-line"
+                            >
+                              <FaChartLine className="mr-1.5 h-3.5 w-3.5" />
+                              View Analytics
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setShowDetailModal(false)}
+                              className="px-4 py-2 text-text-soft hover:text-ink font-semibold text-sm transition-colors"
+                            >
+                              Close
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowDetailModal(false);
+                                handleViewProducts(selectedStore.id);
+                              }}
+                              className="inline-flex items-center gap-2 px-5 py-2.5 bg-marigold hover:bg-marigold-dark text-white rounded-xl text-sm font-bold shadow-hard-sm transition-all hover:-translate-y-0.5"
+                            >
+                              <FaEye className="h-4 w-4" />
+                              View Products
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationDialog

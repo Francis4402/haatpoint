@@ -15,6 +15,8 @@ import {
   FaTag,
   FaImage,
   FaInfoCircle,
+  FaTimes,
+  FaStore,
 } from 'react-icons/fa';
 import { Product, storeType } from '@/types';
 import { toast } from 'sonner';
@@ -30,9 +32,11 @@ interface dashboarProductProps {
     },
     products: Product[]
     store: storeType
+    filterStore?: storeType | null
+    selectedStoreId?: string | null
 }
 
-const Products = ({auth, products, store}: dashboarProductProps) => {
+const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboarProductProps) => {
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [productToDelete, setProductToDelete] = useState<string | null>(null);
@@ -189,6 +193,44 @@ const Products = ({auth, products, store}: dashboarProductProps) => {
                             )}
                         </div>
                     </div>
+
+                    {/* Store Filter Banner */}
+                    {filterStore && (
+                        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 md:p-5 bg-gradient-to-r from-marigold/10 via-amber-50 to-orange-50 border-2 border-marigold/40 rounded-2xl shadow-hard-sm">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-marigold/40 shrink-0 bg-white shadow-sm">
+                                    <img
+                                        src={filterStore.logo ? `/storage/${filterStore.logo}` : 'https://placehold.co/400x400/e2e8f0/64748b?text=Store'}
+                                        alt={filterStore.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = 'https://placehold.co/400x400/e2e8f0/64748b?text=Store';
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-marigold-dark bg-marigold/20 px-2.5 py-0.5 rounded-full">
+                                            Store Filter Active
+                                        </span>
+                                        <span className="text-xs text-text-soft">
+                                            {products.length} product{products.length === 1 ? '' : 's'} listed
+                                        </span>
+                                    </div>
+                                    <h2 className="text-lg md:text-xl font-display font-extrabold text-ink mt-0.5">
+                                        {filterStore.name}
+                                    </h2>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => router.visit(route('dashboard.products'))}
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-line text-ink hover:bg-neutral-100 rounded-xl font-semibold text-sm transition-all shadow-sm shrink-0"
+                            >
+                                <FaTimes className="h-3.5 w-3.5 text-text-soft" />
+                                Clear Filter / View All
+                            </button>
+                        </div>
+                    )}
 
                     {/* Pricing notice */}
                     <div className="mb-8 flex items-start gap-3 rounded-2xl border border-marigold/30 bg-marigold/5 p-4">

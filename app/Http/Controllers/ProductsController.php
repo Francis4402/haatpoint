@@ -27,24 +27,40 @@ class ProductsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $storeId = $request->query('store_id');
+        $filterStore = $storeId ? Store::with(['user', 'agent'])->find($storeId) : null;
 
         if ($user instanceof Agent) {
-            $products = Products::whereIn('store_id', $this->roleStores($user)->pluck('id'))->get();
-            $store = $this->roleStore($user);
+            $query = Products::whereIn('store_id', $this->roleStores($user)->pluck('id'));
+            if ($storeId) {
+                $query->where('store_id', $storeId);
+            }
+            $products = $query->orderBy('created_at', 'desc')->get();
+            $store = $filterStore ?: $this->roleStore($user);
         } elseif ($user instanceof Admin) {
-            $products = Products::orderBy('created_at', 'desc')->get();
-            $store = $this->roleStore($user);
+            $query = Products::orderBy('created_at', 'desc');
+            if ($storeId) {
+                $query->where('store_id', $storeId);
+            }
+            $products = $query->get();
+            $store = $filterStore ?: $this->roleStore($user);
         } else {
-            $products = Products::where('user_id', Auth::id())->get();
-            $store = Store::where('user_id', Auth::id())->first();
+            $query = Products::where('user_id', Auth::id());
+            if ($storeId) {
+                $query->where('store_id', $storeId);
+            }
+            $products = $query->orderBy('created_at', 'desc')->get();
+            $store = $filterStore ?: Store::where('user_id', Auth::id())->first();
         }
 
         return Inertia::render('dashboard/products/index', [
             'products' => $products,
             'store' => $store,
+            'filterStore' => $filterStore,
+            'selectedStoreId' => $storeId,
         ]);
     }
 

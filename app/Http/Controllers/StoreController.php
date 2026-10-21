@@ -32,15 +32,34 @@ class StoreController extends Controller
         $user = Auth::user();
 
         if ($user instanceof Agent) {
-            $stores = Store::where('agent_id', $user->id)->get();
+            $stores = Store::with(['user', 'agent'])->where('agent_id', $user->id)->get();
         } elseif ($user instanceof Admin) {
-            $stores = Store::all();
+            $stores = Store::with(['user', 'agent'])->get();
         } else {
-            $stores = Store::where('user_id', $user->id)->get();
+            $stores = Store::with(['user', 'agent'])->where('user_id', $user->id)->get();
         }
 
-        $products = Products::whereIn('store_id', $stores->pluck('id'))->get();
-        $orders = Orders::whereIn('store_id', $stores->pluck('id'))->get();
+        $storeIds = $stores->pluck('id');
+        $products = Products::whereIn('store_id', $storeIds)->get();
+        $orders = Orders::whereIn('store_id', $storeIds)->get();
+
+        // Calculate and attach stats for each store
+        $stores->each(function ($store) use ($products, $orders) {
+            $storeProducts = $products->where('store_id', $store->id);
+            $storeOrders = $orders->where('store_id', $store->id);
+            $revenue = $storeOrders->whereIn('payment_status', ['paid'])->sum('total');
+            if ($revenue == 0) {
+                $revenue = $storeOrders->whereNotIn('order_status', ['cancelled', 'returned'])->sum('total');
+            }
+
+            $store->stats = [
+                'totalProducts' => $storeProducts->count(),
+                'totalOrders' => $storeOrders->count(),
+                'totalRevenue' => (float) $revenue,
+                'averageRating' => (float) ($store->rating ?? 0),
+            ];
+            $store->owner_name = $store->author_name;
+        });
 
         return Inertia::render('dashboard/store/index', [
             'stores' => $stores,
@@ -207,6 +226,11 @@ class StoreController extends Controller
             $store->save();
 
             DB::commit();
+
+            if ($request->input('from') === 'agent-guide' || str_contains($request->header('referer', ''), 'agent-guide')) {
+                return redirect()->route('dashboard.agent-guide')
+                    ->with('success', 'Store created successfully!');
+            }
 
             return redirect()->route('dashboard.store')
                 ->with('success', 'Store created successfully!');
@@ -500,14 +524,7 @@ class StoreController extends Controller
      */
     public function products($id)
     {
-        $store = Store::findOrFail($id);
-        $products = Products::where('store_id', $store->id)->get();
-
-        return Inertia::render('dashboard/store/index', [
-            'stores' => collect([$store]),
-            'products' => $products,
-            'orders' => Orders::where('store_id', $store->id)->get(),
-        ]);
+        return redirect()->route('dashboard.products', ['store_id' => $id]);
     }
 
     /**

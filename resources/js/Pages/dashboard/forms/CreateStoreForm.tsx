@@ -61,6 +61,9 @@ export default function CreateStoreForm({auth}: PageProps) {
 
   // Prefill verified KYC details (national ID, mobile) while leaving store-specific details blank.
   const profile = (auth?.user ?? {}) as Record<string, any>;
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const fromSource = searchParams?.get('from') || '';
+
   const initialValues = {
     name: '',
     logo: null as File | null,
@@ -70,6 +73,7 @@ export default function CreateStoreForm({auth}: PageProps) {
     license: '',
     national_id: profile.national_id ?? '',
     mobile: profile.mobile ?? '',
+    from: fromSource,
   };
 
   const { data, setData, post, processing, errors, reset } = useForm(initialValues);
@@ -132,7 +136,11 @@ export default function CreateStoreForm({auth}: PageProps) {
       forceFormData: true,
       onSuccess: () => {
         toast.success('Store created successfully!');
-        router.visit(route('dashboard.store'));
+        if (fromSource === 'agent-guide' || data.from === 'agent-guide') {
+          router.visit(route('dashboard.agent-guide'));
+        } else {
+          router.visit(route('dashboard.store'));
+        }
         reset();
         if (logoPreview) URL.revokeObjectURL(logoPreview);
         setLogoPreview(null);
