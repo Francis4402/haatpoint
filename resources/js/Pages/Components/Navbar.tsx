@@ -136,7 +136,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
         aria-label="Main navigation"
       >
         {/* Top Seller Announcement Bar */}
-        <div className="bg-ink text-paper text-xs py-2 px-4 border-b border-white/10">
+        <div className="bg-ink text-paper text-xs py-2 border-b border-white/10">
           <div className="container flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 overflow-hidden text-[11px] sm:text-xs">
               <span className="inline-flex items-center gap-1 font-mono uppercase tracking-wider text-[10px] font-bold bg-marigold px-2 py-0.5 rounded text-white shrink-0">

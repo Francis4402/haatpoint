@@ -94,27 +94,25 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
 
   if (topProducts.length === 0) {
     return (
-      <section id="topselling" ref={scope} className="py-16 md:py-20 bg-paper-dim">
-        <div className="container">
-          <div className="text-center py-12 bg-white rounded-xl shadow-hard-sm border border-line">
-            <div className="w-20 h-20 mx-auto mb-4 bg-paper-dim rounded-full flex items-center justify-center">
-              <FaEye className="text-3xl text-text-soft" />
-            </div>
-            <Eyebrow>Monthly Leaderboard</Eyebrow>
-            <h2 className="text-2xl font-bold text-ink mb-2">Top Selling Products</h2>
-            <p className="text-text-soft max-w-md mx-auto">
-              This leaderboard only lists products that have sold more than {minSold} times this month. Nothing has
-              reached that yet.
-            </p>
+      <section id="topselling" ref={scope} className="py-16 md:py-20 bg-paper-dim rounded-2xl border border-line p-6 sm:p-10">
+        <div className="text-center py-12 bg-white rounded-xl shadow-hard-sm border border-line">
+          <div className="w-20 h-20 mx-auto mb-4 bg-paper-dim rounded-full flex items-center justify-center">
+            <FaEye className="text-3xl text-text-soft" />
           </div>
+          <Eyebrow>Monthly Leaderboard</Eyebrow>
+          <h2 className="text-2xl font-bold text-ink mb-2">Top Selling Products</h2>
+          <p className="text-text-soft max-w-md mx-auto">
+            This leaderboard only lists products that have sold more than {minSold} times this month. Nothing has
+            reached that yet.
+          </p>
         </div>
       </section>
     );
   }
 
   return (
-    <section id="topselling" ref={scope} className="py-16 sm:py-20 md:py-24 bg-paper-dim">
-      <div className="container">
+    <section id="topselling" ref={scope} className="py-16 sm:py-20 md:py-24 bg-paper-dim rounded-2xl border border-line p-6 sm:p-10">
+      <div>
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-5 mb-10 sm:mb-12 md:mb-14">
           <div>
