@@ -122,13 +122,13 @@ export default function Upgrade({ user, pricing }: { user?: User; pricing?: { mo
             </div>
 
             {/* Plan card */}
-            <div className="relative overflow-hidden rounded-3xl border-[1.5px] border-white/15 bg-white/[0.04] p-8 backdrop-blur-sm">
+            <div className="relative overflow-hidden rounded-3xl border border-line bg-[#1B1B1B] p-8 shadow-hard-lg">
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-marigold">
                   <FaCrown className="h-3.5 w-3.5" /> HaatPoint Pro
                 </span>
                 <span className="rounded-full bg-marigold px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-wide text-white">
-                  {selectedCycle === 'six_month' ? 'Save 5% (৳30 OFF)' : 'Flexible Monthly'}
+                  {selectedCycle === 'six_month' ? 'Save 10% (৳60 OFF)' : 'Flexible Monthly'}
                 </span>
               </div>
 
@@ -158,7 +158,7 @@ export default function Upgrade({ user, pricing }: { user?: User; pricing?: { mo
                   <span className={`rounded px-1 text-[9px] font-mono ${
                     selectedCycle === 'six_month' ? 'bg-white text-marigold font-extrabold' : 'bg-emerald-500/20 text-emerald-400'
                   }`}>
-                    5% OFF
+                    10% OFF
                   </span>
                 </button>
               </div>
@@ -173,7 +173,7 @@ export default function Upgrade({ user, pricing }: { user?: User; pricing?: { mo
               </div>
               {selectedCycle === 'six_month' && (
                 <p className="mt-1 text-xs text-emerald-400 font-mono">
-                  <span className="line-through text-[#8f8d87] mr-1">৳600</span> ৳95/month • 5% discount applied
+                  <span className="line-through text-[#8f8d87] mr-1">৳600</span> ৳90/month • 10% discount applied
                 </p>
               )}
 

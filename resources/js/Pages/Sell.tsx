@@ -60,7 +60,7 @@ const FAQ = [
   },
   {
     q: 'What is HaatPoint Pro and how much does it cost?',
-    a: 'HaatPoint Pro is built for growing sellers. It costs ৳100 per month, or ৳570 for 6 months when you pay in advance (a 5% discount saving you ৳30). It unlocks unlimited product listings, uninterrupted selling, and priority support.',
+    a: 'HaatPoint Pro is built for growing sellers. It costs ৳100 per month, or ৳540 for 6 months when you pay in advance (a 10% discount saving you ৳60). It unlocks unlimited product listings, uninterrupted selling, and priority support.',
   },
   {
     q: 'What extra advantages do I get with HaatPoint Pro?',
@@ -68,7 +68,7 @@ const FAQ = [
   },
   {
     q: 'How do I pay for HaatPoint Pro?',
-    a: 'Send ৳100 for 1 month or ৳570 for 6 months via bKash (Send Money to 01319052507). Then submit your bKash Transaction ID (TrxID) in your dashboard for rapid verification and activation.',
+    a: 'Send ৳100 for 1 month or ৳540 for 6 months via bKash (Send Money to 01319052507). Then submit your bKash Transaction ID (TrxID) in your dashboard for rapid verification and activation.',
   },
   {
     q: 'How do I get paid for my sales?',
@@ -100,7 +100,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
       <Head title="Become a Seller · HaatPoint">
         <meta
           name="description"
-          content="Sell on HaatPoint — Bangladesh's trusted marketplace. Start free with limited products, or upgrade to Pro for ৳100/month with a 5% discount on 6-month advance payments for unlimited products."
+          content="Sell on HaatPoint — Bangladesh's trusted marketplace. Start free with limited products, or upgrade to Pro for ৳100/month with a 10% discount on 6-month advance payments for unlimited products."
         />
       </Head>
 
@@ -195,7 +195,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
               Simple plans built for your business.
             </h2>
             <p className="mt-3 text-text-soft">
-              Start free with essential features, or upgrade to Pro for ৳100/month with a 5% discount when paying 6 months in advance.
+              Start free with essential features, or upgrade to Pro for ৳100/month with a 10% discount when paying 6 months in advance.
             </p>
 
             {/* Billing Cycle Toggle */}
@@ -224,7 +224,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-mono font-extrabold uppercase ${
                   billingCycle === 'six_month' ? 'bg-white text-marigold' : 'bg-emerald-100 text-emerald-800'
                 }`}>
-                  5% OFF
+                  10% OFF
                 </span>
               </button>
             </div>
@@ -270,21 +270,20 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
             </div>
 
             {/* Pro */}
-            <div className="relative flex flex-col overflow-hidden rounded-3xl border-[1.5px] border-ink bg-ink p-8 text-paper shadow-hard-lg">
-              <div className="absolute right-[-90px] top-[-110px] h-[240px] w-[240px] bg-marigold opacity-90 clip-cta" />
+            <div className="relative flex flex-col rounded-3xl border-[1.5px] border-ink bg-[#1B1B1B] p-8 text-paper shadow-hard-lg">
               <div className="relative z-10 flex flex-col h-full">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-marigold">
                     HaatPoint Pro
                   </span>
                   <span className="rounded-full bg-marigold px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-wide text-white">
-                    {billingCycle === 'six_month' ? 'Save 5% (৳30 OFF)' : 'Recommended'}
+                    {billingCycle === 'six_month' ? 'Save 10% (৳60 OFF)' : 'Recommended'}
                   </span>
                 </div>
 
                 <div className="mt-4 flex items-end gap-2">
                   <span className="font-display text-[46px] font-extrabold leading-none text-paper">
-                    ৳{billingCycle === 'monthly' ? '100' : '570'}
+                    ৳{billingCycle === 'monthly' ? '100' : '540'}
                   </span>
                   <span className="pb-1 text-sm text-[#B9B7B0]">
                     {billingCycle === 'monthly' ? '/ month' : '/ 6 months'}
@@ -292,11 +291,11 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
                 </div>
                 {billingCycle === 'six_month' ? (
                   <p className="mt-1 text-xs text-emerald-400 font-mono">
-                    <span className="line-through text-[#8f8d87] mr-1">৳600</span> ৳95/month • 5% discount applied (save ৳30)
+                    <span className="line-through text-[#8f8d87] mr-1">৳600</span> ৳90/month • 10% discount applied (save ৳60)
                   </p>
                 ) : (
                   <p className="mt-1 text-xs text-marigold font-mono">
-                    ৳100/month • Or pay 6 months in advance to get 5% discount (৳570)
+                    ৳100/month • Or pay 6 months in advance to get 10% discount (৳540)
                   </p>
                 )}
                 <p className="mt-3 text-sm text-[#B9B7B0]">
@@ -311,7 +310,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
                     'Advanced sales, performance, and revenue analytics',
                     'Priority 24/7 dedicated seller support',
                     billingCycle === 'six_month'
-                      ? '6 months prepaid with 5% discount (save ৳30, pay ৳570)'
+                      ? '6 months prepaid with 10% discount (save ৳60, pay ৳540)'
                       : 'Pay ৳100 per month with flexible renewal',
                   ].map((f) => (
                     <li key={f} className="flex items-center gap-2.5">
@@ -325,10 +324,10 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
                   href={proRedirect}
                   className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-sm border border-ink bg-marigold px-6 py-3.5 text-sm font-bold text-white shadow-hard-marigold transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5"
                 >
-                  {isAgent ? 'Get Pro' : 'Go Pro'} — ৳{billingCycle === 'monthly' ? '100 / month' : '570 / 6 months'} <FaArrowRight size={13} />
+                  {isAgent ? 'Get Pro' : 'Go Pro'} — ৳{billingCycle === 'monthly' ? '100 / month' : '540 / 6 months'} <FaArrowRight size={13} />
                 </Link>
                 <p className="mt-3 text-center text-[11px] text-[#8f8d87]">
-                  Pay ৳{billingCycle === 'monthly' ? '100' : '570'} via bKash to 01319052507 — your account will be activated after checking the transaction id.
+                  Pay ৳{billingCycle === 'monthly' ? '100' : '540'} via bKash to 01319052507 — your account will be activated after checking the transaction id.
                 </p>
               </div>
             </div>

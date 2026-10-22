@@ -44,7 +44,7 @@ export default function SubscriptionBanner() {
           {daysLeft === 1 ? '' : 's'}.
         </p>
         <p className="text-text-soft">
-          Renew for ৳100 / month or ৳570 / 6 months (5% OFF) to keep your store online.
+          Renew for ৳100 / month or ৳540 / 6 months (10% OFF) to keep your store online.
         </p>
       </div>
 

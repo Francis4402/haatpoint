@@ -146,7 +146,7 @@ export default function SubscriptionPayment({
                   <span className={`rounded px-1.5 py-0.5 text-[9px] font-mono font-extrabold uppercase ${
                     selectedMonths === 6 ? 'bg-white text-marigold' : 'bg-emerald-500/20 text-emerald-400'
                   }`}>
-                    5% OFF
+                    10% OFF
                   </span>
                 </button>
               </div>
@@ -168,7 +168,7 @@ export default function SubscriptionPayment({
                   <strong className="text-paper font-mono underline">{payment.bkashNumber}</strong> (Send Money), then post your bKash Transaction ID below.
                   {selectedMonths === 6 && (
                     <span className="block mt-1 text-xs text-emerald-400 font-mono">
-                      ✓ 5% discount applied: Save ৳30 (effective ৳95/month instead of ৳100/month).
+                      ✓ 10% discount applied: Save ৳60 (effective ৳90/month instead of ৳100/month).
                     </span>
                   )}
                 </p>

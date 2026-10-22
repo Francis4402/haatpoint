@@ -13,11 +13,11 @@ class SubscriptionController extends Controller
 {
     /**
      * The bKash number buyers send the Pro fee to, the fees and terms.
-     * Base: ৳100 / month. 6-Month plan offers a 5% discount: ৳570 for 6 months (saving ৳30).
+     * Base: ৳100 / month. 6-Month plan offers a 10% discount: ৳540 for 6 months (saving ৳60).
      */
     public const BKASH_NUMBER = '01319052507';
     public const PRO_MONTHLY_PRICE = 100;
-    public const PRO_6_MONTH_PRICE = 570; // 6 * 100 = 600 - 5% (30) = 570
+    public const PRO_6_MONTH_PRICE = 540; // 6 * 100 = 600 - 10% (60) = 540
     public const PRO_PRICE = 100;
     public const PRO_MONTHS = 6;
 
