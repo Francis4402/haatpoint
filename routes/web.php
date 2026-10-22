@@ -301,8 +301,8 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked', 'subscription']
 
     Route::post('/stores/{store}/review', [CommentsController::class, 'storeReview'])->name('stores.review');
 
-    // Superadmin-only: verify the bKash transactions agents submit for Pro.
-    Route::middleware('role:superadmin')->group(function () {
+    // Superadmin and Admin: verify the bKash transactions agents submit for Pro.
+    Route::middleware('role:superadmin,admin')->group(function () {
         Route::post('/dashboard/subscription/{agent}/approve', [SubscriptionController::class, 'approve'])->name('dashboard.subscription.approve');
         Route::post('/dashboard/subscription/{agent}/reject', [SubscriptionController::class, 'reject'])->name('dashboard.subscription.reject');
     });

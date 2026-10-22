@@ -74,8 +74,8 @@ interface OrderData {
   trackingNumber: string;
   customer: {
     name: string;
-    email: string;
-    phone: string;
+    email?: string;
+    phone?: string;
     address: string;
     city: string;
     zipCode: string;
@@ -83,8 +83,8 @@ interface OrderData {
   };
   store: {
     name: string;
-    email: string;
-    phone: string;
+    email?: string;
+    phone?: string;
     address: string;
   };
   items: OrderItem[];
@@ -120,9 +120,7 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
       shippingMethod: "Express Delivery",
       trackingNumber: "TRK789456123",
       customer: {
-        name: "John Smith",
-        email: "john.smith@email.com",
-        phone: "+880 1234-567890",
+        name: "Customer",
         address: "123 Main Street, Apt 4B",
         city: "Dhaka",
         zipCode: "1200",
@@ -130,8 +128,6 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
       },
       store: {
         name: "TechHub Electronics",
-        email: "contact@techhub.com",
-        phone: "+880 1234-567891",
         address: "123 Technology Street, Block A, Dhaka"
       },
       items: [
@@ -242,9 +238,7 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
       shippingMethod: "Standard Shipping",
       trackingNumber: "TRK123456789",
       customer: {
-        name: "John Smith",
-        email: "john.smith@email.com",
-        phone: "+880 1234-567890",
+        name: "Customer",
         address: "123 Main Street, Apt 4B",
         city: "Dhaka",
         zipCode: "1200",
@@ -252,8 +246,6 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
       },
       store: {
         name: "Fashion Haven",
-        email: "hello@fashionhaven.com",
-        phone: "+880 1234-567892",
         address: "456 Fashion Avenue, Dhaka"
       },
       items: [
@@ -342,9 +334,7 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
       shippingMethod: "Free Shipping",
       trackingNumber: "TRK456789123",
       customer: {
-        name: "John Smith",
-        email: "john.smith@email.com",
-        phone: "+880 1234-567890",
+        name: "Customer",
         address: "123 Main Street, Apt 4B",
         city: "Dhaka",
         zipCode: "1200",
@@ -352,8 +342,6 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
       },
       store: {
         name: "Home & Living Store",
-        email: "info@homeliving.com",
-        phone: "+880 1234-567893",
         address: "789 Decor Lane, Chittagong"
       },
       items: [
@@ -441,9 +429,7 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
       shippingMethod: "Standard Shipping",
       trackingNumber: "TRK321654987",
       customer: {
-        name: "John Smith",
-        email: "john.smith@email.com",
-        phone: "+880 1234-567890",
+        name: "Customer",
         address: "123 Main Street, Apt 4B",
         city: "Dhaka",
         zipCode: "1200",
@@ -451,8 +437,6 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
       },
       store: {
         name: "Fresh Groceries",
-        email: "support@freshgroceries.com",
-        phone: "+880 1234-567894",
         address: "321 Market Road, Sylhet"
       },
       items: [
@@ -966,16 +950,22 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
                     <p className="text-gray-600">{selectedOrderData.customer.address}</p>
                     <p className="text-gray-600">{selectedOrderData.customer.city}, {selectedOrderData.customer.zipCode}</p>
                     <p className="text-gray-600">{selectedOrderData.customer.country}</p>
-                    <div className="pt-2 border-t">
-                      <div className="flex items-center gap-2 text-sm">
-                        <FaPhone className="h-4 w-4 text-gray-400" />
-                        <span>{selectedOrderData.customer.phone}</span>
+                    {(selectedOrderData.customer.phone || selectedOrderData.customer.email) && (
+                      <div className="pt-2 border-t space-y-1">
+                        {selectedOrderData.customer.phone && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <FaPhone className="h-4 w-4 text-gray-400" />
+                            <span>{selectedOrderData.customer.phone}</span>
+                          </div>
+                        )}
+                        {selectedOrderData.customer.email && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <FaEnvelope className="h-4 w-4 text-gray-400" />
+                            <span>{selectedOrderData.customer.email}</span>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <FaEnvelope className="h-4 w-4 text-gray-400" />
-                        <span>{selectedOrderData.customer.email}</span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
@@ -990,16 +980,22 @@ const TrackOrderPage = ({auth, wishlist}: PageProps) => {
                   <div className="space-y-2">
                     <p className="font-medium text-gray-900">{selectedOrderData.store.name}</p>
                     <p className="text-gray-600">{selectedOrderData.store.address}</p>
-                    <div className="pt-2 border-t">
-                      <div className="flex items-center gap-2 text-sm">
-                        <FaPhone className="h-4 w-4 text-gray-400" />
-                        <span>{selectedOrderData.store.phone}</span>
+                    {(selectedOrderData.store.phone || selectedOrderData.store.email) && (
+                      <div className="pt-2 border-t space-y-1">
+                        {selectedOrderData.store.phone && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <FaPhone className="h-4 w-4 text-gray-400" />
+                            <span>{selectedOrderData.store.phone}</span>
+                          </div>
+                        )}
+                        {selectedOrderData.store.email && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <FaEnvelope className="h-4 w-4 text-gray-400" />
+                            <span>{selectedOrderData.store.email}</span>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <FaEnvelope className="h-4 w-4 text-gray-400" />
-                        <span>{selectedOrderData.store.email}</span>
-                      </div>
-                    </div>
+                    )}
                     <button className="mt-4 px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-600 font-medium rounded-lg transition-colors w-full">
                       Contact Store
                     </button>

@@ -323,7 +323,7 @@ export default function StaffRegister({
                       ? 'border-red-500 focus:ring-red-200'
                       : 'border-ink/20 focus:ring-marigold focus:border-transparent'
                   }`}
-                  placeholder="you@example.com"
+                  placeholder="Enter your email"
                   required
                 />
               </div>

@@ -126,7 +126,7 @@ export default function StaffLogin({
                   autoFocus
                   onChange={(e) => setData('email', e.target.value)}
                   className="block w-full pl-10 pr-3 py-2.5 border border-ink/20 rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all font-body"
-                  placeholder="you@example.com"
+                  placeholder="Enter your email"
                 />
               </div>
               {errors.email && (

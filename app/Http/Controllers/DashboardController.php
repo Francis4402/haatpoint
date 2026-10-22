@@ -70,10 +70,10 @@ class DashboardController extends Controller
             ];
         }
 
-        // Superadmin only: the bKash Pro payments agents have submitted, so
+        // Superadmin and Admin: the bKash Pro payments agents have submitted, so
         // they can be verified (approved/rejected) from the dashboard.
         $subscriptionPayments = null;
-        if ($userRole === 'superadmin') {
+        if (in_array($userRole, ['superadmin', 'admin'], true)) {
             $subscriptionPayments = Agent::where(function ($query) {
                 $query->whereIn('subscription_payment_status', ['pending', 'approved', 'rejected'])
                     ->orWhere('plan', 'pro');

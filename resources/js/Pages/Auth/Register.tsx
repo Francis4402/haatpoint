@@ -403,7 +403,7 @@ export default function Register() {
                     autoComplete="username"
                     onChange={(e) => setData('email', e.target.value)}
                     className="block w-full pl-10 pr-3 py-2.5 border border-ink/20 rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all font-body text-sm"
-                    placeholder="you@gmail.com"
+                    placeholder="Enter your email"
                     required
                   />
                 </div>
@@ -431,7 +431,7 @@ export default function Register() {
                     value={data.phone}
                     onChange={(e) => setData('phone', e.target.value)}
                     className="block w-full pl-10 pr-3 py-2.5 border border-ink/20 rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all font-body text-sm"
-                    placeholder="01712345678"
+                    placeholder="01XXXXXXXXX"
                     required
                   />
                 </div>

@@ -1026,7 +1026,7 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                           type="text"
                           value={editForm.mobile}
                           onChange={(e) => setEditForm(prev => ({ ...prev, mobile: e.target.value }))}
-                          placeholder="01700000000"
+                          placeholder="01XXXXXXXXX"
                           className="w-full px-3 py-2 text-sm rounded-xl border border-line bg-paper-dim focus:bg-white focus:outline-none focus:ring-2 focus:ring-marigold transition-all"
                         />
                         {editErrors.mobile && (

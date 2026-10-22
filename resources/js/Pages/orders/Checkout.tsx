@@ -402,7 +402,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                         className={`w-full px-4 py-3 border ${
                           validationErrors.recipient_email ? 'border-red-500 bg-red-50' : 'border-line'
                         } rounded-xl focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft transition-all`}
-                        placeholder="recipient@email.com"
+                        placeholder="Enter recipient email"
                       />
                       {validationErrors.recipient_email && (
                         <p className="text-red-500 text-sm mt-1 flex items-center">

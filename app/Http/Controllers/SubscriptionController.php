@@ -46,7 +46,7 @@ class SubscriptionController extends Controller
      * The bKash payment page. Shown right after a Pro signup and whenever an
      * expired or Pro-pending agent wants to activate/renew.
      */
-    public function showPayment(): Response|RedirectResponse
+    public function showPayment(Request $request): Response|RedirectResponse
     {
         $user = Auth::guard('agent')->user() ?? Auth::user();
 
@@ -54,14 +54,20 @@ class SubscriptionController extends Controller
             return redirect()->route('dashboard');
         }
 
-        // Already approved and running: nothing left to pay for here.
-        if ($user->isPro()) {
+        // Already approved and running: allow access if renewing or specifying months, otherwise redirect to dashboard.
+        if ($user->isPro() && ! $request->has('renew') && ! $request->has('months')) {
             return redirect()->route('dashboard')
                 ->with('success', 'Your HaatPoint Pro is already active.');
         }
 
-        $currentAmount = (float) ($user->subscription_payment_amount ?: self::PRO_6_MONTH_PRICE);
-        $currentMonths = $currentAmount <= 100 ? 1 : 6;
+        $requestedMonths = (int) $request->query('months');
+        if (in_array($requestedMonths, [1, 6], true)) {
+            $currentMonths = $requestedMonths;
+            $currentAmount = $currentMonths === 1 ? self::PRO_MONTHLY_PRICE : self::PRO_6_MONTH_PRICE;
+        } else {
+            $currentAmount = (float) ($user->subscription_payment_amount ?: self::PRO_6_MONTH_PRICE);
+            $currentMonths = $currentAmount <= 100 ? 1 : 6;
+        }
 
         return Inertia::render('dashboard/SubscriptionPayment', [
             'user' => $user,
@@ -80,7 +86,7 @@ class SubscriptionController extends Controller
 
     /**
      * Store the bKash transaction id the agent pasted in. The payment stays
-     * pending until a superadmin approves it.
+     * pending until a superadmin or admin approves it.
      */
     public function submitPayment(Request $request): RedirectResponse
     {
@@ -106,7 +112,7 @@ class SubscriptionController extends Controller
         $user->save();
 
         return redirect()->route('dashboard.subscription.payment')
-            ->with('success', 'Payment submitted! If your transaction ID is correct, then your account will be activated.');
+            ->with('success', 'Your account will be activated after checking the transaction id.');
     }
 
     /**

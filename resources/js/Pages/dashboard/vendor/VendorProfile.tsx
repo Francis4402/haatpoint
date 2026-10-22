@@ -168,7 +168,7 @@ export default function VendorProfile({ vendor, missingFields, isComplete }: Ven
                                     type='tel'
                                     value={data.mobile}
                                     onChange={(e) => setData('mobile', e.target.value)}
-                                    placeholder='e.g., 01712345678'
+                                    placeholder='01XXXXXXXXX'
                                     className={inputClass}
                                     disabled={processing}
                                 />

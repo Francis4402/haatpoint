@@ -76,7 +76,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                                     className="pl-10 block w-full border-line rounded-lg focus:border-marigold focus:ring-marigold transition-colors"
                                     isFocused={true}
                                     onChange={(e) => setData('email', e.target.value)}
-                                    placeholder="you@example.com"
+                                    placeholder="Enter your email"
                                     required
                                 />
                             </div>

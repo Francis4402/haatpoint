@@ -78,7 +78,11 @@ const FAQ = [
 
 export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegisterRoute: string }>) {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'six_month'>('monthly');
-  const proRegister = `${agentRegisterRoute}?plan=pro`;
+  const isAgent = auth?.user?.role === 'agent';
+  const selectedMonths = billingCycle === 'monthly' ? 1 : 6;
+  const proRedirect = isAgent
+    ? route('dashboard.subscription.payment', { months: selectedMonths })
+    : `${agentRegisterRoute}?plan=pro&months=${selectedMonths}`;
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hash) {
@@ -258,10 +262,10 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
               </ul>
 
               <Link
-                href={agentRegisterRoute}
+                href={isAgent ? route('dashboard') : agentRegisterRoute}
                 className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-sm border border-ink bg-white px-6 py-3.5 text-sm font-bold text-ink shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
               >
-                Start for free
+                {isAgent ? 'Go to Dashboard' : 'Start for free'}
               </Link>
             </div>
 
@@ -318,13 +322,13 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
                 </ul>
 
                 <Link
-                  href={proRegister}
+                  href={proRedirect}
                   className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-sm border border-ink bg-marigold px-6 py-3.5 text-sm font-bold text-white shadow-hard-marigold transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5"
                 >
-                  Go Pro — ৳{billingCycle === 'monthly' ? '100 / month' : '570 / 6 months'} <FaArrowRight size={13} />
+                  {isAgent ? 'Get Pro' : 'Go Pro'} — ৳{billingCycle === 'monthly' ? '100 / month' : '570 / 6 months'} <FaArrowRight size={13} />
                 </Link>
                 <p className="mt-3 text-center text-[11px] text-[#8f8d87]">
-                  Pay ৳{billingCycle === 'monthly' ? '100' : '570'} via bKash to 01319052507 — activated promptly once verified.
+                  Pay ৳{billingCycle === 'monthly' ? '100' : '570'} via bKash to 01319052507 — your account will be activated after checking the transaction id.
                 </p>
               </div>
             </div>

@@ -38,12 +38,13 @@ export default function SubscriptionPayment({
   const defaultMonths = initialMonthsParam === 1 || payment.months === 1 ? 1 : 6;
 
   const [selectedMonths, setSelectedMonths] = useState<number>(defaultMonths);
+  const [isEditingTrx, setIsEditingTrx] = useState(false);
   const monthlyFee = payment.monthlyPrice || 100;
   const sixMonthFee = payment.sixMonthPrice || 570;
   const currentAmount = selectedMonths === 1 ? monthlyFee : sixMonthFee;
 
   const { data, setData, post, processing, errors } = useForm({
-    trx_id: '',
+    trx_id: payment.trxId || '',
     months: defaultMonths,
   });
 
@@ -68,7 +69,9 @@ export default function SubscriptionPayment({
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    post(route('dashboard.subscription.payment.submit'));
+    post(route('dashboard.subscription.payment.submit'), {
+      onSuccess: () => setIsEditingTrx(false),
+    });
   };
 
   const logout = () => router.post(route('agent.logout'));
@@ -171,7 +174,7 @@ export default function SubscriptionPayment({
                 </p>
                 <div className="mt-2.5 inline-flex items-center gap-2 rounded-lg bg-marigold/20 px-3 py-1.5 text-xs font-bold text-marigold">
                   <FaCheck className="h-3 w-3" />
-                  If your transaction ID is correct, then your account will be activated.
+                  Your account will be activated after checking the transaction id by superadmin or admin.
                 </div>
               </div>
             </div>
@@ -200,7 +203,7 @@ export default function SubscriptionPayment({
                   <FaCrown className="h-3 w-3 text-marigold" />
                 )}
                 <span className="font-mono text-[10px] font-bold uppercase tracking-[0.14em]">
-                  {isPending ? 'Awaiting superadmin verification' : 'HaatPoint Pro Checkout'}
+                  {isPending ? 'Awaiting verification by Admin / Superadmin' : 'HaatPoint Pro Checkout'}
                 </span>
               </span>
 
@@ -213,7 +216,7 @@ export default function SubscriptionPayment({
               <p className="mt-5 max-w-[520px] text-[15px] leading-relaxed text-[#B9B7B0] sm:text-[16.5px]">
                 Hi{user?.name ? ` ${user.name}` : ''} — send{' '}
                 <strong className="text-paper">৳{currentAmount}</strong> to our bKash
-                number <strong className="text-marigold font-mono">{payment.bkashNumber}</strong> for {selectedMonths} month{selectedMonths > 1 ? 's' : ''} of HaatPoint Pro, then post the transaction ID below so our superadmin can verify it and
+                number <strong className="text-marigold font-mono">{payment.bkashNumber}</strong> for {selectedMonths} month{selectedMonths > 1 ? 's' : ''} of HaatPoint Pro, then post the transaction ID below. Superadmin or Admin will verify it and
                 activate HaatPoint Pro for your account.
               </p>
 
@@ -228,7 +231,7 @@ export default function SubscriptionPayment({
                       {submittedAt ? ` on ${submittedAt}` : ''}.
                     </p>
                     <p className="mt-2 font-medium text-marigold">
-                      If your transaction ID is correct, then your account will be activated shortly.
+                      Your account will be activated after checking the transaction id.
                     </p>
                   </div>
                 </div>
@@ -240,7 +243,7 @@ export default function SubscriptionPayment({
                   <div className="text-sm leading-relaxed text-[#E6E4DD]">
                     <p className="font-semibold text-paper">Last payment could not be verified</p>
                     <p className="mt-1">
-                      The TrxID was rejected by superadmin. Please check your bKash message and submit the correct transaction ID below. If your transaction ID is correct, then your account will be activated.
+                      The TrxID was rejected by admin. Please check your bKash message and submit the correct transaction ID below. Your account will be activated after checking the transaction id.
                     </p>
                   </div>
                 </div>
@@ -252,7 +255,7 @@ export default function SubscriptionPayment({
                   <>Send <strong className="text-paper">৳{currentAmount}</strong> to <strong className="text-paper font-mono">{payment.bkashNumber}</strong>.</>,
                   <>Copy the <strong className="text-paper">TrxID</strong> from your bKash SMS or receipt.</>,
                   <>Paste the transaction ID in the input below and click <strong className="text-paper">Post TrxID</strong>.</>,
-                  <>Superadmin verifies the transaction ID and activates your Pro account for {selectedMonths} month{selectedMonths > 1 ? 's' : ''}.</>,
+                  <>Superadmin or Admin verifies the transaction ID and activates your Pro account for {selectedMonths} month{selectedMonths > 1 ? 's' : ''}.</>,
                 ].map((step, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-marigold/20 font-mono text-[11px] font-bold text-marigold">
@@ -318,42 +321,81 @@ export default function SubscriptionPayment({
                 >
                   <FaReceipt className="h-3 w-3 text-marigold" /> bKash Transaction ID (TrxID)
                 </label>
-                <div className="mt-2 flex items-stretch gap-2">
+                <div className="mt-2 flex flex-col sm:flex-row items-stretch gap-2">
                   <div className="relative flex-1">
                     <FaMobileAlt className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8f8d87]" />
                     <input
                       id="trx_id"
                       type="text"
+                      disabled={isPending && !isEditingTrx}
                       value={data.trx_id}
                       onChange={(e) => setData('trx_id', e.target.value)}
-                      placeholder="e.g. 9F7A2C1B4D"
+                      placeholder={isPending && !isEditingTrx ? (payment.trxId || 'e.g. 9F7A2C1B4D') : 'e.g. 9F7A2C1B4D'}
                       autoComplete="off"
-                      className="w-full rounded-sm border border-white/20 bg-ink/40 py-3 pl-10 pr-3 font-mono text-sm uppercase tracking-wide text-paper placeholder:text-[#6f6d68] focus:border-marigold focus:outline-none focus:ring-1 focus:ring-marigold"
+                      className="w-full rounded-sm border border-white/20 bg-ink/40 py-3 pl-10 pr-3 font-mono text-sm uppercase tracking-wide text-paper placeholder:text-[#6f6d68] focus:border-marigold focus:outline-none focus:ring-1 focus:ring-marigold disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
-                  <button
-                    type="submit"
-                    disabled={processing}
-                    className="group inline-flex items-center gap-2 rounded-sm border border-ink bg-marigold px-5 py-3 text-sm font-bold text-white shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {isPending ? 'Update TrxID' : 'Post TrxID'}
-                    <FaArrowRight
-                      size={13}
-                      className="transition-transform duration-150 group-hover:translate-x-1"
-                    />
-                  </button>
+                  {isPending && !isEditingTrx ? (
+                    <button
+                      type="button"
+                      disabled={true}
+                      className="inline-flex items-center justify-center gap-2 rounded-sm border border-marigold/40 bg-marigold/20 px-4 py-3 text-xs sm:text-sm font-bold text-paper cursor-not-allowed shadow-none"
+                    >
+                      <FaClock className="h-3.5 w-3.5 text-marigold shrink-0 animate-pulse" />
+                      <span>Your account will be activated after checking the transaction id</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={processing || !data.trx_id.trim()}
+                      className="group inline-flex items-center justify-center gap-2 rounded-sm border border-ink bg-marigold px-6 py-3 text-sm font-bold text-white shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 shrink-0"
+                    >
+                      {processing ? (
+                        <>
+                          <FaClock className="h-4 w-4 animate-spin-slow" />
+                          <span>Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{isEditingTrx ? 'Update TrxID' : 'Post TrxID'}</span>
+                          <FaArrowRight
+                            size={13}
+                            className="transition-transform duration-150 group-hover:translate-x-1"
+                          />
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
                 {errors.trx_id && (
                   <p className="mt-2 text-xs text-red-300">{errors.trx_id}</p>
                 )}
 
+                {isPending && (
+                  <div className="mt-3 flex items-center justify-between text-xs text-[#B9B7B0]">
+                    <span>
+                      Submitted TrxID: <strong className="font-mono text-marigold">{payment.trxId}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isEditingTrx) {
+                          setData('trx_id', payment.trxId || '');
+                        }
+                        setIsEditingTrx(!isEditingTrx);
+                      }}
+                      className="font-semibold text-marigold hover:underline"
+                    >
+                      {isEditingTrx ? 'Cancel edit' : 'Need to change TrxID?'}
+                    </button>
+                  </div>
+                )}
+
                 <p className="mt-3 text-[12px] font-medium leading-relaxed text-marigold">
-                  ★ If your transaction ID is correct, then your account will be activated.
+                  ★ Your account will be activated after checking the transaction id.
                 </p>
                 <p className="mt-1 text-[11px] leading-relaxed text-[#8f8d87]">
-                  {isPending
-                    ? 'Entered the wrong TrxID? Enter the correct one and click Update.'
-                    : 'Paste the exact TrxID from your bKash SMS or receipt (e.g., 9F7A2C1B4D).'}
+                  Send ৳{currentAmount} to bKash 01319052507, then enter your transaction ID. Superadmin or Admin will verify and activate your Pro account.
                 </p>
               </form>
             </div>

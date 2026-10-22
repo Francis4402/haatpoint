@@ -4,7 +4,6 @@ import { Dialog, Transition } from "@headlessui/react";
 import {
   FaEnvelope,
   FaPhone,
-  FaMapMarkerAlt,
   FaClock,
   FaPaperPlane,
   FaUser,
@@ -88,7 +87,6 @@ const ContactUsPage = ({ auth, wishlist, flash }: Props) => {
 
   const contactInfo = {
     phone: "01319052507",
-    address: "Chittagong, TeriBazar",
     workingHours: "Monday - Thursday: 12:00 AM - 8:00 PM\nSaturday: 10:00 AM - 4:00 PM\nFriday: Closed",
     socialMedia: {
       facebook: "https://facebook.com/multivendor",
@@ -434,7 +432,7 @@ const ContactUsPage = ({ auth, wishlist, flash }: Props) => {
                             className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-marigold focus:border-transparent transition-colors ${
                               errors.name ? 'border-red-300' : 'border-line'
                             } ${isLoggedIn ? 'bg-paper-dim cursor-not-allowed' : 'bg-white'}`}
-                            placeholder="John Doe"
+                            placeholder="Enter your name"
                           />
                         </div>
                         {errors.name && (
@@ -462,7 +460,7 @@ const ContactUsPage = ({ auth, wishlist, flash }: Props) => {
                             className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-marigold focus:border-transparent transition-colors ${
                               errors.email ? 'border-red-300' : 'border-line'
                             } ${isLoggedIn ? 'bg-paper-dim cursor-not-allowed' : 'bg-white'}`}
-                            placeholder="john@example.com"
+                            placeholder="Enter your email"
                           />
                         </div>
                         {errors.email && (
@@ -561,16 +559,6 @@ const ContactUsPage = ({ auth, wishlist, flash }: Props) => {
                       <a href={`tel:${contactInfo.phone}`} className="hover:text-marigold transition-colors">
                         {contactInfo.phone}
                       </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-full bg-marigold/20 flex items-center justify-center flex-shrink-0">
-                      <FaMapMarkerAlt className="h-6 w-6 text-marigold" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg mb-1">Address</h3>
-                      <p className="text-gray-300">{contactInfo.address}</p>
                     </div>
                   </div>
 

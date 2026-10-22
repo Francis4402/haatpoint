@@ -155,8 +155,8 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                     </div>
                 </div>
 
-                {/* Superadmin — bKash Pro payment verification & account activation */}
-                {isSuperadmin && (
+                {/* Superadmin & Admin — bKash Pro payment verification & account activation */}
+                {isAdmin && (
                     <div className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden">
                         <div className="px-6 py-5 border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
@@ -164,7 +164,7 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                                     <FaCrown className="text-marigold" /> HaatPoint Pro Requests
                                 </h3>
                                 <p className="mt-1 text-sm text-text-soft">
-                                    bKash transaction IDs and user info submitted after registration. Superadmin can verify the TrxID and click Activate to enable HaatPoint Pro.
+                                    bKash transaction IDs and user info submitted by agents. Superadmin and Admin can verify the TrxID and confirm account permission to Pro.
                                 </p>
                             </div>
                             <span className={`self-start sm:self-auto text-xs font-mono uppercase tracking-wide px-3 py-1 rounded-full font-bold ${pendingPayments.length > 0 ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-green-100 text-green-800'}`}>
@@ -183,7 +183,7 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                                             <th className="px-6 py-3">Amount</th>
                                             <th className="px-6 py-3">Submitted</th>
                                             <th className="px-6 py-3">Status</th>
-                                            <th className="px-6 py-3 text-right">Superadmin Action</th>
+                                            <th className="px-6 py-3 text-right">Admin Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-line">
