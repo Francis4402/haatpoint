@@ -191,4 +191,94 @@ class CustomerProfileUpdateTest extends TestCase
         Storage::disk('public')->assertMissing('product_images/pic1.jpg');
         Storage::disk('public')->assertMissing('product_images/pic2.jpg');
     }
+
+    public function test_superadmin_can_promote_user_to_admin(): void
+    {
+        $superadmin = $this->createSuperAdmin();
+
+        $user = User::factory()->create([
+            'name' => 'Promote User',
+            'email' => 'promoteuser@haatpoint.com',
+            'password' => bcrypt('secret123'),
+        ]);
+
+        $response = $this->actingAs($superadmin, 'admin')
+            ->post("/dashboard/customers/user/{$user->id}/promote");
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+        $this->assertDatabaseHas('admins', [
+            'email' => 'promoteuser@haatpoint.com',
+            'role' => 'admin',
+            'name' => 'Promote User',
+        ]);
+    }
+
+    public function test_superadmin_can_promote_agent_to_admin_and_detach_stores(): void
+    {
+        $superadmin = $this->createSuperAdmin();
+
+        $agent = $this->createAgent([
+            'name' => 'Promote Agent',
+            'email' => 'promoteagent@haatpoint.com',
+            'password' => bcrypt('agentpass123'),
+        ]);
+
+        $store = Store::create([
+            'id' => (string) Str::uuid(),
+            'name' => 'Promoted Agent Store',
+            'email' => 'store@example.com',
+            'address' => 'Store Address',
+            'agent_id' => $agent->id,
+            'mobile' => '01711111111',
+            'storetype' => 'Retail',
+            'national_id' => '1234567890',
+        ]);
+
+        $response = $this->actingAs($superadmin, 'admin')
+            ->post("/dashboard/customers/agent/{$agent->id}/promote");
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        // Agent should be removed from agents table
+        $this->assertDatabaseMissing('agents', ['id' => $agent->id]);
+
+        // New Admin record created with role admin
+        $this->assertDatabaseHas('admins', [
+            'email' => 'promoteagent@haatpoint.com',
+            'role' => 'admin',
+            'name' => 'Promote Agent',
+        ]);
+
+        // Store should still exist in database, with agent_id detached
+        $this->assertDatabaseHas('stores', [
+            'id' => $store->id,
+            'agent_id' => null,
+        ]);
+    }
+
+    public function test_regular_admin_cannot_promote_user_or_agent(): void
+    {
+        $regularAdmin = Admin::create([
+            'id' => (string) Str::uuid(),
+            'name' => 'Regular Admin',
+            'email' => 'admin@haatpoint.com',
+            'password' => bcrypt('password'),
+            'role' => 'admin',
+        ]);
+
+        $user = User::factory()->create();
+        $agent = $this->createAgent();
+
+        $responseUser = $this->actingAs($regularAdmin, 'admin')
+            ->post("/dashboard/customers/user/{$user->id}/promote");
+        $responseUser->assertForbidden();
+
+        $responseAgent = $this->actingAs($regularAdmin, 'admin')
+            ->post("/dashboard/customers/agent/{$agent->id}/promote");
+        $responseAgent->assertForbidden();
+    }
 }

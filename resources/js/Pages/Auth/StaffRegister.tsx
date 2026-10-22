@@ -124,11 +124,7 @@ export default function StaffRegister({
     post(route(`${type}.register`), {
       forceFormData: true,
       onSuccess: () => {
-        if (type === 'agent' && data.plan === 'pro') {
-          toast.success('Registration submitted! If your transaction ID is correct, then your account will be activated.');
-        } else {
-          toast.success('Registration Successful! Welcome aboard!');
-        }
+        toast.success('Registration Successful! Welcome aboard!');
       },
       onError: (errs) => {
         if (errs && typeof errs === 'object') {
@@ -440,57 +436,6 @@ export default function StaffRegister({
                     <FaExclamationCircle className="h-3 w-3 mr-1" />
                     The National ID must be valid or your store will be closed.
                   </p>
-                </div>
-
-                {/* Subscription plan */}
-                <div>
-                  <label className="block text-sm font-body font-semibold text-ink mb-1.5">
-                    Choose your plan
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setData('plan', 'free')}
-                      className={`text-left rounded-xl border-2 p-3 transition-all ${
-                        data.plan === 'free'
-                          ? 'border-marigold bg-marigold/5 shadow-sm'
-                          : 'border-ink/15 hover:border-ink/30'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-display font-extrabold uppercase text-ink">Free</span>
-                        {data.plan === 'free' && <FaCheck className="h-4 w-4 text-marigold" />}
-                      </div>
-                      <p className="text-xs text-ink/60 mt-1">৳0 · Active for 1 year</p>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setData('plan', 'pro')}
-                      className={`text-left rounded-xl border-2 p-3 transition-all ${
-                        data.plan === 'pro'
-                          ? 'border-marigold bg-marigold/5 shadow-sm'
-                          : 'border-ink/15 hover:border-ink/30'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-display font-extrabold uppercase text-ink">HaatPoint Pro</span>
-                        {data.plan === 'pro' && <FaCheck className="h-4 w-4 text-marigold" />}
-                      </div>
-                      <p className="text-xs text-ink/60 mt-1">৳500 · Every 6 months</p>
-                    </button>
-                  </div>
-                  <p className="mt-1.5 text-xs text-ink/50">
-                    {data.plan === 'pro'
-                      ? 'Next step: Send ৳500 to bKash 01319052507 and submit the TrxID. If your transaction ID is correct, then your account will be activated.'
-                      : 'Free gives you a full year. Upgrade to Pro any time from your dashboard.'}
-                  </p>
-                  {errors.plan && (
-                    <p className="mt-1.5 text-sm text-red-600 flex items-center">
-                      <FaExclamationCircle className="h-3.5 w-3.5 mr-1" />
-                      {errors.plan}
-                    </p>
-                  )}
                 </div>
               </>
             )}

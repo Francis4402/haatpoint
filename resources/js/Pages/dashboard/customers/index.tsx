@@ -150,11 +150,14 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
 
   const requestUrl = (candidate: NonNullable<typeof actionCandidate>) => {
     const { customer, action } = candidate;
+    const type = resourceType(customer.role);
     if (action === 'delete' || action === 'block' || action === 'unblock') {
-      const type = resourceType(customer.role);
       return action === 'delete'
         ? `/dashboard/customers/${type}/${customer.id}`
         : `/dashboard/customers/${type}/${customer.id}/block`;
+    }
+    if (action === 'admin') {
+      return `/dashboard/customers/${type}/${customer.id}/promote`;
     }
     return `/dashboard/customers/${customer.id}/${actionMeta[action].endpoint}`;
   };
@@ -486,7 +489,7 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                                     Make Agent
                                   </button>
                                 )}
-                                {currentUserRole === 'superadmin' && customer.role === 'user' && (
+                                {currentUserRole === 'superadmin' && (customer.role === 'user' || customer.role === 'agent') && (
                                   <button
                                     type="button"
                                     onClick={(e) => {
@@ -844,7 +847,7 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                               Make Agent
                             </button>
                           )}
-                          {currentUserRole === 'superadmin' && selectedCustomer.role === 'user' && (
+                          {currentUserRole === 'superadmin' && (selectedCustomer.role === 'user' || selectedCustomer.role === 'agent') && (
                             <button
                               type="button"
                               onClick={() => setActionCandidate({ customer: selectedCustomer, action: 'admin' })}
@@ -923,6 +926,9 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
           const { customer, action } = actionCandidate;
           if (action === 'delete' && customer.role === 'agent') {
             return `Are you sure you want to permanently delete agent ${customer.name}? All of their stores, products, and associated images will also be permanently deleted from the system.`;
+          }
+          if (action === 'admin' && customer.role === 'agent') {
+            return `Are you sure you want to promote agent ${customer.name} to admin? Their stores and products will be detached and they will be granted admin dashboard access with their current password.`;
           }
           const verb = actionMeta[action].verb;
           return `Are you sure you want to ${verb} ${customer.name}? ${actionMeta[action].message}`;

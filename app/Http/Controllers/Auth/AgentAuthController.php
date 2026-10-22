@@ -85,46 +85,23 @@ class AgentAuthController extends StaffAuthController
 
     protected function registrationData(Request $request): array
     {
-        $plan = $request->input('plan') === 'pro' ? 'pro' : 'free';
-
-        if ($plan === 'pro') {
-            return [
-                'address' => $request->address,
-                'mobile' => $request->mobile,
-                'national_id' => $request->national_id,
-                'plan' => 'pro',
-                // Pro is NOT granted at signup: the agent pays ৳500 by bKash and
-                // a superadmin approves the transaction. Until then the account
-                // has no active subscription and is held on the payment page.
-                'subscription_ends_at' => null,
-                'subscription_payment_status' => 'pending',
-                'subscription_payment_amount' => 500,
-            ];
-        }
-
         return [
             'address' => $request->address,
             'mobile' => $request->mobile,
             'national_id' => $request->national_id,
             'plan' => 'free',
-            // Free accounts run for one year. When the date passes the account
-            // is locked behind the upgrade prompt.
+            // Free accounts are activated on registration for one year.
+            // Agents can upgrade to Pro anytime from their dashboard.
             'subscription_ends_at' => now()->addYear(),
             'subscription_payment_status' => 'none',
         ];
     }
 
     /**
-     * A Pro signup is not finished until the bKash payment is submitted, so
-     * send the new agent straight to the payment page instead of the dashboard.
+     * Newly registered agents are created with a free active account and redirect to dashboard.
      */
     protected function registrationRedirect(Request $request, $user): RedirectResponse
     {
-        if ($user instanceof Agent && $user->plan === 'pro') {
-            return redirect()->route('dashboard.subscription.payment')
-                ->with('success', 'Account registered for HaatPoint Pro! Send money to bKash 01319052507 and submit your transaction ID. If your transaction ID is correct, then your account will be activated.');
-        }
-
         return parent::registrationRedirect($request, $user);
     }
 }

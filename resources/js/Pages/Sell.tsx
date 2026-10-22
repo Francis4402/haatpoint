@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { PageProps } from '@/types';
@@ -17,7 +17,7 @@ const BENEFITS = [
   {
     icon: FaStore,
     title: 'Your own storefront',
-    body: 'Create a branded shop in minutes and list unlimited products for the whole country to discover.',
+    body: 'Create a branded shop in minutes and list your products for customers across Bangladesh to discover.',
   },
   {
     icon: FaWallet,
@@ -56,27 +56,28 @@ const STEPS = [
 const FAQ = [
   {
     q: 'How much does it cost to start selling?',
-    a: 'Nothing. The Free plan gives you a full year of selling with no upfront cost and no listing fees.',
+    a: 'Getting started is completely free! The Free Starter plan lets you launch your store with limited products, manage orders, and test the market with zero upfront cost.',
   },
   {
-    q: 'What happens when my free year ends?',
-    a: 'Your store is paused until you renew. You can upgrade to HaatPoint Pro for ৳500 every 6 months to stay live.',
+    q: 'What is HaatPoint Pro and how much does it cost?',
+    a: 'HaatPoint Pro is built for growing sellers. It costs ৳100 per month, or ৳570 for 6 months when you pay in advance (a 5% discount saving you ৳30). It unlocks unlimited product listings, uninterrupted selling, and priority support.',
   },
   {
-    q: 'What extra do I get with HaatPoint Pro?',
-    a: 'Pro keeps your store always-on with priority support and continuous selling — ideal for busy shops.',
+    q: 'What extra advantages do I get with HaatPoint Pro?',
+    a: 'Pro members get unlimited product listings, continuous always-on selling without storefront pauses, a Verified Pro Seller badge, advanced sales analytics, and priority customer support.',
   },
   {
     q: 'How do I pay for HaatPoint Pro?',
-    a: 'Pay ৳500 by bKash to 01319052507 from your bKash app, then submit the transaction ID on the payment page. We verify it and activate Pro for 6 months.',
+    a: 'Send ৳100 for 1 month or ৳570 for 6 months via bKash (Send Money to 01319052507). Then submit your bKash Transaction ID (TrxID) in your dashboard for rapid verification and activation.',
   },
   {
-    q: 'How do I get paid?',
-    a: 'Customers pay cash on delivery. Your earnings are settled directly to you with no hidden deductions.',
+    q: 'How do I get paid for my sales?',
+    a: 'Customers pay cash on delivery (COD) or via bKash. Deliveries are fulfilled through integrated Pathao courier service, and your earnings are settled directly to you.',
   },
 ];
 
 export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegisterRoute: string }>) {
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'six_month'>('monthly');
   const proRegister = `${agentRegisterRoute}?plan=pro`;
 
   useEffect(() => {
@@ -95,7 +96,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
       <Head title="Become a Seller · HaatPoint">
         <meta
           name="description"
-          content="Sell on HaatPoint — Bangladesh's local marketplace. Start free for a year, list unlimited products and get paid directly. Upgrade to HaatPoint Pro for ৳500 every 6 months."
+          content="Sell on HaatPoint — Bangladesh's trusted marketplace. Start free with limited products, or upgrade to Pro for ৳100/month with a 5% discount on 6-month advance payments for unlimited products."
         />
       </Head>
 
@@ -111,9 +112,9 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
           </span>
 
           <h1 className="mt-6 max-w-[820px] text-[38px] leading-[0.98] sm:text-[58px] lg:text-[72px]">
-            Turn your stall into an
+            Take your local stall
             <br />
-            <span className="text-marigold">online shop</span> for all of Bangladesh.
+            <span className="text-marigold">online</span> across Bangladesh.
           </h1>
 
           <p className="mt-6 max-w-[560px] text-[15px] leading-relaxed text-[#B9B7B0] sm:text-[17px]">
@@ -140,13 +141,13 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
 
           <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 font-mono text-[10.5px] uppercase tracking-wide text-[#B9B7B0]">
             <span className="inline-flex items-center gap-1.5">
-              <FaCheck className="text-marigold" /> Free for 1 year
+              <FaCheck className="text-marigold" /> Free to start
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <FaCheck className="text-marigold" /> No listing fees
+              <FaCheck className="text-marigold" /> ৳100/mo Pro available
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <FaCheck className="text-marigold" /> Cash-on-delivery
+              <FaCheck className="text-marigold" /> Cash-on-delivery & Pathao
             </span>
           </div>
         </div>
@@ -182,45 +183,76 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
       {/* Pricing */}
       <section id="pricing" className="bg-paper-dim py-20">
         <div className="container">
-          <div className="mx-auto max-w-[620px] text-center">
+          <div className="mx-auto max-w-[660px] text-center">
             <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-marigold">
-              Pricing
+              Transparent Pricing
             </span>
             <h2 className="mt-3 text-[30px] sm:text-[40px]">
-              Simple plans. No surprises.
+              Simple plans built for your business.
             </h2>
             <p className="mt-3 text-text-soft">
-              Start free and sell for a full year. Upgrade to Pro whenever you are
-              ready to grow.
+              Start free with essential features, or upgrade to Pro for ৳100/month with a 5% discount when paying 6 months in advance.
             </p>
+
+            {/* Billing Cycle Toggle */}
+            <div className="mt-8 inline-flex items-center rounded-full border border-line bg-white p-1.5 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setBillingCycle('monthly')}
+                className={`rounded-full px-5 py-2 text-xs font-bold transition-all ${
+                  billingCycle === 'monthly'
+                    ? 'bg-ink text-white shadow-sm'
+                    : 'text-text-soft hover:text-ink'
+                }`}
+              >
+                Monthly billing
+              </button>
+              <button
+                type="button"
+                onClick={() => setBillingCycle('six_month')}
+                className={`relative rounded-full px-5 py-2 text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  billingCycle === 'six_month'
+                    ? 'bg-marigold text-white shadow-sm'
+                    : 'text-text-soft hover:text-ink'
+                }`}
+              >
+                <span>6 Months</span>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-mono font-extrabold uppercase ${
+                  billingCycle === 'six_month' ? 'bg-white text-marigold' : 'bg-emerald-100 text-emerald-800'
+                }`}>
+                  5% OFF
+                </span>
+              </button>
+            </div>
           </div>
 
-          <div className="mx-auto mt-12 grid max-w-[880px] grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="mx-auto mt-12 grid max-w-[880px] grid-cols-1 gap-6 md:grid-cols-2 items-stretch">
             {/* Free */}
             <div className="flex flex-col rounded-3xl border border-line bg-white p-8 shadow-hard-sm">
               <span className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-text-soft">
-                Free
+                Free Starter
               </span>
               <div className="mt-4 flex items-end gap-2">
                 <span className="font-display text-[46px] font-extrabold leading-none text-ink">
                   ৳0
                 </span>
-                <span className="pb-1 text-sm text-text-soft">/ first year</span>
+                <span className="pb-1 text-sm text-text-soft">/ forever free</span>
               </div>
               <p className="mt-3 text-sm text-text-soft">
-                Perfect to get your shop online and test the waters.
+                Perfect for new sellers to set up their store and explore the marketplace with zero risk.
               </p>
 
-              <ul className="mt-6 space-y-3 text-sm text-ink">
+              <ul className="mt-6 space-y-3.5 text-sm text-ink flex-1">
                 {[
-                  'Active for 1 full year',
-                  'Unlimited products',
-                  'Storefront & analytics',
-                  'Pathao delivery + COD',
-                ].map((f) => (
+                  'Limited product listings (starter catalog)',
+                  'Custom storefront branding & profile',
+                  'Basic sales dashboard & order management',
+                  'Integrated delivery & cash on delivery (COD)',
+                  'Standard seller support',
+                ].map((f, idx) => (
                   <li key={f} className="flex items-center gap-2.5">
-                    <FaCheck className="h-3.5 w-3.5 shrink-0 text-marigold" />
-                    {f}
+                    <FaCheck className={`h-3.5 w-3.5 shrink-0 ${idx === 0 ? 'text-amber-500' : 'text-marigold'}`} />
+                    <span className={idx === 0 ? 'font-semibold text-ink' : ''}>{f}</span>
                   </li>
                 ))}
               </ul>
@@ -236,32 +268,47 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
             {/* Pro */}
             <div className="relative flex flex-col overflow-hidden rounded-3xl border-[1.5px] border-ink bg-ink p-8 text-paper shadow-hard-lg">
               <div className="absolute right-[-90px] top-[-110px] h-[240px] w-[240px] bg-marigold opacity-90 clip-cta" />
-              <div className="relative z-10 flex flex-col">
+              <div className="relative z-10 flex flex-col h-full">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-marigold">
                     HaatPoint Pro
                   </span>
                   <span className="rounded-full bg-marigold px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-wide text-white">
-                    Best for growth
+                    {billingCycle === 'six_month' ? 'Save 5% (৳30 OFF)' : 'Recommended'}
                   </span>
                 </div>
 
                 <div className="mt-4 flex items-end gap-2">
                   <span className="font-display text-[46px] font-extrabold leading-none text-paper">
-                    ৳500
+                    ৳{billingCycle === 'monthly' ? '100' : '570'}
                   </span>
-                  <span className="pb-1 text-sm text-[#B9B7B0]">/ 6 months</span>
+                  <span className="pb-1 text-sm text-[#B9B7B0]">
+                    {billingCycle === 'monthly' ? '/ month' : '/ 6 months'}
+                  </span>
                 </div>
+                {billingCycle === 'six_month' ? (
+                  <p className="mt-1 text-xs text-emerald-400 font-mono">
+                    <span className="line-through text-[#8f8d87] mr-1">৳600</span> ৳95/month • 5% discount applied (save ৳30)
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-marigold font-mono">
+                    ৳100/month • Or pay 6 months in advance to get 5% discount (৳570)
+                  </p>
+                )}
                 <p className="mt-3 text-sm text-[#B9B7B0]">
-                  Keep your store always-on and never lose a sale.
+                  List unlimited products, keep your store always active, and gain maximum customer visibility.
                 </p>
 
-                <ul className="mt-6 space-y-3 text-sm">
+                <ul className="mt-6 space-y-3.5 text-sm flex-1">
                   {[
-                    'Everything in Free',
-                    'Continuous, always-on selling',
-                    'Priority support',
-                    'Renews every 6 months',
+                    'Unlimited product listings with no restrictions',
+                    'Continuous, always-on selling without storefront pauses',
+                    'Verified Pro Seller badge on your shop and items',
+                    'Advanced sales, performance, and revenue analytics',
+                    'Priority 24/7 dedicated seller support',
+                    billingCycle === 'six_month'
+                      ? '6 months prepaid with 5% discount (save ৳30, pay ৳570)'
+                      : 'Pay ৳100 per month with flexible renewal',
                   ].map((f) => (
                     <li key={f} className="flex items-center gap-2.5">
                       <FaCheck className="h-3.5 w-3.5 shrink-0 text-marigold" />
@@ -274,10 +321,10 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
                   href={proRegister}
                   className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-sm border border-ink bg-marigold px-6 py-3.5 text-sm font-bold text-white shadow-hard-marigold transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5"
                 >
-                  Go Pro <FaArrowRight size={13} />
+                  Go Pro — ৳{billingCycle === 'monthly' ? '100 / month' : '570 / 6 months'} <FaArrowRight size={13} />
                 </Link>
                 <p className="mt-3 text-center text-[11px] text-[#8f8d87]">
-                  Pay ৳500 by bKash — activated once verified.
+                  Pay ৳{billingCycle === 'monthly' ? '100' : '570'} via bKash to 01319052507 — activated promptly once verified.
                 </p>
               </div>
             </div>

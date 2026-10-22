@@ -17,6 +17,8 @@ type PaymentStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
 interface PaymentInfo {
   bkashNumber: string;
+  monthlyPrice?: number;
+  sixMonthPrice?: number;
   amount: number;
   months: number;
   status: PaymentStatus;
@@ -31,10 +33,28 @@ export default function SubscriptionPayment({
   user?: User;
   payment: PaymentInfo;
 }) {
-  const { data, setData, post, processing, errors } = useForm({ trx_id: '' });
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const initialMonthsParam = Number(searchParams?.get('months'));
+  const defaultMonths = initialMonthsParam === 1 || payment.months === 1 ? 1 : 6;
+
+  const [selectedMonths, setSelectedMonths] = useState<number>(defaultMonths);
+  const monthlyFee = payment.monthlyPrice || 100;
+  const sixMonthFee = payment.sixMonthPrice || 570;
+  const currentAmount = selectedMonths === 1 ? monthlyFee : sixMonthFee;
+
+  const { data, setData, post, processing, errors } = useForm({
+    trx_id: '',
+    months: defaultMonths,
+  });
+
   const { props } = usePage<PageProps>();
   const flash = props.flash;
   const [copied, setCopied] = useState(false);
+
+  const handleSelectMonths = (m: number) => {
+    setSelectedMonths(m);
+    setData('months', m);
+  };
 
   const copyNumber = async () => {
     try {
@@ -89,6 +109,47 @@ export default function SubscriptionPayment({
         </header>
 
         <main className="relative z-10 mx-auto max-w-[1240px] px-6 pb-24 pt-8 sm:px-8">
+          {/* Plan Selector */}
+          <div className="mb-8 rounded-2xl border border-white/15 bg-white/[0.04] p-5 backdrop-blur-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-marigold">
+                  Select Pro Subscription Term
+                </span>
+                <h3 className="text-lg font-bold text-paper mt-0.5">Choose your billing cycle</h3>
+              </div>
+              <div className="flex items-center gap-2 p-1 bg-ink/60 rounded-xl border border-white/10">
+                <button
+                  type="button"
+                  onClick={() => handleSelectMonths(1)}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                    selectedMonths === 1
+                      ? 'bg-white text-ink shadow-sm'
+                      : 'text-[#B9B7B0] hover:text-white'
+                  }`}
+                >
+                  1 Month — ৳{monthlyFee}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectMonths(6)}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    selectedMonths === 6
+                      ? 'bg-marigold text-white shadow-sm'
+                      : 'text-[#B9B7B0] hover:text-white'
+                  }`}
+                >
+                  <span>6 Months — ৳{sixMonthFee}</span>
+                  <span className={`rounded px-1.5 py-0.5 text-[9px] font-mono font-extrabold uppercase ${
+                    selectedMonths === 6 ? 'bg-white text-marigold' : 'bg-emerald-500/20 text-emerald-400'
+                  }`}>
+                    5% OFF
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Important message for agent */}
           <div className="mb-8 rounded-2xl border border-marigold/40 bg-marigold/10 p-5 backdrop-blur-sm">
             <div className="flex items-start gap-3.5">
@@ -97,11 +158,16 @@ export default function SubscriptionPayment({
               </div>
               <div className="flex-1">
                 <h3 className="font-display text-base font-extrabold uppercase tracking-wide text-paper">
-                  HaatPoint Pro Activation Instructions
+                  HaatPoint Pro Activation Instructions ({selectedMonths} Month{selectedMonths > 1 ? 's' : ''})
                 </h3>
                 <p className="mt-1 text-sm leading-relaxed text-[#E6E4DD]">
-                  Send <strong className="text-marigold">৳{payment.amount}</strong> to bKash number{' '}
+                  Send <strong className="text-marigold text-base">৳{currentAmount}</strong> to bKash number{' '}
                   <strong className="text-paper font-mono underline">{payment.bkashNumber}</strong> (Send Money), then post your bKash Transaction ID below.
+                  {selectedMonths === 6 && (
+                    <span className="block mt-1 text-xs text-emerald-400 font-mono">
+                      ✓ 5% discount applied: Save ৳30 (effective ৳95/month instead of ৳100/month).
+                    </span>
+                  )}
                 </p>
                 <div className="mt-2.5 inline-flex items-center gap-2 rounded-lg bg-marigold/20 px-3 py-1.5 text-xs font-bold text-marigold">
                   <FaCheck className="h-3 w-3" />
@@ -139,15 +205,15 @@ export default function SubscriptionPayment({
               </span>
 
               <h1 className="mt-6 text-[34px] leading-[1.02] sm:text-[50px]">
-                Pay ৳{payment.amount} by bKash.
+                Pay ৳{currentAmount} by bKash.
                 <br />
                 <span className="text-marigold">Then post your TrxID.</span>
               </h1>
 
               <p className="mt-5 max-w-[520px] text-[15px] leading-relaxed text-[#B9B7B0] sm:text-[16.5px]">
                 Hi{user?.name ? ` ${user.name}` : ''} — send{' '}
-                <strong className="text-paper">৳{payment.amount}</strong> to our bKash
-                number <strong className="text-marigold font-mono">{payment.bkashNumber}</strong>, then post the transaction ID below so our superadmin can verify it and
+                <strong className="text-paper">৳{currentAmount}</strong> to our bKash
+                number <strong className="text-marigold font-mono">{payment.bkashNumber}</strong> for {selectedMonths} month{selectedMonths > 1 ? 's' : ''} of HaatPoint Pro, then post the transaction ID below so our superadmin can verify it and
                 activate HaatPoint Pro for your account.
               </p>
 
@@ -183,10 +249,10 @@ export default function SubscriptionPayment({
               <ol className="mt-9 space-y-4 text-sm text-[#B9B7B0]">
                 {[
                   <>Open your bKash app and choose <strong className="text-paper">Send Money</strong>.</>,
-                  <>Send <strong className="text-paper">৳{payment.amount}</strong> to <strong className="text-paper font-mono">{payment.bkashNumber}</strong>.</>,
+                  <>Send <strong className="text-paper">৳{currentAmount}</strong> to <strong className="text-paper font-mono">{payment.bkashNumber}</strong>.</>,
                   <>Copy the <strong className="text-paper">TrxID</strong> from your bKash SMS or receipt.</>,
                   <>Paste the transaction ID in the input below and click <strong className="text-paper">Post TrxID</strong>.</>,
-                  <>Superadmin verifies the transaction ID and activates your Pro account.</>,
+                  <>Superadmin verifies the transaction ID and activates your Pro account for {selectedMonths} month{selectedMonths > 1 ? 's' : ''}.</>,
                 ].map((step, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-marigold/20 font-mono text-[11px] font-bold text-marigold">
@@ -233,10 +299,15 @@ export default function SubscriptionPayment({
 
                 <div className="mt-5 flex items-end gap-2 border-t border-white/10 pt-5">
                   <span className="font-display text-[44px] font-extrabold leading-none text-paper">
-                    ৳{payment.amount}
+                    ৳{currentAmount}
                   </span>
-                  <span className="pb-1.5 text-sm text-[#B9B7B0]">/ {payment.months} months</span>
+                  <span className="pb-1.5 text-sm text-[#B9B7B0]">/ {selectedMonths} month{selectedMonths > 1 ? 's' : ''}</span>
                 </div>
+                {selectedMonths === 6 && (
+                  <p className="mt-1 text-xs text-emerald-400 font-mono">
+                    <span className="line-through text-[#8f8d87] mr-1">৳600</span> ৳95/month • 5% discount applied (save ৳30)
+                  </p>
+                )}
               </div>
 
               {/* Form */}

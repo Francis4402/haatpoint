@@ -118,8 +118,8 @@ const ContactUsPage = ({ auth, wishlist, flash }: Props) => {
     },
     {
       id: 5,
-      question: "Do you offer phone support?",
-      answer: "Yes, we offer phone support for urgent matters. You can reach us at +880 1234-567890 during business hours. For non-urgent inquiries, we recommend using the contact form for faster processing."
+      question: "Do you offer customer support?",
+      answer: "Yes, our support team is available during business hours to assist you. For fast response and ticket tracking, we recommend submitting your inquiry using the contact form above."
     },
     {
       id: 6,
@@ -132,32 +132,24 @@ const ContactUsPage = ({ auth, wishlist, flash }: Props) => {
     {
       id: 1,
       name: "Customer Support",
-      email: "support@multivendor.com",
-      phone: "+880 1234-567891",
       description: "For order issues, returns, and general inquiries",
       icon: <FaHeadset className="h-6 w-6" />
     },
     {
       id: 2,
       name: "Technical Support",
-      email: "tech@multivendor.com",
-      phone: "+880 1234-567892",
       description: "For website issues and technical problems",
       icon: <FaComments className="h-6 w-6" />
     },
     {
       id: 3,
       name: "Seller Support",
-      email: "sellers@multivendor.com",
-      phone: "+880 1234-567893",
       description: "For seller account and store management",
       icon: <FaUser className="h-6 w-6" />
     },
     {
       id: 4,
       name: "Business Inquiries",
-      email: "business@multivendor.com",
-      phone: "+880 1234-567894",
       description: "For partnership and business opportunities",
       icon: <FaQuestionCircle className="h-6 w-6" />
     }
@@ -318,21 +310,7 @@ const ContactUsPage = ({ auth, wishlist, flash }: Props) => {
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-lg text-ink mb-2">{info.name}</h3>
-            <p className="text-text-soft text-sm mb-3">{info.description}</p>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm">
-                <FaEnvelope className="h-4 w-4 text-text-soft" />
-                <a href={`mailto:${info.email}`} className="text-marigold hover:text-marigold-dark transition-colors">
-                  {info.email}
-                </a>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <FaPhone className="h-4 w-4 text-text-soft" />
-                <a href={`tel:${info.phone}`} className="text-text-soft hover:text-marigold transition-colors">
-                  {info.phone}
-                </a>
-              </div>
-            </div>
+            <p className="text-text-soft text-sm">{info.description}</p>
           </div>
         </div>
       </div>
@@ -647,21 +625,7 @@ const ContactUsPage = ({ auth, wishlist, flash }: Props) => {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-bold text-lg text-ink mb-2">{dept.name}</h3>
-                      <p className="text-text-soft text-sm mb-3">{dept.description}</p>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <FaEnvelope className="h-4 w-4 text-text-soft" />
-                          <a href={`mailto:${dept.email}`} className="text-marigold hover:text-marigold-dark transition-colors">
-                            {dept.email}
-                          </a>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <FaPhone className="h-4 w-4 text-text-soft" />
-                          <a href={`tel:${dept.phone}`} className="text-text-soft hover:text-marigold transition-colors">
-                            {dept.phone}
-                          </a>
-                        </div>
-                      </div>
+                      <p className="text-text-soft text-sm">{dept.description}</p>
                     </div>
                   </div>
                 </div>

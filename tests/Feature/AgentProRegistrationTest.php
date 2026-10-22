@@ -34,27 +34,27 @@ class AgentProRegistrationTest extends TestCase
         $this->assertTrue($agent->isSubscriptionActive());
     }
 
-    public function test_agent_register_pro_redirects_to_payment_checkout_page_with_message(): void
+    public function test_agent_registration_always_creates_free_activation_account(): void
     {
         $response = $this->post('/agent/register', [
-            'name' => 'Pro Agent',
-            'email' => 'proagent@gmail.com',
+            'name' => 'New Agent',
+            'email' => 'newagent@gmail.com',
             'password' => 'password',
             'password_confirmation' => 'password',
             'national_id' => '1234567890',
             'mobile' => '01799887766',
             'address' => 'Chittagong, Bangladesh',
-            'plan' => 'pro',
+            'plan' => 'pro', // Even if submitted, new registrations always create free active accounts
         ]);
 
         $response->assertSessionHasNoErrors();
-        $response->assertRedirect(route('dashboard.subscription.payment'));
-        $response->assertSessionHas('success');
+        $response->assertRedirect(route('dashboard'));
 
-        $agent = Agent::where('email', 'proagent@gmail.com')->first();
+        $agent = Agent::where('email', 'newagent@gmail.com')->first();
         $this->assertNotNull($agent);
-        $this->assertEquals('pro', $agent->plan);
-        $this->assertFalse($agent->isPro()); // Not activated yet!
+        $this->assertEquals('free', $agent->plan);
+        $this->assertTrue($agent->isSubscriptionActive());
+        $this->assertEquals('none', $agent->subscription_payment_status);
     }
 
     public function test_pro_agent_submits_bkash_transaction_id_and_sees_activation_message(): void

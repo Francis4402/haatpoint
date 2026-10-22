@@ -12,12 +12,13 @@ use Inertia\Response;
 class SubscriptionController extends Controller
 {
     /**
-     * The bKash number buyers send the Pro fee to, the fee itself and the
-     * length of a Pro term. Kept in one place so the page copy, the stored
-     * amount and the approval all agree.
+     * The bKash number buyers send the Pro fee to, the fees and terms.
+     * Base: ৳100 / month. 6-Month plan offers a 5% discount: ৳570 for 6 months (saving ৳30).
      */
     public const BKASH_NUMBER = '01319052507';
-    public const PRO_PRICE = 500;
+    public const PRO_MONTHLY_PRICE = 100;
+    public const PRO_6_MONTH_PRICE = 570; // 6 * 100 = 600 - 5% (30) = 570
+    public const PRO_PRICE = 100;
     public const PRO_MONTHS = 6;
 
     public function sell(): Response
@@ -33,6 +34,11 @@ class SubscriptionController extends Controller
 
         return Inertia::render('dashboard/Upgrade', [
             'user' => $user,
+            'pricing' => [
+                'monthly' => self::PRO_MONTHLY_PRICE,
+                'sixMonths' => self::PRO_6_MONTH_PRICE,
+                'bkashNumber' => self::BKASH_NUMBER,
+            ],
         ]);
     }
 
@@ -54,12 +60,17 @@ class SubscriptionController extends Controller
                 ->with('success', 'Your HaatPoint Pro is already active.');
         }
 
+        $currentAmount = (float) ($user->subscription_payment_amount ?: self::PRO_6_MONTH_PRICE);
+        $currentMonths = $currentAmount <= 100 ? 1 : 6;
+
         return Inertia::render('dashboard/SubscriptionPayment', [
             'user' => $user,
             'payment' => [
                 'bkashNumber' => self::BKASH_NUMBER,
-                'amount' => self::PRO_PRICE,
-                'months' => self::PRO_MONTHS,
+                'monthlyPrice' => self::PRO_MONTHLY_PRICE,
+                'sixMonthPrice' => self::PRO_6_MONTH_PRICE,
+                'amount' => $currentAmount,
+                'months' => $currentMonths,
                 'status' => $user->subscription_payment_status ?? 'none',
                 'trxId' => $user->subscription_trx_id,
                 'submittedAt' => $user->subscription_payment_submitted_at?->toIso8601String(),
@@ -81,12 +92,16 @@ class SubscriptionController extends Controller
 
         $validated = $request->validate([
             'trx_id' => ['required', 'string', 'min:6', 'max:40'],
+            'months' => ['nullable', 'integer', 'in:1,6'],
         ]);
+
+        $months = (int) ($validated['months'] ?? 6);
+        $amount = $months === 1 ? self::PRO_MONTHLY_PRICE : self::PRO_6_MONTH_PRICE;
 
         $user->plan = 'pro';
         $user->subscription_payment_status = 'pending';
         $user->subscription_trx_id = $validated['trx_id'];
-        $user->subscription_payment_amount = self::PRO_PRICE;
+        $user->subscription_payment_amount = $amount;
         $user->subscription_payment_submitted_at = now();
         $user->save();
 
@@ -95,8 +110,8 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * Superadmin approves a submitted bKash payment: activate Pro for six
-     * months, extending from the current expiry when it is still in the future.
+     * Superadmin approves a submitted bKash payment: activate Pro for the chosen
+     * duration (1 or 6 months), extending from the current expiry when it is still in the future.
      */
     public function approve(Agent $agent): RedirectResponse
     {
@@ -104,8 +119,10 @@ class SubscriptionController extends Controller
             ? $agent->subscription_ends_at->copy()
             : now();
 
+        $months = ((float) $agent->subscription_payment_amount) <= 100 ? 1 : 6;
+
         $agent->plan = 'pro';
-        $agent->subscription_ends_at = $base->addMonths(self::PRO_MONTHS);
+        $agent->subscription_ends_at = $base->addMonths($months);
         $agent->subscription_payment_status = 'approved';
         $agent->save();
 

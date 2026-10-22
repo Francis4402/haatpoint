@@ -32,6 +32,7 @@ interface SubscriptionPayment {
     images?: string | null;
     trxId?: string | null;
     amount: number;
+    months?: number;
     status: 'pending' | 'approved' | 'rejected';
     plan?: string;
     submittedAt?: string | null;
@@ -264,7 +265,9 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                                                 {/* Amount */}
                                                 <td className="px-6 py-4">
                                                     <p className="font-semibold text-ink"><FormatPrice price={p.amount} /></p>
-                                                    <span className="text-[10px] text-text-soft font-mono">6 months</span>
+                                                    <span className="text-[10px] text-text-soft font-mono">
+                                                        {p.months ? `${p.months} month${p.months > 1 ? 's' : ''}` : p.amount <= 100 ? '1 month' : '6 months'}
+                                                    </span>
                                                 </td>
 
                                                 {/* Submitted date */}

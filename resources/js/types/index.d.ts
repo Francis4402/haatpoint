@@ -47,6 +47,7 @@ export interface SubscriptionPayment {
     mobile: string | null;
     trxId: string | null;
     amount: number;
+    months?: number;
     status: 'pending' | 'approved' | 'rejected';
     plan: string;
     submittedAt: string | null;

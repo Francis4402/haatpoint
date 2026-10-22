@@ -44,40 +44,66 @@ class CustomersController extends Controller
     }
 
     /**
-     * Superadmin: promote a user to the admin role.
+     * Superadmin: promote a user or agent to the admin role.
      */
-    public function promote(User $user): RedirectResponse
+    public function promote(Request $request, string $type, string $customerId): RedirectResponse
     {
-        if (Admin::where('email', $user->email)->exists()) {
-            return redirect()->back()->with('error', "{$user->name} is already an admin.");
+        $customer = $this->resolveCustomer($type, $customerId);
+
+        return $this->executePromotion($customer);
+    }
+
+    /**
+     * Legacy endpoint: promote a user to admin via single customer ID parameter.
+     */
+    public function promoteLegacy(string $customerId): RedirectResponse
+    {
+        $customer = User::find($customerId) ?? Agent::findOrFail($customerId);
+
+        return $this->executePromotion($customer);
+    }
+
+    private function executePromotion(User|Agent|Admin $customer): RedirectResponse
+    {
+        if ($customer instanceof Admin || Admin::where('email', $customer->email)->exists()) {
+            return redirect()->back()->with('error', "{$customer->name} is already an admin.");
         }
 
-        DB::transaction(function () use ($user) {
-            // Copy the user's password hash verbatim. Admin has a 'hashed' cast,
+        DB::transaction(function () use ($customer) {
+            // Copy the user's/agent's password hash verbatim. Admin has a 'hashed' cast,
             // so mass-assigning would double-hash it and break login.
             DB::table('admins')->insert([
                 'id' => (string) \Illuminate\Support\Str::uuid(),
-                'name' => $user->name,
-                'email' => $user->email,
-                'password' => $user->password,
+                'name' => $customer->name,
+                'email' => $customer->email,
+                'password' => $customer->password,
                 'role' => 'admin',
-                'images' => $user->images,
-                'email_verified_at' => $user->email_verified_at,
-                'blocked' => $user->blocked,
+                'images' => $customer->images,
+                'google_id' => $customer->google_id ?? null,
+                'provider' => $customer->provider ?? null,
+                'provider_id' => $customer->provider_id ?? null,
+                'email_verified_at' => $customer->email_verified_at,
+                'blocked' => (bool) $customer->blocked,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            // The promoted account no longer exists as a customer: detach its
+            // The promoted account no longer exists as a customer/agent: detach its
             // business data (orders/products/stores) so it survives the delete.
-            DB::table('orders')->where('user_id', $user->id)->update(['user_id' => null]);
-            DB::table('products')->where('user_id', $user->id)->update(['user_id' => null]);
-            DB::table('stores')->where('user_id', $user->id)->update(['user_id' => null]);
+            if ($customer instanceof User) {
+                DB::table('orders')->where('user_id', $customer->id)->update(['user_id' => null]);
+                DB::table('products')->where('user_id', $customer->id)->update(['user_id' => null]);
+                DB::table('stores')->where('user_id', $customer->id)->update(['user_id' => null]);
+            } elseif ($customer instanceof Agent) {
+                DB::table('stores')->where('agent_id', $customer->id)->update(['agent_id' => null]);
+                DB::table('orders')->where('agent_id', $customer->id)->update(['agent_id' => null]);
+                DB::table('products')->where('user_id', $customer->id)->update(['user_id' => null]);
+            }
 
-            $user->delete();
+            $customer->delete();
         });
 
-        return redirect()->back()->with('success', "{$user->name} has been promoted to admin.");
+        return redirect()->back()->with('success', "{$customer->name} has been promoted to admin.");
     }
 
     /**

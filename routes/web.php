@@ -174,8 +174,12 @@ Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])
     Route::post('/dashboard/categories', [CategoriesController::class, 'store'])->name('dashboard.storecategory');
     Route::delete('/dashboard/categories/{id}', [CategoriesController::class, 'destroy'])->name('dashboard.deletecategory');
     Route::get('/dashboard/customers', [CustomersController::class, 'index'])->name('dashboard.customers');
-    Route::post('/dashboard/customers/{user}/promote', [CustomersController::class, 'promote'])
+    Route::post('/dashboard/customers/{type}/{customer}/promote', [CustomersController::class, 'promote'])
         ->name('dashboard.customer.promote')
+        ->middleware('role:superadmin')
+        ->where('type', 'user|agent');
+    Route::post('/dashboard/customers/{customer}/promote', [CustomersController::class, 'promoteLegacy'])
+        ->name('dashboard.customer.promote.legacy')
         ->middleware('role:superadmin');
     Route::post('/dashboard/customers/{user}/make-agent', [CustomersController::class, 'makeAgent'])
         ->name('dashboard.customer.make-agent');
