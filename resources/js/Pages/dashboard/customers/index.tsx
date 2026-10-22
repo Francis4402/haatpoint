@@ -417,121 +417,123 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                             </div>
 
                             {/* Customer Info */}
-                            <div className="flex-1">
-                              <div className="flex items-start justify-between mb-2">
-                                <div>
-                                  <h3 className="font-bold text-ink">{customer.name}</h3>
-                                  <div className="flex items-center mt-1 space-x-2 flex-wrap gap-1">
-                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getRoleColor(customer.role)}`}>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+                                <div className="min-w-0">
+                                  <h3 className="font-bold text-ink truncate">{customer.name}</h3>
+                                  <div className="flex items-center mt-1.5 flex-wrap gap-1.5">
+                                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${getRoleColor(customer.role)}`}>
                                       {getRoleIcon(customer.role)}
                                       <span>{getRoleLabel(customer.role)}</span>
                                     </span>
                                     {customer.stats && customer.stats.totalOrders > 0 && (
-                                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white ${tier.color}`}>
+                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-white ${tier.color}`}>
                                         {tier.label}
                                       </span>
                                     )}
                                     {customer.email_verified_at ? (
-                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                                         <FaCheckCircle className="h-3 w-3 mr-1" />
                                         Verified
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
                                         <FaExclamationCircle className="h-3 w-3 mr-1" />
                                         Unverified
                                       </span>
                                     )}
                                     {customer.blocked && (
-                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
                                         <FaBan className="h-3 w-3 mr-1" />
                                         Blocked
                                       </span>
                                     )}
                                   </div>
                                 </div>
-                                {showActions && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      openEditModal(customer);
-                                    }}
-                                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-paper-dim text-ink border border-line text-xs font-semibold hover:bg-marigold/10 hover:text-marigold transition-all duration-300"
-                                  >
-                                    <FaEdit className="h-3 w-3" />
-                                    Edit
-                                  </button>
-                                )}
-                                {isAdminOrSuperAdmin && customer.role === 'agent' && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setActionCandidate({ customer, action: 'user' });
-                                    }}
-                                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 text-white text-xs font-semibold hover:bg-gray-700 hover:ring-2 hover:ring-gray-700/30 transition-all duration-300"
-                                  >
-                                    <FaUserCog className="h-3 w-3" />
-                                    Make Customer
-                                  </button>
-                                )}
-                                {isAdminOrSuperAdmin && customer.role === 'user' && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setActionCandidate({ customer, action: 'agent' });
-                                    }}
-                                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-600 hover:ring-2 hover:ring-emerald-700/30 transition-all duration-300"
-                                  >
-                                    <FaUserCog className="h-3 w-3" />
-                                    Make Agent
-                                  </button>
-                                )}
-                                {currentUserRole === 'superadmin' && (customer.role === 'user' || customer.role === 'agent') && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setActionCandidate({ customer, action: 'admin' });
-                                    }}
-                                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink text-white text-xs font-semibold hover:bg-ink/90 hover:ring-2 hover:ring-ink/30 transition-all duration-300"
-                                  >
-                                    <FaUserShield className="h-3 w-3" />
-                                    Make Admin
-                                  </button>
-                                )}
-                                {currentUserRole === 'superadmin' && customer.id !== (auth.user as any)?.id && (
-                                  <div className="flex gap-2 shrink-0">
+                                <div className="flex items-center flex-wrap gap-2 pt-1 sm:pt-0">
+                                  {showActions && (
                                     <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        setActionCandidate({ customer, action: customer.blocked ? 'unblock' : 'block' });
+                                        openEditModal(customer);
                                       }}
-                                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:ring-2 transition-all duration-300 ${
-                                        customer.blocked
-                                          ? 'bg-emerald-600 text-white hover:bg-emerald-500 hover:ring-emerald-600/30'
-                                          : 'bg-amber-500 text-white hover:bg-amber-400 hover:ring-amber-500/30'
-                                      }`}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-paper-dim text-ink border border-line text-xs font-semibold hover:bg-marigold/10 hover:text-marigold hover:border-marigold/30 transition-all duration-200 shadow-sm"
                                     >
-                                      <FaBan className="h-3 w-3" />
-                                      {customer.blocked ? 'Unblock' : 'Block'}
+                                      <FaEdit className="h-3 w-3" />
+                                      Edit
                                     </button>
+                                  )}
+                                  {isAdminOrSuperAdmin && customer.role === 'agent' && (
                                     <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        setActionCandidate({ customer, action: 'delete' });
+                                        setActionCandidate({ customer, action: 'user' });
                                       }}
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-500 hover:ring-2 hover:ring-red-600/30 transition-all duration-300"
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 text-white text-xs font-semibold hover:bg-gray-700 hover:ring-2 hover:ring-gray-700/30 transition-all duration-200 shadow-sm"
                                     >
-                                      <FaTimes className="h-3 w-3" />
-                                      Delete
+                                      <FaUserCog className="h-3 w-3" />
+                                      Make Customer
                                     </button>
-                                  </div>
-                                )}
+                                  )}
+                                  {isAdminOrSuperAdmin && customer.role === 'user' && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActionCandidate({ customer, action: 'agent' });
+                                      }}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-600 hover:ring-2 hover:ring-emerald-700/30 transition-all duration-200 shadow-sm"
+                                    >
+                                      <FaUserCog className="h-3 w-3" />
+                                      Make Agent
+                                    </button>
+                                  )}
+                                  {currentUserRole === 'superadmin' && (customer.role === 'user' || customer.role === 'agent') && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActionCandidate({ customer, action: 'admin' });
+                                      }}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink text-white text-xs font-semibold hover:bg-ink/90 hover:ring-2 hover:ring-ink/30 transition-all duration-200 shadow-sm"
+                                    >
+                                      <FaUserShield className="h-3 w-3" />
+                                      Make Admin
+                                    </button>
+                                  )}
+                                  {currentUserRole === 'superadmin' && customer.id !== (auth.user as any)?.id && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActionCandidate({ customer, action: customer.blocked ? 'unblock' : 'block' });
+                                        }}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:ring-2 transition-all duration-200 shadow-sm ${
+                                          customer.blocked
+                                            ? 'bg-emerald-600 text-white hover:bg-emerald-500 hover:ring-emerald-600/30'
+                                            : 'bg-amber-500 text-white hover:bg-amber-400 hover:ring-amber-500/30'
+                                        }`}
+                                      >
+                                        <FaBan className="h-3 w-3" />
+                                        {customer.blocked ? 'Unblock' : 'Block'}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActionCandidate({ customer, action: 'delete' });
+                                        }}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-500 hover:ring-2 hover:ring-red-600/30 transition-all duration-200 shadow-sm"
+                                      >
+                                        <FaTimes className="h-3 w-3" />
+                                        Delete
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
                               </div>
 
                               {/* Contact Info */}
@@ -809,21 +811,21 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
 
                       {/* Actions */}
                       {canManageCustomer(selectedCustomer) && (
-                        <div className="pt-4 border-t border-line">
+                        <div className="pt-4 border-t border-line space-y-3">
                           <div className="grid grid-cols-2 gap-3">
                             <button
                               type="button"
                               onClick={() => openEditModal(selectedCustomer)}
-                              className="text-center px-4 py-2.5 bg-paper-dim text-ink rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 font-medium border border-line"
+                              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-paper-dim text-ink rounded-xl hover:bg-marigold/10 hover:text-marigold hover:border-marigold/30 transition-all duration-200 font-semibold border border-line text-sm shadow-sm"
                             >
-                              <FaEdit className="inline mr-1" />
+                              <FaEdit className="h-3.5 w-3.5 text-text-soft" />
                               Edit Profile
                             </button>
                             <Link
                               href={`/dashboard/orders?customer=${selectedCustomer.id}`}
-                              className="text-center px-4 py-2.5 bg-paper-dim text-ink rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 font-medium border border-line"
+                              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-paper-dim text-ink rounded-xl hover:bg-marigold/10 hover:text-marigold hover:border-marigold/30 transition-all duration-200 font-semibold border border-line text-sm shadow-sm"
                             >
-                              <FaEye className="inline mr-1" />
+                              <FaEye className="h-3.5 w-3.5 text-text-soft" />
                               View Orders
                             </Link>
                           </div>
@@ -831,9 +833,9 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                             <button
                               type="button"
                               onClick={() => setActionCandidate({ customer: selectedCustomer, action: 'user' })}
-                              className="mt-3 w-full text-center px-4 py-2.5 bg-gray-800 text-white rounded-xl hover:bg-gray-700 hover:ring-2 hover:ring-gray-700/30 transition-all duration-300 font-medium"
+                              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 text-white rounded-xl hover:bg-gray-700 hover:ring-2 hover:ring-gray-700/30 transition-all duration-200 font-semibold text-sm shadow-sm"
                             >
-                              <FaUserCog className="inline mr-1" />
+                              <FaUserCog className="h-4 w-4" />
                               Make Customer
                             </button>
                           )}
@@ -841,9 +843,9 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                             <button
                               type="button"
                               onClick={() => setActionCandidate({ customer: selectedCustomer, action: 'agent' })}
-                              className="mt-3 w-full text-center px-4 py-2.5 bg-emerald-700 text-white rounded-xl hover:bg-emerald-600 hover:ring-2 hover:ring-emerald-700/30 transition-all duration-300 font-medium"
+                              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-700 text-white rounded-xl hover:bg-emerald-600 hover:ring-2 hover:ring-emerald-700/30 transition-all duration-200 font-semibold text-sm shadow-sm"
                             >
-                              <FaUserCog className="inline mr-1" />
+                              <FaUserCog className="h-4 w-4" />
                               Make Agent
                             </button>
                           )}
@@ -851,35 +853,35 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                             <button
                               type="button"
                               onClick={() => setActionCandidate({ customer: selectedCustomer, action: 'admin' })}
-                              className="mt-3 w-full text-center px-4 py-2.5 bg-ink text-white rounded-xl hover:bg-ink/90 hover:ring-2 hover:ring-ink/30 transition-all duration-300 font-medium"
+                              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-ink text-white rounded-xl hover:bg-ink/90 hover:ring-2 hover:ring-ink/30 transition-all duration-200 font-semibold text-sm shadow-sm"
                             >
-                              <FaUserShield className="inline mr-1" />
+                              <FaUserShield className="h-4 w-4" />
                               Promote to Admin
                             </button>
                           )}
                           {currentUserRole === 'superadmin' && selectedCustomer.id !== (auth.user as any)?.id && (
-                            <>
+                            <div className="grid grid-cols-2 gap-3 pt-1">
                               <button
                                 type="button"
                                 onClick={() => setActionCandidate({ customer: selectedCustomer, action: selectedCustomer.blocked ? 'unblock' : 'block' })}
-                                className={`mt-3 w-full text-center px-4 py-2.5 text-white rounded-xl hover:ring-2 transition-all duration-300 font-medium ${
+                                className={`inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-white rounded-xl hover:ring-2 transition-all duration-200 font-semibold text-sm shadow-sm ${
                                   selectedCustomer.blocked
                                     ? 'bg-emerald-600 hover:bg-emerald-500 hover:ring-emerald-600/30'
                                     : 'bg-amber-500 hover:bg-amber-400 hover:ring-amber-500/30'
                                 }`}
                               >
-                                <FaBan className="inline mr-1" />
-                                {selectedCustomer.blocked ? 'Unblock Account' : 'Block Account'}
+                                <FaBan className="h-3.5 w-3.5" />
+                                {selectedCustomer.blocked ? 'Unblock' : 'Block'}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setActionCandidate({ customer: selectedCustomer, action: 'delete' })}
-                                className="mt-3 w-full text-center px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-500 hover:ring-2 hover:ring-red-600/30 transition-all duration-300 font-medium"
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-500 hover:ring-2 hover:ring-red-600/30 transition-all duration-200 font-semibold text-sm shadow-sm"
                               >
-                                <FaTimes className="inline mr-1" />
-                                Delete Account
+                                <FaTimes className="h-3.5 w-3.5" />
+                                Delete
                               </button>
-                            </>
+                            </div>
                           )}
                         </div>
                       )}
