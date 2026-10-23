@@ -83,14 +83,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
       icon: FiHome,
       current: url === '/dashboard'
     },
-    ...((user.role === 'admin') ? [
-        {
-            name: 'Customers',
-            href: '/dashboard/customers',
-            icon: FiUsers,
-            current: url.startsWith('/dashboard/customers')
-        },
-    ] : []),
 
     ...(user.role === 'agent' ? [
         {

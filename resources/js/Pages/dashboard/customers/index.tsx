@@ -253,15 +253,6 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                   : 'View customer list'}
               </p>
             </div>
-            {isAdminOrSuperAdmin && (
-              <Link
-                href="/dashboard/customers/create"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-marigold text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105"
-              >
-                <FaPlus className="h-4 w-4" />
-                Add Customer
-              </Link>
-            )}
           </div>
 
           {/* Stats Cards */}
@@ -341,20 +332,11 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                   <div className="text-center py-12">
                     <FaUsers className="h-16 w-16 text-text-soft mx-auto mb-4" />
                     <h3 className="text-xl font-bold text-ink mb-2">No Users Found</h3>
-                    <p className="text-text-soft mb-6">
+                    <p className="text-text-soft">
                       {isAdminOrSuperAdmin
                         ? 'No users registered yet'
                         : 'No customers available'}
                     </p>
-                    {isAdminOrSuperAdmin && (
-                      <Link
-                        href="/dashboard/customers/create"
-                        className="inline-flex items-center px-6 py-3 bg-gray-900 hover:bg-marigold text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105"
-                      >
-                        <FaPlus className="h-4 w-4 mr-2" />
-                        Add Your First User
-                      </Link>
-                    )}
                   </div>
                 ) : (
                   <div className="space-y-4">

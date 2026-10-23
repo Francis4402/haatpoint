@@ -586,8 +586,8 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                                         className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
                                     >
                                         <FiUsers className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
-                                        <span className="text-sm font-medium text-ink">Add Customer</span>
-                                        <span className="text-xs text-text-soft mt-1">Manage customers</span>
+                                        <span className="text-sm font-medium text-ink">Customers</span>
+                                        <span className="text-xs text-text-soft mt-1">Manage users &amp; customers</span>
                                     </Link>
                                 ) : (
                                     <Link
