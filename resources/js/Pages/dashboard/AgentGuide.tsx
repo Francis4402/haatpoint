@@ -118,8 +118,8 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComple
                             </div>
                         </div>
                         <a
-                            href="/videos/haatpoint-agent-guide.mp4"
-                            download="haatpoint-agent-guide.mp4"
+                            href="/videos/agentaccountv.mp4"
+                            download="agentaccountv.mp4"
                             className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wide text-marigold hover:underline shrink-0"
                         >
                             Download Video (MP4)
@@ -128,8 +128,9 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComple
                     
                     <div className="relative rounded-2xl overflow-hidden border border-line bg-black shadow-inner aspect-video max-w-4xl mx-auto">
                         <video
-                            src="/videos/haatpoint-agent-guide.mp4"
+                            src="/videos/agentaccountv.mp4"
                             controls
+                            playsInline
                             preload="metadata"
                             className="w-full h-full object-contain"
                         >
