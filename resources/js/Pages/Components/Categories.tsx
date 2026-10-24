@@ -95,7 +95,7 @@ const Categories = ({ categories }: { categories: categoryType[] }) => {
             <SwiperSlide key={c.id}>
               <Link
                 href={`/products?category=${encodeURIComponent(c.categories)}`}
-                className="clip-cat group flex flex-col items-center gap-2.5 text-center px-3.5 py-5 bg-white border border-line transition-all duration-200 hover:border-marigold hover:-translate-y-1 hover:shadow-hard-sm h-full block"
+                className="clip-cat group flex flex-col items-center gap-2.5 text-center px-3.5 py-5 bg-white border border-line transition-all duration-200 hover:border-marigold hover:-translate-y-1 hover:shadow-hard-sm h-full"
               >
                 <div className="text-xl transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
                   <LazyLoadImage
