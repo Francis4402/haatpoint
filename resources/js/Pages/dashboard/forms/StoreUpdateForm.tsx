@@ -67,7 +67,7 @@ export default function StoreUpdateForm({ auth, store }: EditStoreFormProps) {
           <meta name="description" content="Store not found" />
         </Head>
 
-        <div className="max-w-7xl mx-auto p-4 md:p-6">
+        <div className="max-w-[1240px] mx-auto">
           <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-8 text-center">
             <div className="mb-6">
               <FaStore className="h-16 w-16 text-text-soft mx-auto mb-4" />
@@ -279,7 +279,7 @@ export default function StoreUpdateForm({ auth, store }: EditStoreFormProps) {
         <meta name="description" content="Edit your store information" />
       </Head>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-6">
+      <div className="max-w-[1240px] mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>

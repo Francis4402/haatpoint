@@ -476,7 +476,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
         <meta name="keywords" content="edit product, update product, product management" />
       </Head>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-6">
+      <div className="max-w-[1240px] mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
