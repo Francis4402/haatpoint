@@ -74,7 +74,7 @@ const LazyAvatar = ({
 );
 
 const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any }>) => {
-  const { language, setLanguage, toggleLanguage, t } = useTranslation()
+  const { language, setLanguage, t } = useTranslation()
   const [searchOpen, setSearchOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -146,13 +146,53 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                 Own a shop? Sell on HaatPoint free for 1 year &bull; Pathao delivery handled &bull; Keep 100% profit
               </span>
             </div>
-            <Link
-              href="/sell"
-              className="shrink-0 font-bold text-marigold hover:text-white transition-colors text-[11px] sm:text-xs inline-flex items-center gap-1"
-            >
-              <span>Learn How to Sell</span>
-              <span aria-hidden="true">&rarr;</span>
-            </Link>
+            <div className="flex items-center gap-3 shrink-0">
+              <Link
+                href="/sell"
+                className="shrink-0 font-bold text-marigold hover:text-white transition-colors text-[11px] sm:text-xs inline-flex items-center gap-1"
+              >
+                <span>Learn How to Sell</span>
+                <span aria-hidden="true">&rarr;</span>
+              </Link>
+
+              <span className="hidden lg:inline text-white/20" aria-hidden="true">|</span>
+
+              {/* Language Switcher - Top Right (Desktop Only) */}
+              <div className="hidden lg:flex items-center notranslate" translate="no">
+                <div
+                  className="inline-flex items-center bg-white/10 p-0.5 rounded border border-white/15"
+                  role="group"
+                  aria-label="Language selection"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setLanguage('en')}
+                    className={`px-2 py-0.5 text-[11px] font-bold rounded transition-all duration-150 flex items-center gap-1 ${
+                      language === 'en'
+                        ? 'bg-marigold text-white shadow-sm'
+                        : 'text-[#E3E1DB] hover:text-white'
+                    }`}
+                    aria-pressed={language === 'en'}
+                    title="Switch to English"
+                  >
+                    <span>EN</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLanguage('bn')}
+                    className={`px-2 py-0.5 text-[11px] font-bold rounded transition-all duration-150 flex items-center gap-1 ${
+                      language === 'bn'
+                        ? 'bg-marigold text-white shadow-sm'
+                        : 'text-[#E3E1DB] hover:text-white'
+                    }`}
+                    aria-pressed={language === 'bn'}
+                    title="বাংলায় পরিবর্তন করুন"
+                  >
+                    <span>বাংলা</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -203,58 +243,6 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                 aria-expanded={searchOpen}
               >
                 {searchOpen ? <FiX className="h-5 w-5" aria-hidden="true" /> : <FiSearch className="h-5 w-5" aria-hidden="true" />}
-              </button>
-
-              {/* Language Switcher - Desktop & Tablet */}
-              <div className="hidden sm:flex items-center notranslate" translate="no">
-                <div
-                  className="inline-flex items-center bg-[#F2F2EE] p-0.5 rounded-sm border border-[#E3E1DB]"
-                  role="group"
-                  aria-label="Language selection"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setLanguage('en')}
-                    className={`px-2 py-1 text-xs font-bold rounded-sm transition-all duration-150 flex items-center gap-1 ${
-                      language === 'en'
-                        ? 'bg-white text-[#1B1B1B] shadow-sm'
-                        : 'text-[#767470] hover:text-[#1B1B1B]'
-                    }`}
-                    aria-pressed={language === 'en'}
-                    title="Switch to English"
-                  >
-                    <FiGlobe className="h-3 w-3 text-[#6E7F5C]" />
-                    <span>EN</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLanguage('bn')}
-                    className={`px-2 py-1 text-xs font-bold rounded-sm transition-all duration-150 flex items-center gap-1 ${
-                      language === 'bn'
-                        ? 'bg-[#6E7F5C] text-white shadow-sm'
-                        : 'text-[#767470] hover:text-[#1B1B1B]'
-                    }`}
-                    aria-pressed={language === 'bn'}
-                    title="বাংলায় পরিবর্তন করুন"
-                  >
-                    <span>বাংলা</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Language Switcher - Mobile Quick Button */}
-              <button
-                type="button"
-                onClick={toggleLanguage}
-                translate="no"
-                className="sm:hidden notranslate flex items-center gap-1 px-2 py-1.5 rounded-sm border border-[#E3E1DB] bg-white hover:bg-[#F2F2EE] text-xs font-bold text-[#1B1B1B] transition-colors"
-                aria-label={`Toggle language. Current: ${language === 'en' ? 'English' : 'Bangla'}`}
-                title={language === 'en' ? 'বাংলায় পরিবর্তন করুন' : 'Switch to English'}
-              >
-                <FiGlobe className="h-3.5 w-3.5 text-[#6E7F5C]" />
-                <span className="font-semibold text-[11px] uppercase">
-                  {language === 'en' ? 'বাং' : 'EN'}
-                </span>
               </button>
 
               {/* Wishlist */}
