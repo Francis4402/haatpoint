@@ -54,13 +54,10 @@ export default function VendorCTA() {
   return (
     <div className="w-full pt-20">
       <section className="relative w-full overflow-hidden py-20 bg-ink text-paper border-y border-ink" id="sell">
-        <div className="absolute right-[-120px] top-[-160px] w-[460px] h-[460px] bg-marigold opacity-90 clip-cta pointer-events-none" />
-        <div className="absolute left-[-100px] bottom-[-140px] w-[340px] h-[340px] bg-marigold/10 rounded-full blur-3xl pointer-events-none" />
-
         <div ref={ref} className="relative z-10 container">
           {/* Header */}
           <div className="max-w-[700px] mb-12">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 backdrop-blur-sm mb-4">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#333333] bg-[#222222] px-3 py-1.5 mb-4">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-marigold" />
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-paper">
                 For store owners & entrepreneurs
@@ -88,7 +85,7 @@ export default function VendorCTA() {
               </Link>
               <Link
                 href="/sell#pricing"
-                className="inline-flex items-center gap-2 rounded-sm border border-white/25 bg-white/5 hover:bg-white/10 px-5 py-3.5 text-sm font-bold text-paper backdrop-blur-sm transition-all duration-150"
+                className="inline-flex items-center gap-2 rounded-sm border border-[#3A3A3A] bg-[#242424] hover:bg-[#2C2C2C] px-5 py-3.5 text-sm font-bold text-paper transition-all duration-150"
               >
                 <span>See Seller Plans & Pricing</span>
               </Link>
@@ -102,13 +99,13 @@ export default function VendorCTA() {
               return (
                 <div
                   key={perk.title}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm hover:border-marigold/50 transition-colors"
+                  className="rounded-2xl border border-[#2E2E2E] bg-[#222222] p-5 hover:border-marigold/70 transition-colors shadow-sm"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-marigold/20 text-marigold">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2C3827] text-marigold">
                       <Icon className="h-5 w-5" />
                     </div>
-                    <span className="font-mono text-[9px] uppercase tracking-wider font-bold bg-white/10 text-[#E3E1DB] px-2 py-0.5 rounded-full">
+                    <span className="font-mono text-[9px] uppercase tracking-wider font-bold bg-[#2E2E2E] border border-[#3A3A3A] text-[#E3E1DB] px-2 py-0.5 rounded-full">
                       {perk.badge}
                     </span>
                   </div>
@@ -124,8 +121,8 @@ export default function VendorCTA() {
           </div>
 
           {/* 3-Step Simple Guide */}
-          <div className="rounded-2xl border border-white/15 bg-white/[0.03] p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-white/10">
+          <div className="rounded-2xl border border-[#2E2E2E] bg-[#222222] p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-[#2E2E2E]">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-marigold">
                   Simple 3-Step Guide

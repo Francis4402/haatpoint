@@ -157,10 +157,10 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
         </div>
 
         <div className="container">
-          <div className="flex h-16 md:h-[76px] items-center justify-between gap-4">
+          <div className="flex h-16 md:h-[76px] items-center justify-between gap-2 xl:gap-4 w-full">
             {/* Left Section - Logo + nav */}
-            <div className="flex items-center gap-3 shrink-0">
-              <Link href="/" className="flex items-center gap-2.5 group" aria-label="Haatpoint home">
+            <div className="flex items-center gap-2 xl:gap-3 min-w-0">
+              <Link href="/" className="flex items-center gap-2.5 group shrink-0" aria-label="Haatpoint home">
                 <div className="h-[34px] w-auto">
                   <LazyLogo />
                 </div>
@@ -169,21 +169,20 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                 </span>
               </Link>
 
-              <nav className="hidden lg:flex ml-3 xl:ml-6 gap-0.5 xl:gap-1" aria-label="Main navigation">
+              <nav className="hidden lg:flex items-center ml-2 xl:ml-4 gap-0.5 xl:gap-1" aria-label="Main navigation">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3.5 py-2 text-sm font-semibold rounded-sm transition-colors duration-150"
+                    className="flex items-center gap-1.5 px-2 xl:px-3 py-1.5 text-xs xl:text-sm font-semibold rounded-sm transition-colors duration-150 whitespace-nowrap"
                     style={{ color: '#1B1B1B' }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F2F2EE'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                   >
-                    <item.icon className="h-4 w-4" aria-hidden="true" />
-                    {item.name}
+                    <span>{item.name}</span>
                     {item.badge && (
                       <span
-                        className="ml-0.5 inline-flex items-center rounded-full bg-[#6E7F5C] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-white"
+                        className="ml-0.5 inline-flex items-center rounded-full bg-[#6E7F5C] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wide text-white"
                         aria-label={`${item.badge} deals`}
                       >
                         {item.badge}
@@ -195,7 +194,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
             </div>
 
             {/* Right Section - Actions */}
-            <div className="flex items-center gap-1 md:gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0">
               {/* Mobile Search Button */}
               <button
                 onClick={handleSearchButtonClick}
