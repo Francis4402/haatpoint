@@ -476,7 +476,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
         <meta name="keywords" content="edit product, update product, product management" />
       </Head>
 
-      <div className="max-w-[1240px] mx-auto">
+      <div className="max-w-7xl 2xl:max-w-[1536px] mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
@@ -550,19 +550,19 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
         </div>
 
         <form ref={formRef} onSubmit={handleSubmit}>
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-12 gap-8 items-start">
             {/* Left Column */}
-            <div className="space-y-6">
+            <div className="lg:col-span-7 xl:col-span-8 space-y-8">
               {/* Product Information Card */}
-              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
+              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 sm:p-8">
                 <div className="flex items-center gap-2 mb-6 pb-4 border-b border-line">
                   <FaBox className="h-5 w-5 text-marigold" />
                   <h2 className="text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Product Information</h2>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-6 sm:space-y-7">
                   {/* Row 1: Name and Slug */}
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
                     {/* Product Name */}
                     <div>
                       <label className="text-sm font-medium text-ink mb-2 flex items-center gap-1">
@@ -643,7 +643,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                   </div>
 
                   {/* Row 2: Categories, Subcategories, and Brands */}
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6">
                     {/* Main Category */}
                     <div>
                       <label className="block text-sm font-medium text-ink mb-2">
@@ -930,7 +930,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                   </div>
 
                   {/* Row 4: Quantity and Colors */}
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
                     {/* Quantity */}
                     <div>
                       <label className="text-sm font-medium text-ink mb-2 flex items-center gap-1">
@@ -1139,7 +1139,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
               </div>
 
               {/* Pricing Card */}
-              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
+              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 sm:p-8">
                 <div className="flex items-center gap-2 mb-6 pb-4 border-b border-line">
                   <span className="inline-flex items-center rounded-md border border-line bg-paper-dim px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-marigold">
                     BDT
@@ -1147,8 +1147,8 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                   <h2 className="text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Pricing</h2>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-6 sm:space-y-7">
+                  <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
                     {/* Regular Price */}
                     <div>
                       <label className="block text-sm font-medium text-ink mb-2">
@@ -1247,7 +1247,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
               </div>
 
               {/* Rich Description Card with Quill.js */}
-              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
+              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 sm:p-8">
                 <div className="flex items-center gap-2 mb-6 pb-4 border-b border-line">
                   <FaBookOpen className="h-5 w-5 text-marigold" />
                   <h2 className="text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Product Description</h2>
@@ -1283,9 +1283,9 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
             </div>
 
             {/* Right Column */}
-            <div className="space-y-6">
+            <div className="lg:col-span-5 xl:col-span-4 space-y-8">
               {/* Images Upload Card */}
-              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
+              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 sm:p-8">
                 <div className="flex items-center gap-2 mb-6 pb-4 border-b border-line">
                   <FaImage className="h-5 w-5 text-marigold" />
                   <h2 className="text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Product Images</h2>
