@@ -306,11 +306,19 @@ export default function SubscriptionPayment({
                   </span>
                   <span className="pb-1.5 text-sm text-[#B9B7B0]">/ {selectedMonths} month{selectedMonths > 1 ? 's' : ''}</span>
                 </div>
-                {selectedMonths === 6 && (
+                {selectedMonths === 6 ? (
                   <p className="mt-1 text-xs text-emerald-400 font-mono">
-                    <span className="line-through text-[#8f8d87] mr-1">৳600</span> ৳95/month • 5% discount applied (save ৳30)
+                    <span className="line-through text-[#8f8d87] mr-1">৳600</span> ৳90/month • 10% discount applied (save ৳60)
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-marigold font-mono">
+                    ৳100/month • Flexible monthly subscription
                   </p>
                 )}
+                <p className="mt-2 text-xs text-paper flex items-center gap-1.5 font-medium">
+                  <FaCheck className="text-marigold h-3 w-3 shrink-0" />
+                  Unlimited product uploads included with Pro
+                </p>
               </div>
 
               {/* Form */}

@@ -56,6 +56,9 @@ class HandleInertiaRequests extends Middleware
                 'isPro' => $user->isPro(),
                 'paymentStatus' => $user->subscription_payment_status ?? 'none',
                 'pendingPayment' => $user->hasPendingSubscriptionPayment(),
+                'productsCount' => $user->getProductsCount(),
+                'productLimit' => $user->getProductLimit(),
+                'canAddProduct' => $user->canAddProduct(),
             ];
         }
 

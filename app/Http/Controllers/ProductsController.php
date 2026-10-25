@@ -69,7 +69,8 @@ class ProductsController extends Controller
      */
     public function create()
     {
-        $stores = $this->roleStores(Auth::user());
+        $user = Auth::user();
+        $stores = $this->roleStores($user);
 
         // The form reads store.id, so handing it a null crashed the page. Send
         // the seller to the store list instead of rendering a broken form.
@@ -78,10 +79,19 @@ class ProductsController extends Controller
                 ->with('error', 'Create a store before adding products.');
         }
 
+        // Check if agent on free plan reached 150 products limit
+        if ($user instanceof Agent && ! $user->canAddProduct()) {
+            return redirect()->route('dashboard.upgrade')
+                ->with('error', 'You have reached the 150-product upload limit for the Free 1-Year plan. Upgrade to HaatPoint Pro (Monthly or 6 Months) for unlimited product uploads.');
+        }
+
         return Inertia::render('dashboard/forms/CreateProductForm', [
             'stores' => $stores,
             'store' => $stores->first(),
             'categories' => Categories::all(),
+            'productLimit' => $user instanceof Agent ? $user->getProductLimit() : null,
+            'productsCount' => $user instanceof Agent ? $user->getProductsCount() : 0,
+            'canAddProduct' => $user instanceof Agent ? $user->canAddProduct() : true,
         ]);
     }
 
@@ -96,6 +106,13 @@ class ProductsController extends Controller
         if ($stores->isEmpty()) {
             return redirect()->back()->withErrors([
                 'store_id' => 'You need to create a store first before adding products.',
+            ]);
+        }
+
+        // Free 1-year agent accounts are limited to 150 products; Pro accounts have unlimited uploads.
+        if ($user instanceof Agent && ! $user->canAddProduct()) {
+            return redirect()->back()->withInput()->withErrors([
+                'name' => 'You have reached the 150-product upload limit for the Free 1-Year plan. Upgrade to HaatPoint Pro (Monthly or 6 Months) for unlimited product uploads.',
             ]);
         }
 

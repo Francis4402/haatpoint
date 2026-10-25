@@ -117,7 +117,7 @@ export default function Upgrade({ user, pricing }: { user?: User; pricing?: { mo
               </div>
 
               <p className="mt-4 max-w-[460px] text-xs leading-relaxed text-[#8f8d87]">
-                Pro is ৳{monthlyPrice}/month, or ৳{sixMonthPrice} for 6 months (5% discount applied). Pay via bKash to {bkashNumber}, submit your TrxID, and superadmin or admin will confirm your Pro access after checking the transaction id.
+                Free 1-year accounts are limited to 150 product uploads. Upgrade to Pro for unlimited product uploads at ৳{monthlyPrice}/month, or ৳{sixMonthPrice} for 6 months (10% discount applied). Pay via bKash to {bkashNumber}, submit your TrxID, and admin will activate your Pro access upon verification.
               </p>
             </div>
 

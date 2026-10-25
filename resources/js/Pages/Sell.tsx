@@ -56,15 +56,15 @@ const STEPS = [
 const FAQ = [
   {
     q: 'How much does it cost to start selling?',
-    a: 'Getting started is completely free! The Free Starter plan lets you launch your store with limited products, manage orders, and test the market with zero upfront cost.',
+    a: 'Getting started is completely free! Every new agent gets a 1-year free account that lets you upload up to 150 products, manage your store and orders, and sell across Bangladesh with zero upfront cost.',
   },
   {
     q: 'What is HaatPoint Pro and how much does it cost?',
-    a: 'HaatPoint Pro is built for growing sellers. It costs ৳100 per month, or ৳540 for 6 months when you pay in advance (a 10% discount saving you ৳60). It unlocks unlimited product listings, uninterrupted selling, and priority support.',
+    a: 'HaatPoint Pro is built for active and scaling sellers. You can pay monthly for ৳100/month or pay 6 months in advance for ৳540 (a 10% discount saving ৳60). Pro unlocks unlimited product uploads, continuous selling, and priority support.',
   },
   {
     q: 'What extra advantages do I get with HaatPoint Pro?',
-    a: 'Pro members get unlimited product listings, continuous always-on selling without storefront pauses, a Verified Pro Seller badge, advanced sales analytics, and priority customer support.',
+    a: 'Pro members enjoy unlimited product uploads (no 150-product cap), continuous storefront visibility without pauses, a Verified Pro Seller badge, advanced sales analytics, and priority customer support.',
   },
   {
     q: 'How do I pay for HaatPoint Pro?',
@@ -240,7 +240,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
                 <span className="font-display text-[46px] font-extrabold leading-none text-ink">
                   ৳0
                 </span>
-                <span className="pb-1 text-sm text-text-soft">/ forever free</span>
+                <span className="pb-1 text-sm text-text-soft">/ 1 year free</span>
               </div>
               <p className="mt-3 text-sm text-text-soft">
                 Perfect for new sellers to set up their store and explore the marketplace with zero risk.
@@ -248,7 +248,8 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
 
               <ul className="mt-6 space-y-3.5 text-sm text-ink flex-1">
                 {[
-                  'Limited product listings (starter catalog)',
+                  'Upload up to 150 products (Starter catalog)',
+                  '1 full year free agent account access',
                   'Custom storefront branding & profile',
                   'Basic sales dashboard & order management',
                   'Integrated delivery & cash on delivery (COD)',

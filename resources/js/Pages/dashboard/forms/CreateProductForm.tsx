@@ -1,7 +1,7 @@
 // CreateProductForm.tsx
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { categoryType, storeType } from '@/types';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { categoryType, PageProps, storeType } from '@/types';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import { withMarkup } from '../../utils/price';
 import {
@@ -30,6 +30,7 @@ import {
   FaStar,
   FaFire,
   FaRocket,
+  FaCrown,
 } from 'react-icons/fa';
 import {
   HiCheck,
@@ -48,6 +49,9 @@ interface productFormType {
     store: storeType;
     stores?: storeType[];
     categories: categoryType[];
+    productLimit?: number | null;
+    productsCount?: number;
+    canAddProduct?: boolean;
 }
 
 const quillModules = {
@@ -74,7 +78,22 @@ const quillFormats = [
   'link', 'image', 'video'
 ];
 
-export default function CreateProductForm({auth, store, stores = [], categories}: productFormType) {
+export default function CreateProductForm({
+  auth,
+  store,
+  stores = [],
+  categories,
+  productLimit,
+  productsCount,
+  canAddProduct,
+}: productFormType) {
+  const { props } = usePage<PageProps>();
+  const sub = props.auth?.subscription;
+  const isAgent = auth.user?.role === 'agent' || !!sub;
+  const isPro = !!sub?.isPro;
+  const currentCount = productsCount ?? sub?.productsCount ?? 0;
+  const maxLimit = productLimit !== undefined ? productLimit : (sub?.productLimit ?? (isPro ? null : 150));
+  const isBlocked = isAgent && !isPro && maxLimit !== null && currentCount >= maxLimit;
   const imagesInputRef = useRef<HTMLInputElement>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [showSalePrice, setShowSalePrice] = useState(false);
@@ -335,6 +354,11 @@ export default function CreateProductForm({auth, store, stores = [], categories}
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isBlocked) {
+      toast.error('You have reached the 150 products upload limit for your Free 1-Year account. Upgrade to Pro for unlimited uploads.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('slug', data.slug);
@@ -478,6 +502,80 @@ export default function CreateProductForm({auth, store, stores = [], categories}
             </div>
           )}
         </div>
+
+        {/* Agent Product Upload Capacity Banner */}
+        {isAgent && (
+          <div className="bg-white rounded-2xl border border-line shadow-hard-sm p-5 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                {isPro ? (
+                  <>
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-marigold/20 text-marigold">
+                      <FaCrown className="h-3 w-3" />
+                    </span>
+                    <span className="font-display font-bold text-sm text-ink">
+                      HaatPoint Pro Active
+                    </span>
+                    <span className="text-xs font-mono uppercase tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-bold">
+                      Unlimited Product Uploads
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="h-2.5 w-2.5 rounded-full bg-marigold animate-pulse" />
+                    <span className="font-display font-bold text-sm text-ink">
+                      Free 1-Year Plan: {currentCount} / {maxLimit || 150} Products Uploaded
+                    </span>
+                    <span className="text-xs font-mono text-text-soft">
+                      ({Math.max(0, (maxLimit || 150) - currentCount)} remaining)
+                    </span>
+                  </>
+                )}
+              </div>
+              {!isPro && (
+                <Link
+                  href={route('dashboard.upgrade')}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-marigold hover:underline shrink-0"
+                >
+                  <FaCrown className="h-3.5 w-3.5 text-amber-500" />
+                  Upgrade for Unlimited Uploads (Monthly / 6 Months) &rarr;
+                </Link>
+              )}
+            </div>
+
+            {!isPro && (
+              <div className="w-full bg-neutral-100 rounded-full h-2.5 overflow-hidden border border-line/40">
+                <div
+                  className={`h-full transition-all duration-500 ${
+                    isBlocked ? 'bg-red-500' : currentCount >= 130 ? 'bg-amber-500' : 'bg-marigold'
+                  }`}
+                  style={{ width: `${Math.min(100, (currentCount / (maxLimit || 150)) * 100)}%` }}
+                />
+              </div>
+            )}
+
+            {isBlocked && (
+              <div className="mt-4 p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <p className="font-bold flex items-center gap-2">
+                    <HiOutlineExclamationCircle className="h-4 w-4 text-red-600" />
+                    Upload Limit Reached (150 / 150 Products)
+                  </p>
+                  <p className="text-xs text-red-700 mt-1">
+                    Free 1-Year agent accounts are limited to 150 product uploads. Upgrade to Pro with Monthly (৳100/mo) or 6-Month advance payment (৳540) to upload unlimited products.
+                  </p>
+                </div>
+                <Link
+                  href={route('dashboard.upgrade')}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shrink-0 shadow-sm transition-colors"
+                >
+                  <FaCrown className="h-3 w-3" />
+                  Upgrade to Pro
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
 
         <form ref={formRef} onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-12 gap-8 items-start">
@@ -1500,23 +1598,38 @@ export default function CreateProductForm({auth, store, stores = [], categories}
 
               {/* Action Card */}
               <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
-                <button
-                  type="submit"
-                  disabled={isSubmitting || processing || !data.name || !data.category || !data.regular_price || !data.description || !data.item_weight}
-                  className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting || processing ? (
-                    <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                      Uploading Product...
-                    </>
-                  ) : (
-                    <>
-                      <FaCheck className="h-4 w-4" />
-                      Upload Product
-                    </>
-                  )}
-                </button>
+                {isBlocked ? (
+                  <div className="space-y-3">
+                    <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-medium text-center">
+                      150-product limit reached on Free 1-Year account.
+                    </div>
+                    <Link
+                      href={route('dashboard.upgrade')}
+                      className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2 text-center text-sm shadow-hard-sm"
+                    >
+                      <FaCrown className="h-4 w-4" />
+                      Upgrade for Unlimited Uploads
+                    </Link>
+                  </div>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || processing || !data.name || !data.category || !data.regular_price || !data.description || !data.item_weight}
+                    className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting || processing ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                        Uploading Product...
+                      </>
+                    ) : (
+                      <>
+                        <FaCheck className="h-4 w-4" />
+                        Upload Product
+                      </>
+                    )}
+                  </button>
+                )}
 
                 <div className="mt-6 pt-6 border-t border-line">
                   <div className="text-xs text-text-soft space-y-2">

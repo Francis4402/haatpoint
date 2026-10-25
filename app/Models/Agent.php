@@ -157,6 +157,59 @@ class Agent extends Authenticatable
     }
 
     /**
+     * Maximum number of products allowed on a Free 1-year agent account.
+     */
+    public const FREE_PRODUCT_LIMIT = 150;
+
+    /**
+     * Stores owned by this agent.
+     */
+    public function stores()
+    {
+        return $this->hasMany(Store::class, 'agent_id', 'id');
+    }
+
+    /**
+     * Total products uploaded across all stores owned by this agent.
+     */
+    public function getProductsCount(): int
+    {
+        $storeIds = Store::where('agent_id', $this->id)->pluck('id');
+        if ($storeIds->isEmpty()) {
+            return 0;
+        }
+
+        return (int) Products::whereIn('store_id', $storeIds)->count();
+    }
+
+    /**
+     * The product upload limit for this agent:
+     * - Pro plan (active): null (unlimited)
+     * - Free plan (1 year free): 150 products
+     */
+    public function getProductLimit(): ?int
+    {
+        if ($this->isPro()) {
+            return null; // Unlimited for Pro
+        }
+
+        return self::FREE_PRODUCT_LIMIT;
+    }
+
+    /**
+     * Whether the agent is allowed to upload another product.
+     */
+    public function canAddProduct(): bool
+    {
+        $limit = $this->getProductLimit();
+        if ($limit === null) {
+            return true; // Unlimited
+        }
+
+        return $this->getProductsCount() < $limit;
+    }
+
+    /**
      * A bKash transaction id has been submitted at some point (pending or
      * already reviewed) and is worth showing to the superadmin.
      */

@@ -38,6 +38,10 @@ export interface AgentSubscription {
     paymentStatus?: 'none' | 'pending' | 'approved' | 'rejected';
     /** True while a submitted bKash TrxID still awaits superadmin approval. */
     pendingPayment?: boolean;
+    /** Product upload count and limits: 150 for Free 1-Year plan, null (unlimited) for Pro */
+    productsCount?: number;
+    productLimit?: number | null;
+    canAddProduct?: boolean;
 }
 
 export interface SubscriptionPayment {

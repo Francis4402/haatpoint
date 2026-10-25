@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
   FaEye,
   FaEdit,
@@ -17,8 +17,9 @@ import {
   FaInfoCircle,
   FaTimes,
   FaStore,
+  FaCrown,
 } from 'react-icons/fa';
-import { Product, storeType } from '@/types';
+import { PageProps, Product, storeType } from '@/types';
 import { toast } from 'sonner';
 import FormatPrice from '@/Pages/utils/FormatePrice';
 import { withMarkup } from '@/Pages/utils/price';
@@ -37,6 +38,12 @@ interface dashboarProductProps {
 }
 
 const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboarProductProps) => {
+    const { props } = usePage<PageProps>();
+    const sub = props.auth?.subscription;
+    const isAgent = auth.user?.role === 'agent' || !!sub;
+    const isPro = !!sub?.isPro;
+    const agentProductsCount = sub?.productsCount ?? products.length;
+    const isLimitReached = isAgent && !isPro && agentProductsCount >= 150;
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [productToDelete, setProductToDelete] = useState<string | null>(null);
@@ -174,7 +181,20 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                         </div>
 
                         <div>
-                            {store ? (
+                            {isLimitReached ? (
+                                <div className="flex items-center gap-3 flex-wrap">
+                                    <span className="text-xs font-mono font-bold text-red-600 bg-red-50 border border-red-200 px-3.5 py-2.5 rounded-xl">
+                                        150 / 150 Limit Reached
+                                    </span>
+                                    <Link
+                                        href={route('dashboard.upgrade')}
+                                        className="inline-flex items-center gap-2 px-6 py-3 bg-marigold hover:bg-marigold-dark text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105"
+                                    >
+                                        <FaCrown className="h-4 w-4" />
+                                        Upgrade for Unlimited
+                                    </Link>
+                                </div>
+                            ) : store ? (
                                 <Link
                                     href={route('dashboard.createproduct')}
                                     className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-marigold text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105"
@@ -193,6 +213,55 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                             )}
                         </div>
                     </div>
+
+                    {/* Agent Product Upload Capacity Banner */}
+                    {isAgent && (
+                        isPro ? (
+                            <div className="mb-6 flex items-center justify-between gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl shadow-hard-sm">
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 shrink-0">
+                                        <FaCrown className="h-4 w-4" />
+                                    </span>
+                                    <div>
+                                        <p className="text-sm font-bold text-emerald-950">HaatPoint Pro Seller Active</p>
+                                        <p className="text-xs text-emerald-700">Unlimited products upload enabled across your stores.</p>
+                                    </div>
+                                </div>
+                                <span className="text-xs font-mono font-bold bg-white text-emerald-800 border border-emerald-300 px-3 py-1 rounded-full shrink-0">
+                                    Unlimited Uploads
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="mb-6 p-4 sm:p-5 bg-white border border-line rounded-2xl shadow-hard-sm">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
+                                    <div className="flex items-center gap-2.5 flex-wrap">
+                                        <span className="h-2.5 w-2.5 rounded-full bg-marigold animate-pulse" />
+                                        <span className="font-display font-bold text-sm text-ink">
+                                            Free 1-Year Plan: {agentProductsCount} / 150 Products Uploaded
+                                        </span>
+                                        <span className="text-xs font-mono text-text-soft">
+                                            ({Math.max(0, 150 - agentProductsCount)} remaining)
+                                        </span>
+                                    </div>
+                                    <Link
+                                        href={route('dashboard.upgrade')}
+                                        className="inline-flex items-center gap-1.5 text-xs font-bold text-marigold hover:underline shrink-0"
+                                    >
+                                        <FaCrown className="h-3.5 w-3.5 text-amber-500" />
+                                        Upgrade to Pro for Unlimited Uploads (Monthly or 6 Months) &rarr;
+                                    </Link>
+                                </div>
+                                <div className="w-full bg-neutral-100 rounded-full h-2.5 overflow-hidden border border-line/40">
+                                    <div
+                                        className={`h-full transition-all duration-500 ${
+                                            isLimitReached ? 'bg-red-500' : agentProductsCount >= 130 ? 'bg-amber-500' : 'bg-marigold'
+                                        }`}
+                                        style={{ width: `${Math.min(100, (agentProductsCount / 150) * 100)}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )
+                    )}
 
                     {/* Store Filter Banner */}
                     {filterStore && (
