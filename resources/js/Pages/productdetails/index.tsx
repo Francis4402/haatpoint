@@ -340,29 +340,33 @@ const ProductDetailsPage = ({
           },
         ]} />
 
-      <div className="min-h-screen bg-paper-dim py-20">
+      <div className="min-h-screen bg-paper-dim py-6 sm:py-10 lg:py-14">
         <div className="container">
           {/* Breadcrumb */}
-          <nav className="flex mb-8 text-sm">
-            <ol className="flex items-center space-x-2 flex-wrap">
+          <nav className="flex mb-4 sm:mb-6 text-xs sm:text-sm overflow-x-auto pb-1 scrollbar-hide" aria-label="Breadcrumb">
+            <ol className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
               <li>
                 <Link href="/" className="flex items-center text-text-soft hover:text-marigold transition-colors">
-                  <FaHome className="w-4 h-4 mr-2" />
-                  Home
+                  <FaHome className="w-3.5 h-3.5 mr-1" />
+                  <span>Home</span>
                 </Link>
               </li>
               <li className="text-text-soft">/</li>
               <li>
                 <Link href="/products" className="text-text-soft hover:text-marigold transition-colors">
-                  Products
+                  <span>Products</span>
                 </Link>
               </li>
+              {product.category && (
+                <>
+                  <li className="text-text-soft">/</li>
+                  <li className="text-text-soft">
+                    {product.category}
+                  </li>
+                </>
+              )}
               <li className="text-text-soft">/</li>
-              <li className="text-text-soft truncate max-w-xs">
-                {product.category}
-              </li>
-              <li className="text-text-soft">/</li>
-              <li className="text-ink font-medium truncate max-w-xs">
+              <li className="text-ink font-semibold truncate max-w-[160px] sm:max-w-xs">
                 {product.name}
               </li>
             </ol>
@@ -370,7 +374,7 @@ const ProductDetailsPage = ({
 
           {/* Main Product Section */}
           <div className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden mb-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8">
               {/* Left Column - Images */}
               <div className="space-y-4">
                 {/* Main Image */}
@@ -378,40 +382,37 @@ const ProductDetailsPage = ({
                   <img
                     src={currentImageUrl}
                     alt={product.name}
-                    className="w-full h-full object-contain p-8 transition-transform duration-500 hover:scale-105"
+                    className="w-full h-full object-contain p-4 sm:p-6 lg:p-8 transition-transform duration-500 hover:scale-105"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = '/otherplaceholder.jpg';
                     }}
                   />
 
-                  {discount > 0 && (
-                    <div className="absolute top-4 left-4">
-                      <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-bold bg-red-500 text-white shadow-hard-sm">
+                  {/* Top-Left Corner Badges (Grouped cleanly so they never overlap) */}
+                  <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex flex-wrap items-center gap-1.5 sm:gap-2 z-10 max-w-[calc(100%-64px)]">
+                    {discount > 0 && (
+                      <span className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-red-500 text-white shadow-sm">
                         -{discount}% OFF
                       </span>
-                    </div>
-                  )}
-
-                  {/* Brand Badge on Image */}
-                  {product.brand && (
-                    <div className="absolute top-4 left-4">
-                      <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-bold bg-[#6E7F5C] text-white shadow-hard-sm">
+                    )}
+                    {product.brand && (
+                      <span className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-[#6E7F5C] text-white shadow-sm">
                         {product.brand}
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   {currentCartQuantity > 0 && (
-                    <div className="absolute bottom-4 right-4">
-                      <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-marigold/10 text-marigold text-sm font-medium">
+                    <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-10">
+                      <span className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-marigold/10 text-marigold text-xs sm:text-sm font-medium">
                         {currentCartQuantity} in cart
                       </span>
                     </div>
                   )}
 
                   {/* Wishlist Button */}
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
                     {auth.user && <WishlistButton productId={product.id} />}
                   </div>
                 </div>
@@ -480,35 +481,35 @@ const ProductDetailsPage = ({
                   {/* Brand - Displayed prominently above product name */}
                   {product.brand && (
                     <div className="mb-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-lg bg-orange-50 text-orange-700 text-sm font-semibold border border-orange-200">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-orange-50 text-orange-700 text-xs sm:text-sm font-semibold border border-orange-200">
                         {product.brand}
                       </span>
                     </div>
                   )}
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-ink mb-4 leading-tight">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-ink mb-3 sm:mb-4 leading-tight">
                     {product.name}
                   </h1>
 
                   {/* Store Info */}
-                  <div className="flex items-center flex-wrap gap-4 mb-6">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-marigold/10 flex items-center justify-center">
-                        <FaStore className="w-5 h-5 text-marigold" />
+                  <div className="flex items-center flex-wrap gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div className="flex items-center space-x-2.5 sm:space-x-3">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-marigold/10 flex items-center justify-center shrink-0">
+                        <FaStore className="w-4 h-4 sm:w-5 sm:h-5 text-marigold" />
                       </div>
                       <div>
                         <Link
                           href={`/stores/${store.id}`}
-                          className="text-base font-semibold text-ink hover:text-marigold transition-colors"
+                          className="text-sm sm:text-base font-semibold text-ink hover:text-marigold transition-colors"
                         >
                           {store.name}
                         </Link>
-                        <div className="text-xs text-text-soft">{store.storetype} Store</div>
+                        <div className="text-[11px] sm:text-xs text-text-soft">{store.storetype} Store</div>
                       </div>
                     </div>
-                    <div className="flex items-center text-xs bg-paper-dim px-3 py-1.5 rounded-lg">
-                      <span className="text-amber-500 mr-1">Rated</span>
-                      <span className="font-medium text-ink">{displayStoreRating.toFixed(1)}</span>
-                      <span className="text-text-soft mx-1">/</span>
+                    <div className="flex items-center text-xs bg-paper-dim px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-line">
+                      <span className="text-amber-500 mr-1 font-bold">★</span>
+                      <span className="font-semibold text-ink">{displayStoreRating.toFixed(1)}</span>
+                      <span className="text-text-soft mx-1">·</span>
                       <span className="text-text-soft">{displayStoreReviewCount} reviews</span>
                     </div>
                   </div>
@@ -551,61 +552,77 @@ const ProductDetailsPage = ({
 
                 {/* Size & Color Selectors */}
                 {(availableColors.length > 0 || availableSizes.length > 0) && (
-                  <div className="space-y-5">
+                  <div className="space-y-5 pt-1">
                     {availableColors.length > 0 && (
                       <div>
-                        <p className="text-text-soft font-medium mb-2">
-                          Color:
-                          {selectedColor ? (
-                            <span className="text-ink font-semibold capitalize"> {selectedColor}</span>
-                          ) : (
-                            <span className="text-red-500 ml-1">*</span>
-                          )}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {availableColors.map((color) => (
-                            <button
-                              key={color}
-                              type="button"
-                              onClick={() => setSelectedColor(color)}
-                              className={`px-4 py-2 rounded-xl border text-sm font-medium capitalize transition-colors ${
-                                selectedColor === color
-                                  ? 'bg-marigold text-white border-marigold shadow-sm'
-                                  : 'bg-white text-ink border-line hover:border-marigold'
-                              }`}
-                            >
-                              {color}
-                            </button>
-                          ))}
+                        <div className="flex items-center justify-between mb-2.5">
+                          <span className="text-sm font-semibold text-ink flex items-center gap-2">
+                            <span>Color:</span>
+                            {selectedColor ? (
+                              <span className="text-marigold font-bold capitalize bg-marigold/10 px-2.5 py-0.5 rounded-full text-xs">
+                                {selectedColor}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-red-500 font-normal">(Please select a color)</span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2.5">
+                          {availableColors.map((color) => {
+                            const isSelected = selectedColor === color;
+                            return (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => setSelectedColor(color)}
+                                className={`min-h-[44px] px-4 py-2.5 rounded-xl border text-sm font-medium capitalize transition-all flex items-center gap-2 select-none active:scale-95 ${
+                                  isSelected
+                                    ? 'bg-ink text-white border-ink shadow-md ring-2 ring-marigold/30'
+                                    : 'bg-white text-ink border-line hover:border-marigold hover:bg-paper-dim'
+                                }`}
+                              >
+                                {isSelected && <FaCheck className="w-3 h-3 text-marigold" />}
+                                <span>{color}</span>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
 
                     {availableSizes.length > 0 && (
                       <div>
-                        <p className="text-text-soft font-medium mb-2">
-                          Size:
-                          {selectedSize ? (
-                            <span className="text-ink font-semibold"> {selectedSize}</span>
-                          ) : (
-                            <span className="text-red-500 ml-1">*</span>
-                          )}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {availableSizes.map((optionSize) => (
-                            <button
-                              key={optionSize}
-                              type="button"
-                              onClick={() => setSelectedSize(optionSize)}
-                              className={`min-w-[48px] px-4 py-2 rounded-xl border text-sm font-semibold uppercase transition-colors ${
-                                selectedSize === optionSize
-                                  ? 'bg-marigold text-white border-marigold shadow-sm'
-                                  : 'bg-white text-ink border-line hover:border-marigold'
-                              }`}
-                            >
-                              {optionSize}
-                            </button>
-                          ))}
+                        <div className="flex items-center justify-between mb-2.5">
+                          <span className="text-sm font-semibold text-ink flex items-center gap-2">
+                            <span>Size:</span>
+                            {selectedSize ? (
+                              <span className="text-marigold font-bold uppercase bg-marigold/10 px-2.5 py-0.5 rounded-full text-xs">
+                                {selectedSize}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-red-500 font-normal">(Please select a size)</span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2.5">
+                          {availableSizes.map((optionSize) => {
+                            const isSelected = selectedSize === optionSize;
+                            return (
+                              <button
+                                key={optionSize}
+                                type="button"
+                                onClick={() => setSelectedSize(optionSize)}
+                                className={`min-h-[44px] min-w-[52px] px-4 py-2.5 rounded-xl border text-sm font-bold uppercase transition-all flex items-center justify-center gap-1.5 select-none active:scale-95 ${
+                                  isSelected
+                                    ? 'bg-ink text-white border-ink shadow-md ring-2 ring-marigold/30'
+                                    : 'bg-white text-ink border-line hover:border-marigold hover:bg-paper-dim'
+                                }`}
+                              >
+                                {isSelected && <FaCheck className="w-3 h-3 text-marigold" />}
+                                <span>{optionSize}</span>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

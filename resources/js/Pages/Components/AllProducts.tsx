@@ -134,7 +134,7 @@ const AllProducts = ({ product, user, links, from, to, total }: allproductsprops
                 </div>
 
                 {/* Products Grid */}
-                <div className="grid md:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                     {allproducts.map((offer) => (
                         <ProductCard
                             key={offer.id}

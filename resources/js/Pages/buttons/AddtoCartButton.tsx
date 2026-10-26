@@ -50,14 +50,22 @@ const AddtoCartButton = ({
             return;
         }
 
-        if (availableSizes.length > 0 && !chosenSize) {
-            toast.error(t('select_size', 'Please select a size'));
-            return;
-        }
+        if (hasVariants && (!chosenSize || !chosenColor)) {
+            // On mobile cards or where picker is not shown, navigate to product view to select variants comfortably
+            if (!showVariantPicker) {
+                window.location.href = `/products/${product.slug || product.id}`;
+                return;
+            }
 
-        if (availableColors.length > 0 && !chosenColor) {
-            toast.error(t('select_color', 'Please select a color'));
-            return;
+            if (availableSizes.length > 0 && !chosenSize) {
+                toast.error(t('select_size', 'Please select a size'));
+                return;
+            }
+
+            if (availableColors.length > 0 && !chosenColor) {
+                toast.error(t('select_color', 'Please select a color'));
+                return;
+            }
         }
 
         addtoCart(product, resolvedStore, 1, chosenSize, chosenColor);
@@ -105,23 +113,23 @@ const AddtoCartButton = ({
 
         return (
             <div
-                className="w-full rounded-lg bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg p-2.5 space-y-2 mb-1.5"
+                className="w-full rounded-xl bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg p-3 space-y-2.5 mb-2"
                 onClick={(e) => e.stopPropagation()}
             >
                 {availableColors.length > 0 && (
                     <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
                             {t('color', 'Color')}
                         </p>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1.5">
                             {availableColors.map((color) => (
                                 <button
                                     key={color}
                                     type="button"
                                     onClick={() => setInternalColor(color)}
-                                    className={`px-2 py-0.5 rounded-full border text-[11px] font-medium transition-colors capitalize ${
+                                    className={`px-3 py-1 min-h-[30px] rounded-lg border text-xs font-medium transition-colors capitalize ${
                                         chosenColor === color
-                                            ? 'bg-marigold text-white border-marigold'
+                                            ? 'bg-marigold text-white border-marigold shadow-sm'
                                             : 'bg-white text-gray-700 border-gray-300 hover:border-marigold'
                                     }`}
                                 >
@@ -134,18 +142,18 @@ const AddtoCartButton = ({
 
                 {availableSizes.length > 0 && (
                     <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
                             {t('size', 'Size')}
                         </p>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1.5">
                             {availableSizes.map((optionSize) => (
                                 <button
                                     key={optionSize}
                                     type="button"
                                     onClick={() => setInternalSize(optionSize)}
-                                    className={`min-w-[28px] px-2 py-0.5 rounded-md border text-[11px] font-semibold uppercase transition-colors ${
+                                    className={`min-w-[34px] min-h-[30px] px-2.5 py-1 rounded-lg border text-xs font-semibold uppercase transition-colors ${
                                         chosenSize === optionSize
-                                            ? 'bg-marigold text-white border-marigold'
+                                            ? 'bg-marigold text-white border-marigold shadow-sm'
                                             : 'bg-white text-gray-700 border-gray-300 hover:border-marigold'
                                     }`}
                                 >

@@ -10,6 +10,7 @@ import FormatPrice from "@/Pages/utils/FormatePrice";
 import { withMarkup } from "@/Pages/utils/price";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import WishlistButton from "@/Pages/buttons/WishListButton";
+import { parseVariantList } from "@/Pages/utils/parseVariants";
 
 
 interface ProductCardProps {
@@ -149,6 +150,10 @@ const ProductCard = ({
   const regularDisplayPrice = withMarkup(product.regular_price);
   const showImage = imageSrc && !imageFailed;
 
+  const availableSizes = parseVariantList(product.size);
+  const availableColors = parseVariantList(product.color);
+  const hasVariants = availableSizes.length > 0 || availableColors.length > 0;
+
   // Real review data from props or preloaded ratings; fallback to 0 to prevent N+1 AJAX floods
   useEffect(() => {
     if (product.rating !== undefined) {
@@ -250,16 +255,26 @@ const ProductCard = ({
           )}
         </div>
 
-        {/* Quick Add to Cart - Bottom */}
-        <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 z-20">
-          <AddtoCartButton product={product} />
+        {/* Quick Action - Bottom */}
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3 sm:left-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 z-20">
+          {hasVariants ? (
+            <Link
+              href={productUrl}
+              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-ink hover:bg-marigold text-white text-xs font-semibold shadow-md transition-all duration-200"
+            >
+              <FaEye className="w-3.5 h-3.5" />
+              <span>Select Options</span>
+            </Link>
+          ) : (
+            <AddtoCartButton product={product} showVariantPicker={false} />
+          )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         {/* Vendor/Category & Brand */}
-        <div className="font-mono text-[10.5px] text-[#767470] uppercase tracking-wide mb-1.5 flex items-center justify-between">
+        <div className="font-mono text-[10px] sm:text-[10.5px] text-[#767470] uppercase tracking-wide mb-1.5 flex items-center justify-between">
           <div className="flex items-center gap-2 flex-wrap min-w-0">
             {store ? (
               <Link
@@ -273,11 +288,11 @@ const ProductCard = ({
                     src={storeLogo}
                     alt={`${vendor} store logo`}
                     loading="lazy"
-                    className="w-7 h-7 rounded-full object-cover border border-[#E3E1DB] bg-white shadow-sm"
+                    className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border border-[#E3E1DB] bg-white shadow-sm"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                   />
                 ) : (
-                  <span className="w-7 h-7 rounded-full bg-[#E7F4EF] text-[#4F6B63] flex items-center justify-center text-[11px] font-bold">
+                  <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#E7F4EF] text-[#4F6B63] flex items-center justify-center text-[10px] sm:text-[11px] font-bold">
                     {vendor.charAt(0)}
                   </span>
                 )}
@@ -295,7 +310,7 @@ const ProductCard = ({
         </div>
 
         {/* Product Name */}
-        <h3 className="font-semibold text-[14.5px] leading-snug mb-2 line-clamp-2 min-h-[44px] group-hover:text-[#6E7F5C] transition-colors">
+        <h3 className="font-semibold text-[13px] sm:text-[14.5px] leading-snug mb-1.5 sm:mb-2 line-clamp-2 min-h-[38px] sm:min-h-[44px] group-hover:text-[#6E7F5C] transition-colors">
           <Link href={productUrl} className="hover:underline">
             {product.name}
           </Link>
@@ -303,37 +318,46 @@ const ProductCard = ({
 
         {/* Rating - Only show if there's a rating */}
         {hasRating && !loading ? (
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
             {renderStars(averageRating)}
-            <span className="text-xs font-mono text-[#767470]">
+            <span className="text-[11px] sm:text-xs font-mono text-[#767470]">
               {averageRating.toFixed(1)}
             </span>
           </div>
         ) : loading ? (
-          <div className="flex items-center gap-2 mb-2" aria-hidden="true">
-            <div className="w-20 h-3 bg-gray-200 rounded animate-pulse"></div>
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-2" aria-hidden="true">
+            <div className="w-16 sm:w-20 h-3 bg-gray-200 rounded animate-pulse"></div>
           </div>
         ) : (
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-mono text-[#767470]">No reviews yet</span>
+          <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+            <span className="text-[11px] sm:text-xs font-mono text-[#767470]">No reviews yet</span>
           </div>
         )}
 
         {/* Price */}
         <div className="flex items-center justify-between">
-          <div className="flex items-baseline gap-2">
-            <span className="font-display font-extrabold text-xl" aria-label={`Price: ${displayPrice}`}>
+          <div className="flex items-baseline gap-1.5 sm:gap-2">
+            <span className="font-display font-extrabold text-base sm:text-xl" aria-label={`Price: ${displayPrice}`}>
               <FormatPrice price={displayPrice} />
             </span>
             {hasSalePrice && (
-              <span className="text-sm text-[#767470] line-through" aria-label={`Original price: ${regularDisplayPrice}`}>
+              <span className="text-xs sm:text-sm text-[#767470] line-through" aria-label={`Original price: ${regularDisplayPrice}`}>
                 <FormatPrice price={regularDisplayPrice} />
               </span>
             )}
           </div>
           {!showQuickView && (
             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <AddtoCartButton product={product} />
+              {hasVariants ? (
+                <Link
+                  href={productUrl}
+                  className="px-2.5 py-1.5 rounded-lg bg-ink hover:bg-marigold text-white text-xs font-semibold shadow-sm transition-all"
+                >
+                  Options
+                </Link>
+              ) : (
+                <AddtoCartButton product={product} showVariantPicker={false} />
+              )}
             </div>
           )}
         </div>
