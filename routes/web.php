@@ -382,4 +382,67 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked', 'subscription']
         ->name('vendor.profile.update');
 });
 
+Route::get('/stream/video/{filename}', function (string $filename) {
+    $cleanFilename = basename($filename);
+    $path = public_path('videos/' . $cleanFilename);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    $size = filesize($path);
+    $start = 0;
+    $end = $size - 1;
+
+    $headers = [
+        'Content-Type' => 'video/mp4',
+        'Accept-Ranges' => 'bytes',
+        'Cache-Control' => 'public, max-age=86400',
+    ];
+
+    $range = request()->header('Range');
+
+    if ($range && preg_match('/bytes=(\d+)-(\d*)/i', $range, $matches)) {
+        $start = (int) $matches[1];
+        if (!empty($matches[2])) {
+            $end = min((int) $matches[2], $size - 1);
+        }
+
+        if ($start > $end || $start >= $size) {
+            return response('', 416, [
+                'Content-Range' => "bytes */{$size}",
+            ]);
+        }
+
+        $length = $end - $start + 1;
+        $headers['Content-Range'] = "bytes {$start}-{$end}/{$size}";
+        $headers['Content-Length'] = (string) $length;
+
+        return response()->stream(function () use ($path, $start, $length) {
+            $fp = fopen($path, 'rb');
+            if ($fp === false) {
+                return;
+            }
+            fseek($fp, $start);
+            $remaining = $length;
+            $buffer = 1024 * 64;
+
+            while ($remaining > 0 && !feof($fp)) {
+                $readBytes = min($buffer, $remaining);
+                $chunk = fread($fp, $readBytes);
+                if ($chunk === false) {
+                    break;
+                }
+                echo $chunk;
+                flush();
+                $remaining -= strlen($chunk);
+            }
+            fclose($fp);
+        }, 206, $headers);
+    }
+
+    $headers['Content-Length'] = (string) $size;
+    return response()->file($path, $headers);
+})->name('video.stream');
+
 require __DIR__.'/auth.php';

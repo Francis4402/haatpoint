@@ -11,6 +11,7 @@ import {
   FaChartLine,
   FaShieldAlt,
   FaClock,
+  FaPlayCircle,
 } from 'react-icons/fa';
 
 const BENEFITS = [
@@ -76,6 +77,69 @@ const FAQ = [
   },
 ];
 
+function SellerVideoPlayer() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-ink bg-[#111319] text-paper shadow-2xl">
+      {/* Player Header Bar */}
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-[#181B24] px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full bg-red-500/80" />
+            <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
+            <span className="h-3 w-3 rounded-full bg-emerald-500/80" />
+          </div>
+          <span className="hidden h-4 w-[1px] bg-white/15 sm:inline-block" />
+          <div className="flex items-center gap-2">
+            <FaPlayCircle className="h-4 w-4 text-marigold" />
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-paper">
+              Seller Walkthrough Player
+            </span>
+          </div>
+        </div>
+
+        <span className="rounded bg-marigold/20 px-2.5 py-0.5 font-mono text-[10px] font-bold text-marigold">
+          1080p Full HD
+        </span>
+      </div>
+
+      {/* Video Screen Container */}
+      <div className="relative aspect-video w-full bg-black">
+        <video
+          src="/stream/video/agentaccountv.mp4"
+          controls
+          playsInline
+          preload="metadata"
+          className="h-full w-full object-contain"
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      {/* Video Info Footer */}
+      <div className="border-t border-white/10 bg-[#151720] p-4 sm:p-5">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="font-display text-base font-extrabold text-paper sm:text-lg">
+              How to Sell on HaatPoint: Account Registration & Store Setup
+            </h2>
+            <p className="mt-1 text-xs text-[#B9B7B0] sm:text-sm">
+              Step-by-step video tutorial covering agent registration, profile setup, and uploading your first 150 products free forever.
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 font-mono text-[11px] text-[#8f8d87]">
+            <span className="rounded border border-white/10 bg-white/5 px-2.5 py-1 text-emerald-400">
+              1080p Full HD
+            </span>
+            <span className="rounded border border-white/10 bg-white/5 px-2.5 py-1 text-paper">
+              ~6 mins
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegisterRoute: string }>) {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'six_month'>('monthly');
   const isAgent = auth?.user?.role === 'agent';
@@ -104,10 +168,32 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
         />
       </Head>
 
+      {/* Video Player Section */}
+      <section className="border-b border-line bg-paper-dim py-10 sm:py-16">
+        <div className="container max-w-5xl">
+          <div className="mb-6 text-center max-w-2xl mx-auto sm:mb-8">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-marigold/30 bg-marigold/10 px-3 py-1 font-mono text-xs font-bold uppercase tracking-wider text-marigold">
+              <FaPlayCircle className="h-3.5 w-3.5" /> Seller Video Guide
+            </span>
+            <h2 className="mt-3 font-display text-2xl font-black text-ink sm:text-3xl lg:text-4xl">
+              How to Open an Agent Account & Sell on HaatPoint
+            </h2>
+            <p className="mt-2 text-xs text-text-soft sm:text-sm">
+              Watch this complete step-by-step walkthrough tutorial on opening an agent account and launching your store.
+            </p>
+          </div>
+
+          <SellerVideoPlayer />
+        </div>
+      </section>
+
+      {/* Spacing Gap between Video Section and Hero Banner */}
+      <div className="h-10 sm:h-16 bg-paper" />
+
       {/* Hero */}
       <section className="relative overflow-hidden bg-ink text-paper">
         <div className="absolute right-[-140px] top-[-180px] h-[460px] w-[460px] bg-marigold opacity-90 clip-cta" />
-        <div className="relative z-10 container py-20 sm:py-28">
+        <div className="relative z-10 container py-20 sm:py-28 text-center max-w-3xl mx-auto">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 backdrop-blur-sm">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-marigold" />
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.14em]">
@@ -115,22 +201,22 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
             </span>
           </span>
 
-          <h1 className="mt-6 max-w-[820px] text-[38px] leading-[0.98] sm:text-[58px] lg:text-[72px]">
+          <h1 className="mt-6 text-[36px] leading-[1.02] sm:text-[52px] lg:text-[64px]">
             Take your local stall
             <br />
             <span className="text-marigold">online</span> across Bangladesh.
           </h1>
 
-          <p className="mt-6 max-w-[560px] text-[15px] leading-relaxed text-[#B9B7B0] sm:text-[17px]">
+          <p className="mt-5 max-w-[620px] mx-auto text-[15px] leading-relaxed text-[#B9B7B0] sm:text-[17px]">
             Join thousands of local vendors selling on HaatPoint. Set your own
             prices, reach customers everywhere, and get paid directly — the
             platform just brings the buyers to you.
           </p>
 
-          <div className="mt-9 flex flex-wrap items-center gap-3">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
               href={agentRegisterRoute}
-              className="group inline-flex items-center gap-2 rounded-sm border border-ink bg-marigold px-[26px] py-[15px] text-sm font-bold text-white shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
+              className="group inline-flex items-center gap-2 rounded-sm border border-ink bg-marigold px-[28px] py-[15px] text-sm font-bold text-white shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
             >
               Start selling free
               <FaArrowRight size={14} className="transition-transform duration-150 group-hover:translate-x-1" />
@@ -143,9 +229,9 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
             </a>
           </div>
 
-          <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 font-mono text-[10.5px] uppercase tracking-wide text-[#B9B7B0]">
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 font-mono text-[10.5px] uppercase tracking-wide text-[#B9B7B0]">
             <span className="inline-flex items-center gap-1.5">
-              <FaCheck className="text-marigold" /> Free to start
+              <FaCheck className="text-marigold" /> Free to start (150 products)
             </span>
             <span className="inline-flex items-center gap-1.5">
               <FaCheck className="text-marigold" /> ৳100/mo Pro available
@@ -343,6 +429,9 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
             How it works
           </span>
           <h2 className="mt-3 text-[30px] sm:text-[40px]">From sign-up to first sale.</h2>
+          <p className="mt-3 text-text-soft">
+            Follow the four simple steps below to launch your store and begin selling.
+          </p>
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -378,7 +467,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
             Ready to open your shop?
           </h2>
           <p className="mx-auto mt-4 max-w-[520px] text-sm text-white/90 sm:text-base">
-            It takes minutes and costs nothing for your first year. Join the local
+            It takes minutes and is completely free forever to start (up to 150 products). Join the local
             sellers growing with HaatPoint today.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

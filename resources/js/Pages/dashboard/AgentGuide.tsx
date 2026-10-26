@@ -5,7 +5,6 @@ import {
     FiChevronRight,
     FiClock,
     FiInfo,
-    FiPlayCircle,
     FiShoppingBag,
 } from 'react-icons/fi'
 import { FaBoxOpen, FaStore } from 'react-icons/fa'
@@ -98,44 +97,6 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComple
                     <div className="mt-2 flex justify-between text-xs font-mono uppercase tracking-wide opacity-90">
                         <span>Step 1: Create your store</span>
                         <span>Step 2: Upload your first product</span>
-                    </div>
-                </div>
-
-                {/* Video Tutorial Card */}
-                <div className="bg-white rounded-2xl border border-line shadow-hard-sm p-6 md:p-8">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-marigold/10 text-marigold p-3 rounded-xl shrink-0">
-                                <FiPlayCircle className="h-7 w-7" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg md:text-xl font-display font-bold text-ink">
-                                    Video Tutorial: How to Sell on HaatPoint
-                                </h2>
-                                <p className="text-xs md:text-sm text-text-soft">
-                                    Complete walkthrough: Account registration, dashboard overview, creating your store, uploading products, order management & customer chats.
-                                </p>
-                            </div>
-                        </div>
-                        <a
-                            href="/videos/agentaccountv.mp4"
-                            download="agentaccountv.mp4"
-                            className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wide text-marigold hover:underline shrink-0"
-                        >
-                            Download Video (MP4)
-                        </a>
-                    </div>
-                    
-                    <div className="relative rounded-2xl overflow-hidden border border-line bg-black shadow-inner aspect-video max-w-4xl mx-auto">
-                        <video
-                            src="/videos/agentaccountv.mp4"
-                            controls
-                            playsInline
-                            preload="metadata"
-                            className="w-full h-full object-contain"
-                        >
-                            Your browser does not support the video tag.
-                        </video>
                     </div>
                 </div>
 
