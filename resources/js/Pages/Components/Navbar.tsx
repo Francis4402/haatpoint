@@ -85,6 +85,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
 
   const navigation = [
     { name: t('nav_home', 'Home'), href: "/", icon: FiHome },
+    { name: t('nav_products', 'Products'), href: "/products", icon: FiPackage },
     { name: t('nav_deals', 'Deals'), href: "/hotdeals", badge: t('badge_hot', 'HOT'), icon: FiTag },
     { name: t('nav_new_arrivals', 'New Arrivals'), href: "/new-arrivals", icon: FiZap },
     { name: t('nav_pricing', 'Pricing'), href: "/sell#pricing", icon: FiDollarSign },

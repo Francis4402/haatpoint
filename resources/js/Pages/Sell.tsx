@@ -348,13 +348,6 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
                   </li>
                 ))}
               </ul>
-
-              <Link
-                href={isAgent ? route('dashboard') : agentRegisterRoute}
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-sm border border-ink bg-white px-6 py-3.5 text-sm font-bold text-ink shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
-              >
-                {isAgent ? 'Go to Dashboard' : 'Start for free'}
-              </Link>
             </div>
 
             {/* Pro */}
