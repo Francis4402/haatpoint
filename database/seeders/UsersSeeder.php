@@ -27,7 +27,7 @@ class UsersSeeder extends Seeder
         // ---- Platform staff -------------------------------------------------
         $admins = [
             [
-                'name' => 'Francis Haatpoint',
+                'name' => 'HaatPoint Superadmin',
                 'email' => 'superadmin@haatpoint.test',
                 'role' => 'superadmin',
                 'images' => null,

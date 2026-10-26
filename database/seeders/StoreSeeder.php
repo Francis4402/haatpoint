@@ -183,7 +183,7 @@ class StoreSeeder extends Seeder
     }
 
     /**
-     * @return list<string>
+    * @return string
      */
     private function cityFor(int $index): string
     {
