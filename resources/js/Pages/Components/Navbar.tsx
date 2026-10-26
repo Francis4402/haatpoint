@@ -143,7 +143,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                 For Sellers
               </span>
               <span className="truncate text-[#E3E1DB]">
-                Own a shop? Sell on HaatPoint free for 1 year &bull; Pathao delivery handled &bull; Keep 100% profit
+                Own a shop? Sell on HaatPoint free forever &bull; Up to 150 products &bull; Pathao delivery handled &bull; Keep 100% profit
               </span>
             </div>
             <div className="flex items-center gap-3 shrink-0">
@@ -618,7 +618,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                                   Become a Seller
                                 </span>
                                 <span className="text-[10px] font-mono text-emerald-400 font-semibold">
-                                  1 Year Free
+                                  Free Forever
                                 </span>
                               </div>
                               <h4 className="font-display font-extrabold text-sm text-paper mb-1">

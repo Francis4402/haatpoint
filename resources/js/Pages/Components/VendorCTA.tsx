@@ -6,8 +6,8 @@ import useRevealChildren from "@/Components/useRevealChildren";
 const PERKS = [
   {
     icon: FaStore,
-    title: "1 Year Free Selling",
-    desc: "Zero booth rent and zero listing fees. Sell free for a full 12 months with no upfront cost.",
+    title: "Free Forever Selling",
+    desc: "Zero booth rent and zero listing fees. Sell free forever with up to 150 products upload and no upfront cost.",
     badge: "100% Free",
   },
   {
@@ -80,7 +80,7 @@ export default function VendorCTA() {
                 href="/sell"
                 className="group inline-flex items-center gap-2.5 rounded-sm px-6 py-3.5 font-bold text-sm bg-marigold hover:bg-marigold-dark text-white shadow-hard-marigold transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5"
               >
-                <span>Start Selling Free (1 Year)</span>
+                <span>Start Selling Free Forever</span>
                 <FaArrowRight size={13} className="transition-transform duration-150 group-hover:translate-x-1" />
               </Link>
               <Link

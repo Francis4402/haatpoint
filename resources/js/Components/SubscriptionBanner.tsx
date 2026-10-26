@@ -21,7 +21,8 @@ export default function SubscriptionBanner() {
   };
 
   const sub = auth?.subscription;
-  if (!sub || !sub.isActive || !sub.endsAt) return null;
+  // Free accounts are free forever and never expire. Expiration banners only apply to Pro subscribers.
+  if (!sub || !sub.isActive || !sub.endsAt || sub.plan === 'free') return null;
 
   const daysLeft = Math.ceil(
     (new Date(sub.endsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
@@ -29,7 +30,7 @@ export default function SubscriptionBanner() {
 
   if (daysLeft > 30) return null;
 
-  const planName = sub.plan === 'pro' ? 'HaatPoint Pro' : 'free';
+  const planName = 'HaatPoint Pro';
 
   return (
     <div

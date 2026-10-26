@@ -117,7 +117,7 @@ export default function Upgrade({ user, pricing }: { user?: User; pricing?: { mo
               </div>
 
               <p className="mt-4 max-w-[460px] text-xs leading-relaxed text-[#8f8d87]">
-                Free 1-year accounts are limited to 150 product uploads. Upgrade to Pro for unlimited product uploads at ৳{monthlyPrice}/month, or ৳{sixMonthPrice} for 6 months (10% discount applied). Pay via bKash to {bkashNumber}, submit your TrxID, and admin will activate your Pro access upon verification.
+                Free agent accounts are free forever and limited to 150 product uploads. Upgrade to Pro for unlimited product uploads at ৳{monthlyPrice}/month, or ৳{sixMonthPrice} for 6 months (10% discount applied). Pay via bKash to {bkashNumber}, submit your TrxID, and admin will activate your Pro access upon verification.
               </p>
             </div>
 

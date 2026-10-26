@@ -149,7 +149,7 @@ export default function Hero({ user, categories }: HeroProps) {
               href="/sell"
               className="inline-flex items-center gap-1.5 font-bold text-marigold-dark hover:text-ink underline underline-offset-2 transition-colors bg-marigold/10 px-2.5 py-1 rounded-full border border-marigold/20"
             >
-              <span>Become an Agent &bull; 1 Year Free</span>
+              <span>Become an Agent &bull; Free Forever</span>
               <span aria-hidden="true">&rarr;</span>
             </Link>
           </div>
@@ -245,7 +245,7 @@ export default function Hero({ user, categories }: HeroProps) {
           >
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-mono text-[10px] font-bold uppercase tracking-wide text-ink group-hover:text-marigold transition-colors">
-              Sell Free &bull; 1 Year
+              Sell Free Forever
             </span>
           </Link>
 

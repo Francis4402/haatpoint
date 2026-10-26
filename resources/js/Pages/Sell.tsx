@@ -56,7 +56,7 @@ const STEPS = [
 const FAQ = [
   {
     q: 'How much does it cost to start selling?',
-    a: 'Getting started is completely free! Every new agent gets a 1-year free account that lets you upload up to 150 products, manage your store and orders, and sell across Bangladesh with zero upfront cost.',
+    a: 'Getting started is completely free! Every agent account is free forever with up to 150 products upload limit, full store management, order handling, and zero upfront costs.',
   },
   {
     q: 'What is HaatPoint Pro and how much does it cost?',
@@ -240,7 +240,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
                 <span className="font-display text-[46px] font-extrabold leading-none text-ink">
                   ৳0
                 </span>
-                <span className="pb-1 text-sm text-text-soft">/ 1 year free</span>
+                <span className="pb-1 text-sm text-text-soft">/ free forever</span>
               </div>
               <p className="mt-3 text-sm text-text-soft">
                 Perfect for new sellers to set up their store and explore the marketplace with zero risk.
@@ -248,8 +248,8 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
 
               <ul className="mt-6 space-y-3.5 text-sm text-ink flex-1">
                 {[
-                  'Upload up to 150 products (Starter catalog)',
-                  '1 full year free agent account access',
+                  'Upload up to 150 products (Free forever)',
+                  'Lifetime free agent account (no expiry)',
                   'Custom storefront branding & profile',
                   'Basic sales dashboard & order management',
                   'Integrated delivery & cash on delivery (COD)',

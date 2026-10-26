@@ -82,7 +82,7 @@ class ProductsController extends Controller
         // Check if agent on free plan reached 150 products limit
         if ($user instanceof Agent && ! $user->canAddProduct()) {
             return redirect()->route('dashboard.upgrade')
-                ->with('error', 'You have reached the 150-product upload limit for the Free 1-Year plan. Upgrade to HaatPoint Pro (Monthly or 6 Months) for unlimited product uploads.');
+                ->with('error', 'You have reached the 150-product upload limit for the Free plan. Upgrade to HaatPoint Pro (Monthly or 6 Months) for unlimited product uploads.');
         }
 
         return Inertia::render('dashboard/forms/CreateProductForm', [
@@ -109,10 +109,10 @@ class ProductsController extends Controller
             ]);
         }
 
-        // Free 1-year agent accounts are limited to 150 products; Pro accounts have unlimited uploads.
+        // Free agent accounts are free forever with 150 products limit; Pro accounts have unlimited uploads.
         if ($user instanceof Agent && ! $user->canAddProduct()) {
             return redirect()->back()->withInput()->withErrors([
-                'name' => 'You have reached the 150-product upload limit for the Free 1-Year plan. Upgrade to HaatPoint Pro (Monthly or 6 Months) for unlimited product uploads.',
+                'name' => 'You have reached the 150-product upload limit for the Free plan. Upgrade to HaatPoint Pro (Monthly or 6 Months) for unlimited product uploads.',
             ]);
         }
 

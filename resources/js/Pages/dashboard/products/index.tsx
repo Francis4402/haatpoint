@@ -237,7 +237,7 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                                     <div className="flex items-center gap-2.5 flex-wrap">
                                         <span className="h-2.5 w-2.5 rounded-full bg-marigold animate-pulse" />
                                         <span className="font-display font-bold text-sm text-ink">
-                                            Free 1-Year Plan: {agentProductsCount} / 150 Products Uploaded
+                                            Free Plan: {agentProductsCount} / 150 Products Uploaded (Free Forever)
                                         </span>
                                         <span className="text-xs font-mono text-text-soft">
                                             ({Math.max(0, 150 - agentProductsCount)} remaining)

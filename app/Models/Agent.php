@@ -32,8 +32,8 @@ class Agent extends Authenticatable
     protected static function booted(): void
     {
         static::creating(function ($agent) {
-            if (($agent->plan ?? 'free') === 'free' && empty($agent->subscription_ends_at)) {
-                $agent->subscription_ends_at = now()->addYear();
+            if (($agent->plan ?? 'free') === 'free') {
+                $agent->subscription_ends_at = null; // Free forever
             }
         });
     }
@@ -116,9 +116,14 @@ class Agent extends Authenticatable
 
     /**
      * Whether the subscription is currently active (not expired).
+     * The Free plan is free forever (always active). Pro requires an active subscription_ends_at.
      */
     public function isSubscriptionActive(): bool
     {
+        if ($this->plan === 'free') {
+            return true;
+        }
+
         if (! $this->subscription_ends_at) {
             return false;
         }
@@ -128,9 +133,14 @@ class Agent extends Authenticatable
 
     /**
      * Whether the subscription has expired.
+     * The Free plan is free forever and never expires.
      */
     public function isSubscriptionExpired(): bool
     {
+        if ($this->plan === 'free') {
+            return false;
+        }
+
         if (! $this->subscription_ends_at) {
             return true;
         }
@@ -157,7 +167,7 @@ class Agent extends Authenticatable
     }
 
     /**
-     * Maximum number of products allowed on a Free 1-year agent account.
+     * Maximum number of products allowed on a Free agent account (Free Forever, 150 products limit).
      */
     public const FREE_PRODUCT_LIMIT = 150;
 
@@ -185,7 +195,7 @@ class Agent extends Authenticatable
     /**
      * The product upload limit for this agent:
      * - Pro plan (active): null (unlimited)
-     * - Free plan (1 year free): 150 products
+     * - Free plan (free forever): 150 products
      */
     public function getProductLimit(): ?int
     {

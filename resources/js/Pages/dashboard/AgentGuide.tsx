@@ -221,7 +221,7 @@ const AgentGuide = ({ auth, hasStore, stores, productsCount, vendorProfileComple
 
                     <StoreGuideCard step={2} title="Create Products" done={productDone} optional={!productDone && true}>
                         List an item your store sells — add photos, a category, a brand, sizes/colors,
-                        a price and your stock quantity. Free 1-year accounts can upload up to 150 products (upgrade to Pro anytime for unlimited uploads).
+                        a price and your stock quantity. Free agent accounts are free forever and can upload up to 150 products (upgrade to Pro anytime for unlimited uploads).
                     </StoreGuideCard>
 
                     {!productDone ? (

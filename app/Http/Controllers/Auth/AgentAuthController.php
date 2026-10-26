@@ -90,9 +90,9 @@ class AgentAuthController extends StaffAuthController
             'mobile' => $request->mobile,
             'national_id' => $request->national_id,
             'plan' => 'free',
-            // Free accounts are activated on registration for one year.
-            // Agents can upgrade to Pro anytime from their dashboard.
-            'subscription_ends_at' => now()->addYear(),
+            // Free accounts are activated on registration and free forever (up to 150 products upload).
+            // Agents can upgrade to Pro anytime from their dashboard for unlimited product uploads.
+            'subscription_ends_at' => null,
             'subscription_payment_status' => 'none',
         ];
     }

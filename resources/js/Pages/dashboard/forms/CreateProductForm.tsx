@@ -355,7 +355,7 @@ export default function CreateProductForm({
     e.preventDefault();
 
     if (isBlocked) {
-      toast.error('You have reached the 150 products upload limit for your Free 1-Year account. Upgrade to Pro for unlimited uploads.');
+      toast.error('You have reached the 150 products upload limit for your Free account. Upgrade to Pro for unlimited uploads.');
       return;
     }
 
@@ -524,7 +524,7 @@ export default function CreateProductForm({
                   <>
                     <span className="h-2.5 w-2.5 rounded-full bg-marigold animate-pulse" />
                     <span className="font-display font-bold text-sm text-ink">
-                      Free 1-Year Plan: {currentCount} / {maxLimit || 150} Products Uploaded
+                      Free Plan: {currentCount} / {maxLimit || 150} Products Uploaded (Free Forever)
                     </span>
                     <span className="text-xs font-mono text-text-soft">
                       ({Math.max(0, (maxLimit || 150) - currentCount)} remaining)
@@ -562,7 +562,7 @@ export default function CreateProductForm({
                     Upload Limit Reached (150 / 150 Products)
                   </p>
                   <p className="text-xs text-red-700 mt-1">
-                    Free 1-Year agent accounts are limited to 150 product uploads. Upgrade to Pro with Monthly (৳100/mo) or 6-Month advance payment (৳540) to upload unlimited products.
+                    Free agent accounts are free forever and limited to 150 product uploads. Upgrade to Pro with Monthly (৳100/mo) or 6-Month advance payment (৳540) to upload unlimited products.
                   </p>
                 </div>
                 <Link
@@ -1601,7 +1601,7 @@ export default function CreateProductForm({
                 {isBlocked ? (
                   <div className="space-y-3">
                     <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-medium text-center">
-                      150-product limit reached on Free 1-Year account.
+                      150-product limit reached on Free account.
                     </div>
                     <Link
                       href={route('dashboard.upgrade')}

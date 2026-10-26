@@ -144,7 +144,7 @@ export default function MarketplaceLinksHub({ categories = [] }: MarketplaceLink
                 href="/sell"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Become a Seller (1 Year Free)
+                Become a Seller (Free Forever)
               </Link>
             </li>
             <li>
@@ -238,7 +238,7 @@ export default function MarketplaceLinksHub({ categories = [] }: MarketplaceLink
         <p>
           <strong className="text-ink">HaatPoint</strong> is Bangladesh&apos;s modern multi-vendor marketplace connecting passionate local merchants, shopkeepers, and creators directly with consumers across Dhaka, Chattogram, Sylhet, Khulna, Rajshahi, and nationwide. Explore authentic fashion, smart electronics, home appliances, fresh produce, and lifestyle goods with secure cash on delivery (COD) and prompt home delivery powered by Pathao. Looking to expand your reach?{' '}
           <Link href="/sell" className="text-marigold-dark font-semibold hover:underline">
-            Open your online stall on HaatPoint today with 1 year free selling
+            Open your online stall on HaatPoint today with free selling (up to 150 products)
           </Link>.
         </p>
       </div>
