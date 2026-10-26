@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Dashboard;
-use App\Http\Requests\StoreDashboardRequest;
-use App\Http\Requests\UpdateDashboardRequest;
 use App\Models\Agent;
 use App\Models\OrderItems;
 use App\Models\Orders;
@@ -12,6 +9,7 @@ use App\Models\Products;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -32,29 +30,27 @@ class DashboardController extends Controller
         }
 
         if (in_array($userRole, ['admin', 'superadmin'])) {
-            // Admins see everything
-            $orders = Orders::with('orderItems')->orderBy('created_at', 'desc')->get();
+            $ordersQuery = Orders::query();
             $totalUsers = User::count();
         } elseif ($userRole === 'agent') {
-            // Agents see orders for their assigned store(s) plus orders they placed themselves
-            $orders = Orders::forAgent($user->id)
-                ->with('orderItems')
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $ordersQuery = Orders::forAgent($user->id);
             $storeIds = Store::where('agent_id', $user->id)->pluck('id');
             $totalUsers = User::whereHas('stores', function ($q) use ($storeIds) {
                 $q->whereIn('id', $storeIds);
             })->count();
         } else {
-            // Deliverymen and regular users only see their own orders
-            $orders = Orders::where('user_id', $user->id)
-                ->with('orderItems')
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $ordersQuery = Orders::where('user_id', $user->id);
             $totalUsers = 0;
         }
 
-        $stats = $this->computeStats($orders);
+        // Fetch only latest 15 orders for the recent orders list to keep payload and DOM lightweight
+        $recentOrders = (clone $ordersQuery)
+            ->with('orderItems')
+            ->orderBy('created_at', 'desc')
+            ->limit(15)
+            ->get();
+
+        $stats = $this->computeStats($ordersQuery, $userRole, (string) $user->id);
 
         // Onboarding progress for the agent checklist shown on the dashboard.
         // Agents without any store are redirected to the guide above, so this
@@ -104,7 +100,7 @@ class DashboardController extends Controller
 
         return Inertia::render('dashboard/DashboardHome', [
             'totalUsers' => $totalUsers,
-            'orders' => $orders,
+            'orders' => $recentOrders,
             'userRole' => $userRole,
             'stats' => $stats,
             'onboarding' => $onboarding,
@@ -113,101 +109,65 @@ class DashboardController extends Controller
     }
 
     /**
-     * Build real dashboard KPIs from the role-scoped order list.
+     * Build real dashboard KPIs from database queries with 3-minute caching.
      */
-    private function computeStats($orders)
+    private function computeStats($ordersQuery, string $userRole, string $userId)
     {
-        $deliveredPaid = $orders->where('order_status', 'delivered')->where('payment_status', 'paid');
-        $delivered = $orders->where('order_status', 'delivered');
+        return Cache::remember("dashboard_stats_{$userRole}_{$userId}", now()->addMinutes(3), function () use ($ordersQuery) {
+            $base = clone $ordersQuery;
+            $deliveredPaidQuery = (clone $base)->where('order_status', 'delivered')->where('payment_status', 'paid');
+            $deliveredQuery = (clone $base)->where('order_status', 'delivered');
 
-        $topProducts = OrderItems::query()
-            ->selectRaw('order_items.product_name, SUM(order_items.quantity) as qty, SUM(order_items.total) as revenue, MIN(order_items.product_image) as image')
-            ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->whereIn('orders.id', $delivered->pluck('id'))
-            ->where('orders.order_status', 'delivered')
-            ->groupBy('order_items.product_name')
-            ->orderByDesc('revenue')
-            ->limit(5)
-            ->get()
-            ->map(fn ($r) => [
-                'name' => $r->product_name,
-                'qty' => (int) $r->qty,
-                'revenue' => (float) $r->revenue,
-                'original' => (float) $r->revenue,
-                'profit' => round((float) $r->revenue * 0.10, 2),
-                'image' => $r->image,
-            ])
-            ->values();
+            $totalOrders = (clone $base)->count();
+            $deliveredOrders = (clone $deliveredQuery)->count();
+            $deliveredPaidOrders = (clone $deliveredPaidQuery)->count();
+            $paidOrders = (clone $base)->where('payment_status', 'paid')->count();
+            $cancelledOrders = (clone $base)->where('order_status', 'cancelled')->count();
+            $pendingOrders = (clone $base)->where('order_status', 'pending')->count();
 
-        // Order subtotals store the agent's ORIGINAL product price (the price the
-        // agent set). The platform's cut is 10% of that original price.
-        $subtotalSum = $deliveredPaid->sum(fn ($o) => (float) $o->subtotal);
+            $subtotalSum = (float) ((clone $deliveredPaidQuery)->sum('subtotal') ?? 0);
+            $totalSells = (float) ((clone $deliveredQuery)->sum('total') ?? 0);
+            $totalRevenue = (float) ((clone $deliveredPaidQuery)->sum('total') ?? 0);
+            $totalProductsSold = (int) ((clone $deliveredQuery)->sum('item_quantity') ?? 0);
 
-        return [
-            'totalProfit' => round($subtotalSum * 0.10, 2),
-            'originalRevenue' => round($subtotalSum, 2),
-            'totalSells' => round($delivered->sum('total'), 2),
-            'totalRevenue' => round($deliveredPaid->sum('total'), 2),
-            'totalProductsSold' => $delivered->sum('item_quantity'),
-            'deliveredPaidOrders' => $deliveredPaid->count(),
-            'deliveredOrders' => $delivered->count(),
-            'paidOrders' => $orders->where('payment_status', 'paid')->count(),
-            'cancelledOrders' => $orders->where('order_status', 'cancelled')->count(),
-            'pendingOrders' => $orders->where('order_status', 'pending')->count(),
-            'totalOrders' => $orders->count(),
-            'conversionRate' => $orders->count() > 0
-                ? round(($deliveredPaid->count() / $orders->count()) * 100, 2)
-                : 0,
-            'topProducts' => $topProducts,
-        ];
-    }
+            $deliveredOrderIds = (clone $deliveredQuery)->limit(300)->pluck('id');
+            $topProducts = $deliveredOrderIds->isNotEmpty()
+                ? OrderItems::query()
+                    ->selectRaw('order_items.product_name, SUM(order_items.quantity) as qty, SUM(order_items.total) as revenue, MIN(order_items.product_image) as image')
+                    ->whereIn('order_items.order_id', $deliveredOrderIds)
+                    ->groupBy('order_items.product_name')
+                    ->orderByDesc('revenue')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn ($r) => [
+                        'name' => $r->product_name,
+                        'qty' => (int) $r->qty,
+                        'revenue' => (float) $r->revenue,
+                        'original' => (float) $r->revenue,
+                        'profit' => round((float) $r->revenue * 0.10, 2),
+                        'image' => $r->image,
+                    ])
+                    ->values()
+                : collect();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreDashboardRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Dashboard $dashboard)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Dashboard $dashboard)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateDashboardRequest $request, Dashboard $dashboard)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Dashboard $dashboard)
-    {
-        //
+            return [
+                'totalProfit' => round($subtotalSum * 0.10, 2),
+                'originalRevenue' => round($subtotalSum, 2),
+                'totalSells' => round($totalSells, 2),
+                'totalRevenue' => round($totalRevenue, 2),
+                'totalProductsSold' => $totalProductsSold,
+                'deliveredPaidOrders' => $deliveredPaidOrders,
+                'deliveredOrders' => $deliveredOrders,
+                'paidOrders' => $paidOrders,
+                'cancelledOrders' => $cancelledOrders,
+                'pendingOrders' => $pendingOrders,
+                'totalOrders' => $totalOrders,
+                'conversionRate' => $totalOrders > 0
+                    ? round(($deliveredPaidOrders / $totalOrders) * 100, 2)
+                    : 0,
+                'topProducts' => $topProducts,
+            ];
+        });
     }
 
     /**

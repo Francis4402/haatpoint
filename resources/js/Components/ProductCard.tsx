@@ -149,7 +149,7 @@ const ProductCard = ({
   const regularDisplayPrice = withMarkup(product.regular_price);
   const showImage = imageSrc && !imageFailed;
 
-  // Fetch real review data using the route: /products/{product}/comments only if not already provided
+  // Real review data from props or preloaded ratings; fallback to 0 to prevent N+1 AJAX floods
   useEffect(() => {
     if (product.rating !== undefined) {
       setAverageRating(Number(product.rating) || 0);
@@ -162,27 +162,9 @@ const ProductCard = ({
       return;
     }
 
-    let cancelled = false;
-    setLoading(true);
-
-    axios
-      .get(`/products/${product.id}/comments`)
-      .then((res) => {
-        if (!cancelled) {
-          const stats = res.data.stats || {};
-          setAverageRating(stats.average || 0);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to fetch review data:", err);
-        setLoading(false);
-        setAverageRating(0);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [product.id, product.rating, initialAverageRating]);
+    setAverageRating(0);
+    setLoading(false);
+  }, [product.rating, initialAverageRating]);
 
   // Determine if we should show the rating section
   const hasRating = averageRating > 0;

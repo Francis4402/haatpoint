@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customers;
-use App\Http\Requests\StoreCustomersRequest;
-use App\Http\Requests\UpdateCustomersRequest;
 use App\Models\Admin;
 use App\Models\Agent;
 use App\Models\Products;
@@ -338,30 +335,6 @@ class CustomersController extends Controller
         if ($cleanPath !== '' && Storage::disk('public')->exists($cleanPath)) {
             Storage::disk('public')->delete($cleanPath);
         }
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCustomersRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Customers $customers)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Customers $customers)
-    {
-        //
     }
 
     /**

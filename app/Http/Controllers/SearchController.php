@@ -76,6 +76,16 @@ class SearchController extends Controller
             ->limit(self::STORE_LIMIT)
             ->get();
 
+        $categoryNames = $categories->pluck('categories')->all();
+        $categoryCounts = !empty($categoryNames)
+            ? Products::visible()
+                ->whereIn('category', $categoryNames)
+                ->groupBy('category')
+                ->selectRaw('category, count(*) as total')
+                ->pluck('total', 'category')
+                ->all()
+            : [];
+
         return response()->json([
             'query' => $query,
             'total' => $products->count() + $categories->count() + $stores->count(),
@@ -83,7 +93,7 @@ class SearchController extends Controller
             'categories' => $categories->map(fn (Categories $category) => [
                 'name' => $category->categories,
                 'image' => $category->image,
-                'count' => Products::visible()->where('category', $category->categories)->count(),
+                'count' => (int) ($categoryCounts[$category->categories] ?? 0),
             ])->values(),
             'stores' => $stores->map(fn (Store $store) => [
                 'id' => $store->id,

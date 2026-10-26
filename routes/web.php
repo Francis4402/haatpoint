@@ -27,6 +27,7 @@ use App\Models\Reviews;
 use App\Models\Store;
 use App\Models\Wishlist;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -38,7 +39,7 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
-    $categories = Categories::all();
+    $categories = Cache::remember('all_categories', now()->addHours(6), fn () => Categories::all());
     $products = Products::with('store')
             ->visible()
             ->orderBy('created_at', 'desc')
@@ -47,31 +48,58 @@ Route::get('/', function () {
     $wishlist = Wishlist::forOwner()->paginate(12);
 
     $showcase = function (?string $productType, int $limit = 6) {
-        $random = fn ($query) => $query
-            ->inRandomOrder()
-            ->orderBy('id')
-            ->limit($limit)
-            ->get();
+        $cacheKey = 'showcase_pool_' . ($productType ?? 'all');
+        $poolIds = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($productType) {
+            $q = Products::visible();
+            if ($productType !== null) {
+                $q->where('product_type', $productType);
+            }
+            return $q->latest()->limit(50)->pluck('id')->all();
+        });
 
-        $base = fn () => Products::with('store')->visible();
-
-        if ($productType === null) {
-            return $random($base());
+        $chosenIds = [];
+        if (!empty($poolIds)) {
+            $poolCount = count($poolIds);
+            $pickCount = min($limit, $poolCount);
+            $keys = (array) array_rand($poolIds, $pickCount);
+            foreach ($keys as $k) {
+                $chosenIds[] = $poolIds[$k];
+            }
         }
 
-        $rail = $random($base()->where('product_type', $productType));
+        $rail = !empty($chosenIds)
+            ? Products::with('store')->visible()->whereIn('id', $chosenIds)->get()
+            : collect();
 
         if ($rail->count() >= $limit) {
             return $rail;
         }
 
-        $topUp = Products::with('store')->visible()
-            ->where('product_type', '!=', $productType)
-            ->whereNotIn('id', $rail->pluck('id'))
-            ->inRandomOrder()
-            ->orderBy('id')
-            ->limit($limit - $rail->count())
-            ->get();
+        $needed = $limit - $rail->count();
+        $topUpCacheKey = 'showcase_topup_' . ($productType ?? 'all');
+        $topUpPoolIds = Cache::remember($topUpCacheKey, now()->addMinutes(5), function () use ($productType) {
+            $q = Products::visible();
+            if ($productType !== null) {
+                $q->where('product_type', '!=', $productType);
+            }
+            return $q->latest()->limit(50)->pluck('id')->all();
+        });
+
+        $existingIds = $rail->pluck('id')->all();
+        $availableTopUpIds = array_values(array_diff($topUpPoolIds, $existingIds));
+        $topUpChosen = [];
+        if (!empty($availableTopUpIds)) {
+            $topUpCount = count($availableTopUpIds);
+            $pickCount = min($needed, $topUpCount);
+            $keys = (array) array_rand($availableTopUpIds, $pickCount);
+            foreach ($keys as $k) {
+                $topUpChosen[] = $availableTopUpIds[$k];
+            }
+        }
+
+        $topUp = !empty($topUpChosen)
+            ? Products::with('store')->visible()->whereIn('id', $topUpChosen)->get()
+            : collect();
 
         return $rail->concat($topUp)->values();
     };
@@ -82,7 +110,8 @@ Route::get('/', function () {
 
     $topSellingMinSold = 3;
 
-    $soldTotals = DB::table('order_items')
+    $soldTotals = Cache::remember('home_sold_totals', now()->addMinutes(10), function () use ($topSellingMinSold) {
+        return DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->where('orders.order_status', '!=', 'cancelled')
             ->where('orders.created_at', '>=', now()->startOfMonth())
@@ -91,6 +120,7 @@ Route::get('/', function () {
             ->orderByDesc(DB::raw('SUM(order_items.quantity)'))
             ->limit(6)
             ->get(['order_items.product_id', DB::raw('SUM(order_items.quantity) as sold_count')]);
+    });
 
     $topSelling = Products::with('store')
             ->visible()
@@ -105,7 +135,8 @@ Route::get('/', function () {
             ->values();
 
 
-    $stores = Store::where('is_active', true)
+    $stores = Cache::remember('home_active_stores', now()->addMinutes(15), function () {
+        return Store::where('is_active', true)
             ->whereExists(function ($query) {
                 $query->selectRaw('1')
                     ->from('products')
@@ -117,6 +148,7 @@ Route::get('/', function () {
             ->orderBy('name')
             ->limit(12)
             ->get();
+    });
 
     $showcaseIds = collect([
         ...$offeredProducts->pluck('id'),
@@ -268,6 +300,8 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked', 'subscription']
     Route::post('/dashboard/stores/store', [StoreController::class, 'store'])->name('stores.store');
 
     Route::post('/dashboard/products/store', [ProductsController::class, 'store'])->name('products.store');
+
+    Route::patch('/dashboard/products/{id}/unblock', [ProductsController::class, 'unblock'])->name('dashboard.products.unblock');
 
     Route::delete('/dashboard/products/{slug}', [ProductsController::class, 'destroy'])->name('dashboard.deleteproduct');
 

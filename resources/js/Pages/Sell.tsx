@@ -335,6 +335,7 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
               <ul className="mt-6 space-y-3.5 text-sm text-ink flex-1">
                 {[
                   'Upload up to 150 products (Free forever)',
+                  '10% platform sales commission',
                   'Lifetime free agent account (no expiry)',
                   'Custom storefront branding & profile',
                   'Basic sales dashboard & order management',
@@ -391,11 +392,13 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
 
                 <ul className="mt-6 space-y-3.5 text-sm flex-1">
                   {[
-                    'Unlimited product listings with no restrictions',
+                    'Unlimited product listings for agent',
+                    'Only 7% sales commission (Save 3% on every order)',
                     'Continuous, always-on selling without storefront pauses',
                     'Verified Pro Seller badge on your shop and items',
                     'Advanced sales, performance, and revenue analytics',
                     'Priority 24/7 dedicated seller support',
+                    'Auto re-enables all of your products upon renewal',
                     billingCycle === 'six_month'
                       ? '6 months prepaid with 10% discount (save ৳60, pay ৳540)'
                       : 'Pay ৳100 per month with flexible renewal',

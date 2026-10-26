@@ -172,6 +172,21 @@ class Agent extends Authenticatable
     public const FREE_PRODUCT_LIMIT = 150;
 
     /**
+     * Maximum number of products allowed on a Pro agent account (500 products soft-limit).
+     */
+    public const PRO_PRODUCT_LIMIT = 500;
+
+    /**
+     * Sales commission percentage taken from agent sales:
+     * - Free seller: 10%
+     * - Pro seller: 7%
+     */
+    public function getSalesCommissionRate(): int
+    {
+        return $this->isPro() ? 7 : 10;
+    }
+
+    /**
      * Stores owned by this agent.
      */
     public function stores()
@@ -193,14 +208,30 @@ class Agent extends Authenticatable
     }
 
     /**
+     * Number of paused/disabled products for this agent (due to Free tier 150-product cap).
+     */
+    public function getPausedProductsCount(): int
+    {
+        $storeIds = Store::where('agent_id', $this->id)->pluck('id');
+        if ($storeIds->isEmpty()) {
+            return 0;
+        }
+
+        return (int) Products::whereIn('store_id', $storeIds)
+            ->where('is_blocked', false)
+            ->where('is_active', false)
+            ->count();
+    }
+
+    /**
      * The product upload limit for this agent:
-     * - Pro plan (active): null (unlimited)
+     * - Pro plan (active): 500 products
      * - Free plan (free forever): 150 products
      */
-    public function getProductLimit(): ?int
+    public function getProductLimit(): int
     {
         if ($this->isPro()) {
-            return null; // Unlimited for Pro
+            return self::PRO_PRODUCT_LIMIT;
         }
 
         return self::FREE_PRODUCT_LIMIT;
@@ -211,12 +242,56 @@ class Agent extends Authenticatable
      */
     public function canAddProduct(): bool
     {
-        $limit = $this->getProductLimit();
-        if ($limit === null) {
-            return true; // Unlimited
+        return $this->getProductsCount() < $this->getProductLimit();
+    }
+
+    /**
+     * Syncs product active status based on the agent's current subscription plan:
+     * - Pro: all non-blocked products are activated (up to 500 limit).
+     * - Free: keeps the top 150 highest-rated products active and disables the rest.
+     */
+    public function syncProductStatusForPlan(): void
+    {
+        $storeIds = Store::where('agent_id', $this->id)->pluck('id');
+        if ($storeIds->isEmpty()) {
+            return;
         }
 
-        return $this->getProductsCount() < $limit;
+        if ($this->isPro()) {
+            // Unpause all non-blocked products when Pro is active
+            Products::whereIn('store_id', $storeIds)
+                ->where('is_blocked', false)
+                ->where('is_active', false)
+                ->update(['is_active' => true]);
+            return;
+        }
+
+        // Free plan (or expired Pro):
+        // Keep top 150 highest-rated products active, pause the rest.
+        $allNonBlocked = Products::whereIn('store_id', $storeIds)
+            ->where('is_blocked', false)
+            ->withCount('reviews')
+            ->orderByDesc('reviews_count')
+            ->orderByDesc('created_at')
+            ->get();
+
+        if ($allNonBlocked->count() > self::FREE_PRODUCT_LIMIT) {
+            $top150Ids = $allNonBlocked->take(self::FREE_PRODUCT_LIMIT)->pluck('id');
+            $remainingIds = $allNonBlocked->skip(self::FREE_PRODUCT_LIMIT)->pluck('id');
+
+            Products::whereIn('id', $top150Ids)
+                ->where('is_active', false)
+                ->update(['is_active' => true]);
+
+            Products::whereIn('id', $remainingIds)
+                ->where('is_active', true)
+                ->update(['is_active' => false]);
+        } else {
+            Products::whereIn('store_id', $storeIds)
+                ->where('is_blocked', false)
+                ->where('is_active', false)
+                ->update(['is_active' => true]);
+        }
     }
 
     /**

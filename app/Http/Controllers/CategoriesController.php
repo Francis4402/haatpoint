@@ -6,6 +6,7 @@ use App\Models\Categories;
 use App\Rules\CleanText;
 use App\Rules\SafeImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -89,6 +90,7 @@ class CategoriesController extends Controller
             }
 
             $category->save();
+            Cache::forget('all_categories');
 
             return redirect()->back()->with('success', 'Category created successfully!');
         } catch (\Exception $e) {
@@ -207,5 +209,6 @@ class CategoriesController extends Controller
         }
 
         $category->delete();
+        Cache::forget('all_categories');
     }
 }

@@ -180,7 +180,9 @@ export default function Upgrade({ user, pricing }: { user?: User; pricing?: { mo
               <ul className="mt-6 space-y-3.5 text-sm">
                 {[
                   isActive ? `Extend your store by ${currentMonths} month${currentMonths > 1 ? 's' : ''}` : 'Re-open your store immediately upon verification',
-                  'Unlimited products (no product limit)',
+                  'Unlimited product listings for agent',
+                  'Only 7% sales commission (Save 3% on every order)',
+                  'Auto re-enables all of your paused products upon renewal',
                   'Continuous, always-on storefront visibility',
                   'Verified Pro Seller badge',
                   'Advanced sales & performance analytics',

@@ -13,9 +13,22 @@ class Products extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_blocked' => 'boolean',
+        'inStock' => 'boolean',
+    ];
+
     public function scopeVisible($query)
     {
-        return $query->whereHas('store', fn ($q) => $q->where('is_active', true));
+        return $query->where('is_active', true)
+            ->where('is_blocked', false)
+            ->whereHas('store', fn ($q) => $q->where('is_active', true));
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Reviews::class, 'product_id', 'id');
     }
 
     public function comments()

@@ -92,8 +92,8 @@ export default function CreateProductForm({
   const isAgent = auth.user?.role === 'agent' || !!sub;
   const isPro = !!sub?.isPro;
   const currentCount = productsCount ?? sub?.productsCount ?? 0;
-  const maxLimit = productLimit !== undefined ? productLimit : (sub?.productLimit ?? (isPro ? null : 150));
-  const isBlocked = isAgent && !isPro && maxLimit !== null && currentCount >= maxLimit;
+  const maxLimit = productLimit !== undefined ? productLimit : (sub?.productLimit ?? (isPro ? 500 : 150));
+  const isBlocked = isAgent && maxLimit !== null && currentCount >= maxLimit;
   const imagesInputRef = useRef<HTMLInputElement>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [showSalePrice, setShowSalePrice] = useState(false);
@@ -355,7 +355,11 @@ export default function CreateProductForm({
     e.preventDefault();
 
     if (isBlocked) {
-      toast.error('You have reached the 150 products upload limit for your Free account. Upgrade to Pro for unlimited uploads.');
+      toast.error(
+        isPro
+          ? 'You have reached the 500-product upload limit for your Pro account.'
+          : 'You have reached the 150-product upload limit for your Free account. Upgrade to Pro for unlimited uploads.'
+      );
       return;
     }
 
@@ -514,10 +518,13 @@ export default function CreateProductForm({
                       <FaCrown className="h-3 w-3" />
                     </span>
                     <span className="font-display font-bold text-sm text-ink">
-                      HaatPoint Pro Active
+                      HaatPoint Pro Active: {currentCount} / {maxLimit || 500} Products
                     </span>
                     <span className="text-xs font-mono uppercase tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-bold">
-                      Unlimited Product Uploads
+                      Unlimited Listing Mode
+                    </span>
+                    <span className="text-xs font-mono text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full font-bold">
+                      7% Commission Active
                     </span>
                   </>
                 ) : (
@@ -528,6 +535,9 @@ export default function CreateProductForm({
                     </span>
                     <span className="text-xs font-mono text-text-soft">
                       ({Math.max(0, (maxLimit || 150) - currentCount)} remaining)
+                    </span>
+                    <span className="text-xs font-mono text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full font-bold">
+                      10% Commission
                     </span>
                   </>
                 )}
@@ -543,35 +553,37 @@ export default function CreateProductForm({
               )}
             </div>
 
-            {!isPro && (
-              <div className="w-full bg-neutral-100 rounded-full h-2.5 overflow-hidden border border-line/40">
-                <div
-                  className={`h-full transition-all duration-500 ${
-                    isBlocked ? 'bg-red-500' : currentCount >= 130 ? 'bg-amber-500' : 'bg-marigold'
-                  }`}
-                  style={{ width: `${Math.min(100, (currentCount / (maxLimit || 150)) * 100)}%` }}
-                />
-              </div>
-            )}
+            <div className="w-full bg-neutral-100 rounded-full h-2.5 overflow-hidden border border-line/40">
+              <div
+                className={`h-full transition-all duration-500 ${
+                  isBlocked ? 'bg-red-500' : currentCount >= (maxLimit || 150) * 0.85 ? 'bg-amber-500' : 'bg-marigold'
+                }`}
+                style={{ width: `${Math.min(100, (currentCount / (maxLimit || (isPro ? 500 : 150))) * 100)}%` }}
+              />
+            </div>
 
             {isBlocked && (
               <div className="mt-4 p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
                   <p className="font-bold flex items-center gap-2">
                     <HiOutlineExclamationCircle className="h-4 w-4 text-red-600" />
-                    Upload Limit Reached (150 / 150 Products)
+                    Upload Limit Reached ({maxLimit} / {maxLimit} Products)
                   </p>
                   <p className="text-xs text-red-700 mt-1">
-                    Free agent accounts are free forever and limited to 150 product uploads. Upgrade to Pro with Monthly (৳100/mo) or 6-Month advance payment (৳540) to upload unlimited products.
+                    {isPro
+                      ? 'You have reached the 500-product upload limit for your account.'
+                      : 'Free agent accounts are limited to 150 products. Upgrade to Pro (৳100/mo or ৳540 for 6 months) to enjoy unlimited product listings and reduced 7% sales commission.'}
                   </p>
                 </div>
-                <Link
-                  href={route('dashboard.upgrade')}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shrink-0 shadow-sm transition-colors"
-                >
-                  <FaCrown className="h-3 w-3" />
-                  Upgrade to Pro
-                </Link>
+                {!isPro && (
+                  <Link
+                    href={route('dashboard.upgrade')}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shrink-0 shadow-sm transition-colors"
+                  >
+                    <FaCrown className="h-3 w-3" />
+                    Upgrade to Pro
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -1601,15 +1613,17 @@ export default function CreateProductForm({
                 {isBlocked ? (
                   <div className="space-y-3">
                     <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-medium text-center">
-                      150-product limit reached on Free account.
+                      {isPro ? '500-product limit reached on Pro account.' : '150-product limit reached on Free account.'}
                     </div>
-                    <Link
-                      href={route('dashboard.upgrade')}
-                      className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2 text-center text-sm shadow-hard-sm"
-                    >
-                      <FaCrown className="h-4 w-4" />
-                      Upgrade for Unlimited Uploads
-                    </Link>
+                    {!isPro && (
+                      <Link
+                        href={route('dashboard.upgrade')}
+                        className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2 text-center text-sm shadow-hard-sm"
+                      >
+                        <FaCrown className="h-4 w-4" />
+                        Upgrade for Unlimited Uploads
+                      </Link>
+                    )}
                   </div>
                 ) : (
                   <button

@@ -28,7 +28,7 @@ export default function Footer() {
       heading: "Support",
       links: [
         { label: "Track an order", href: route('trackorder.index') },
-        { label: "Returns", href: route('terms.and.conditions') },
+        { label: "Exchange Policy", href: route('terms.and.conditions') },
         { label: "Contact us", href: route('contact.index') },
       ]
     },

@@ -132,6 +132,8 @@ class SubscriptionController extends Controller
         $agent->subscription_payment_status = 'approved';
         $agent->save();
 
+        $agent->syncProductStatusForPlan();
+
         return redirect()->back()
             ->with('success', "HaatPoint Pro activated for {$agent->name}.");
     }

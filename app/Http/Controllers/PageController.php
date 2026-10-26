@@ -82,9 +82,19 @@ class PageController extends Controller
             $delivered = Orders::where('order_status', 'delivered')->get();
 
             // Order subtotals store the agent's ORIGINAL product price (what the agent
-            // set). The platform's cut is 10% of that original price.
+            // set). Platform cut: 7% for Pro sellers, 10% for Free sellers.
+            $deliveredPaidWithStore = Orders::where('order_status', 'delivered')
+                ->where('payment_status', 'paid')
+                ->with('store.agent')
+                ->get();
+
+            $totalProfit = $deliveredPaidWithStore->sum(function ($order) {
+                $subtotal = (float) $order->subtotal;
+                $agent = $order->store?->agent;
+                $rate = ($agent && $agent->isPro()) ? 0.07 : 0.10;
+                return $subtotal * $rate;
+            });
             $subtotalSum = $deliveredPaid->sum(fn ($o) => (float) $o->subtotal);
-            $totalProfit = $subtotalSum * 0.10;
             $originalRevenue = $subtotalSum;
             // Total sells = all delivered products
             $totalSells = (float) $delivered->sum('total');
@@ -179,6 +189,7 @@ class PageController extends Controller
                 'deliveredOrders' => $deliveredPaid->count(),
                 'pendingOrders' => $orders->where('order_status', 'pending')->count(),
                 'cancelledOrders' => $orders->where('order_status', 'cancelled')->count(),
+                'commissionRate' => $user->getSalesCommissionRate(),
                 'sellByProduct' => $sellByProduct,
             ];
 

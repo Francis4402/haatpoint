@@ -11,6 +11,7 @@ use App\Models\Store;
 use App\Models\Wishlist;
 use App\Rules\CleanText;
 use App\Rules\SafeImage;
+use App\Services\ContentModerationBot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -34,6 +35,7 @@ class ProductsController extends Controller
         $filterStore = $storeId ? Store::with(['user', 'agent'])->find($storeId) : null;
 
         if ($user instanceof Agent) {
+            $user->syncProductStatusForPlan();
             $query = Products::whereIn('store_id', $this->roleStores($user)->pluck('id'));
             if ($storeId) {
                 $query->where('store_id', $storeId);
@@ -41,11 +43,11 @@ class ProductsController extends Controller
             $products = $query->orderBy('created_at', 'desc')->get();
             $store = $filterStore ?: $this->roleStore($user);
         } elseif ($user instanceof Admin) {
-            $query = Products::orderBy('created_at', 'desc');
+            $query = Products::with('store.agent')->orderBy('created_at', 'desc');
             if ($storeId) {
                 $query->where('store_id', $storeId);
             }
-            $products = $query->get();
+            $products = $query->limit(500)->get();
             $store = $filterStore ?: $this->roleStore($user);
         } else {
             $query = Products::where('user_id', Auth::id());
@@ -79,10 +81,13 @@ class ProductsController extends Controller
                 ->with('error', 'Create a store before adding products.');
         }
 
-        // Check if agent on free plan reached 150 products limit
+        // Check if agent reached their product upload limit (150 for Free, 500 for Pro)
         if ($user instanceof Agent && ! $user->canAddProduct()) {
+            $limitMsg = $user->isPro()
+                ? 'You have reached the 500-product upload limit for your account.'
+                : 'You have reached the 150-product upload limit for the Free plan. Upgrade to HaatPoint Pro (Monthly or 6 Months) for up to 500 product uploads.';
             return redirect()->route('dashboard.upgrade')
-                ->with('error', 'You have reached the 150-product upload limit for the Free plan. Upgrade to HaatPoint Pro (Monthly or 6 Months) for unlimited product uploads.');
+                ->with('error', $limitMsg);
         }
 
         return Inertia::render('dashboard/forms/CreateProductForm', [
@@ -109,10 +114,13 @@ class ProductsController extends Controller
             ]);
         }
 
-        // Free agent accounts are free forever with 150 products limit; Pro accounts have unlimited uploads.
+        // Enforce product limit (150 for Free, 500 for Pro)
         if ($user instanceof Agent && ! $user->canAddProduct()) {
+            $limitMsg = $user->isPro()
+                ? 'You have reached the 500-product upload limit for your account.'
+                : 'You have reached the 150-product upload limit for the Free plan. Upgrade to HaatPoint Pro (Monthly or 6 Months) for up to 500 product uploads.';
             return redirect()->back()->withInput()->withErrors([
-                'name' => 'You have reached the 150-product upload limit for the Free plan. Upgrade to HaatPoint Pro (Monthly or 6 Months) for unlimited product uploads.',
+                'name' => $limitMsg,
             ]);
         }
 
@@ -200,9 +208,30 @@ class ProductsController extends Controller
             $product->images = json_encode([]);
         }
 
+        // Run Automated Content Moderation Bot on text and uploaded images
+        $moderation = ContentModerationBot::checkProduct($validated, $request->file('images') ?? []);
+        if ($moderation['is_flagged']) {
+            $product->is_blocked = true;
+            $product->blocked_reason = $moderation['reason'];
+            $product->is_active = false;
+        } else {
+            $product->is_blocked = false;
+            $product->blocked_reason = null;
+            $product->is_active = true;
+        }
+
         $product->save();
 
-        Cache::forget('user_products_'.Auth::id());
+        if ($user instanceof Agent) {
+            $user->syncProductStatusForPlan();
+        }
+
+        $this->clearProductCaches();
+
+        if ($product->is_blocked) {
+            return redirect()->route('dashboard.products')
+                ->with('error', "{$product->blocked_reason} This product has been blocked from the marketplace and submitted for admin review.");
+        }
 
         return redirect()->route('dashboard.products')
             ->with('success', 'Product created successfully!');
@@ -492,9 +521,32 @@ class ProductsController extends Controller
         }
 
         $product->images = json_encode(array_values($existingImages));
+
+        // Check with Content Moderation Bot on updated text and newly uploaded images
+        $moderation = ContentModerationBot::checkProduct($validated, $request->file('images') ?? []);
+        if ($moderation['is_flagged']) {
+            $product->is_blocked = true;
+            $product->blocked_reason = $moderation['reason'];
+            $product->is_active = false;
+        } else {
+            // Cleaned up or verified
+            $product->is_blocked = false;
+            $product->blocked_reason = null;
+            $product->is_active = true;
+        }
+
         $product->save();
 
-        Cache::forget('user_products_'.Auth::id());
+        if ($user instanceof Agent) {
+            $user->syncProductStatusForPlan();
+        }
+
+        $this->clearProductCaches();
+
+        if ($product->is_blocked) {
+            return redirect()->route('dashboard.products')
+                ->with('error', "{$product->blocked_reason} This product has been blocked from the marketplace and submitted for admin review.");
+        }
 
         return redirect()->route('dashboard.products')
             ->with('success', 'Product updated successfully!');
@@ -520,6 +572,8 @@ class ProductsController extends Controller
         }
 
         $product->delete();
+
+        $this->clearProductCaches();
 
         return redirect()->route('dashboard.products')
             ->with('success', 'Product deleted successfully!');
@@ -607,20 +661,30 @@ class ProductsController extends Controller
             })
             ->all();
 
-        $highestPrice = (float) (Products::visible()->max('regular_price') ?? 0);
+        $highestPrice = Cache::remember('catalog_max_price', now()->addHours(2), function () {
+            return (float) (Products::visible()->max('regular_price') ?? 0);
+        });
         $priceCeiling = max($highestPrice, $maxPrice, 10000);
+
+        $cachedCategories = Cache::remember('catalog_filter_categories', now()->addHours(2), function () {
+            return Products::visible()
+                ->whereNotNull('category')->where('category', '!=', '')
+                ->distinct()->orderBy('category')->pluck('category')->values();
+        });
+
+        $cachedBrands = Cache::remember('catalog_filter_brands', now()->addHours(2), function () {
+            return Products::visible()
+                ->whereNotNull('brand')->where('brand', '!=', '')
+                ->distinct()->orderBy('brand')->pluck('brand')->values();
+        });
 
         return Inertia::render('products/index', [
             'products' => $products,
             'wishlist' => Wishlist::where('user_id', Auth::id())->paginate(12),
             'productRatings' => $productRatings,
             'filters' => [
-                'categories' => Products::visible()
-                    ->whereNotNull('category')->where('category', '!=', '')
-                    ->distinct()->orderBy('category')->pluck('category')->values(),
-                'brands' => Products::visible()
-                    ->whereNotNull('brand')->where('brand', '!=', '')
-                    ->distinct()->orderBy('brand')->pluck('brand')->values(),
+                'categories' => $cachedCategories,
+                'brands' => $cachedBrands,
                 'min_price' => 0,
                 'max_price' => $priceCeiling,
                 'current' => [
@@ -650,8 +714,25 @@ class ProductsController extends Controller
             ->paginate(24)
             ->withQueryString();
 
+        $ratings = Comments::whereIn('product_id', $products->pluck('id'))
+            ->whereNotNull('rating')
+            ->select('product_id', 'rating')
+            ->get();
+
+        $productRatings = $products->getCollection()
+            ->mapWithKeys(function ($product) use ($ratings) {
+                $productRating = $ratings->where('product_id', $product->id);
+
+                return [(string) $product->id => [
+                    'average' => round((float) ($productRating->avg('rating') ?? 0), 1),
+                    'count' => $productRating->count(),
+                ]];
+            })
+            ->all();
+
         return Inertia::render('hotdeals/index', [
             'products' => $products,
+            'productRatings' => $productRatings,
             'wishlist' => Wishlist::where('user_id', Auth::id())->paginate(12),
         ]);
     }
@@ -731,9 +812,11 @@ class ProductsController extends Controller
             'showcasingCount' => $flaggedCount,
             'newestArrivalAt' => $newest ? (string) $newest : null,
             'filters' => [
-                'categories' => Products::visible()
-                    ->whereNotNull('category')->where('category', '!=', '')
-                    ->distinct()->orderBy('category')->pluck('category')->values(),
+                'categories' => Cache::remember('catalog_filter_categories', now()->addHours(2), function () {
+                    return Products::visible()
+                        ->whereNotNull('category')->where('category', '!=', '')
+                        ->distinct()->orderBy('category')->pluck('category')->values();
+                }),
                 'current' => [
                     'category' => $category !== '' ? $category : 'all',
                     'search' => $search,
@@ -741,5 +824,45 @@ class ProductsController extends Controller
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Unblock and approve a product that was flagged by the Auto-Mod Bot.
+     * Accessible by Admin / Superadmin.
+     */
+    public function unblock($id)
+    {
+        $user = Auth::user();
+        if (! ($user instanceof Admin || $user->role === 'superadmin' || $user->role === 'admin')) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $product = Products::findOrFail($id);
+        $product->is_blocked = false;
+        $product->blocked_reason = null;
+        $product->is_active = true;
+        $product->save();
+
+        $this->clearProductCaches();
+
+        return redirect()->back()
+            ->with('success', "Product '{$product->name}' unblocked and approved successfully.");
+    }
+
+    /**
+     * Clear cached filter lists and homepage pools when inventory changes.
+     */
+    private function clearProductCaches(): void
+    {
+        Cache::forget('user_products_'.Auth::id());
+        Cache::forget('catalog_filter_categories');
+        Cache::forget('catalog_filter_brands');
+        Cache::forget('catalog_max_price');
+        Cache::forget('showcase_pool_all');
+        Cache::forget('showcase_pool_featured');
+        Cache::forget('showcase_pool_trending');
+        Cache::forget('showcase_pool_regular');
+        Cache::forget('home_active_stores');
+        Cache::forget('home_sold_totals');
     }
 }

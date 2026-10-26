@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pathao;
 use Illuminate\Http\Request;
-use App\Http\Requests\StorePathaoRequest;
-use App\Http\Requests\UpdatePathaoRequest;
 use Enan\PathaoCourier\Facades\PathaoCourier;
 use Enan\PathaoCourier\Requests\PathaoOrderPriceCalculationRequest;
 
@@ -192,62 +189,5 @@ class PathaoController extends Controller
         $pathoStore = PathaoCourier::GET_STORES(1, $request);
 
         return response()->json($pathoStore);
-    }
-
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePathaoRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Pathao $pathao)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Pathao $pathao)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePathaoRequest $request, Pathao $pathao)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Pathao $pathao)
-    {
-        //
     }
 }

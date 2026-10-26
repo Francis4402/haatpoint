@@ -38,10 +38,12 @@ export interface AgentSubscription {
     paymentStatus?: 'none' | 'pending' | 'approved' | 'rejected';
     /** True while a submitted bKash TrxID still awaits superadmin approval. */
     pendingPayment?: boolean;
-    /** Product upload count and limits: 150 for Free 1-Year plan, null (unlimited) for Pro */
+    /** Product upload count and limits: 150 for Free plan, 500 for Pro (advertised as unlimited) */
     productsCount?: number;
     productLimit?: number | null;
     canAddProduct?: boolean;
+    pausedProductsCount?: number;
+    commissionRate?: number;
 }
 
 export interface SubscriptionPayment {
@@ -75,6 +77,9 @@ export type CartItem = {
     size: string;
     product_type: 'top-selling' | 'trending' | 'featured' | 'new-arrival' | 'regular';
     inStock: boolean;
+    is_active?: boolean;
+    is_blocked?: boolean;
+    blocked_reason?: string | null;
     rating: number;
     item_weight: number;
     store?: storeType;
@@ -149,6 +154,9 @@ export interface Product {
     size: string;
     product_type: 'top-selling' | 'trending' | 'featured' | 'new-arrival' | 'regular';
     inStock: boolean;
+    is_active?: boolean;
+    is_blocked?: boolean;
+    blocked_reason?: string | null;
     rating: number;
     item_weight: number;
     store?: storeType;
