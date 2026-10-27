@@ -119,6 +119,47 @@ class PageController extends Controller
                     'image' => $r->image,
                 ])->values();
 
+            if ($sellByProduct->isEmpty()) {
+                $sellByProduct = OrderItems::query()
+                    ->selectRaw('order_items.product_name, SUM(order_items.quantity) as qty, SUM(order_items.total) as revenue, MIN(order_items.product_image) as image')
+                    ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                    ->whereNotIn('orders.order_status', ['cancelled', 'returned'])
+                    ->groupBy('order_items.product_name')
+                    ->orderByDesc('revenue')
+                    ->get()
+                    ->map(fn ($r) => [
+                        'name' => $r->product_name,
+                        'qty' => (int) $r->qty,
+                        'revenue' => (float) $r->revenue,
+                        'original' => (float) $r->revenue,
+                        'profit' => round((float) $r->revenue * 0.10, 2),
+                        'image' => $r->image,
+                    ])->values();
+            }
+
+            if ($sellByProduct->isEmpty()) {
+                $sellByProduct = Products::query()
+                    ->where(function ($q) {
+                        $q->whereIn('product_type', ['top-selling', 'featured', 'trending'])
+                          ->orWhere('quantity', '>', 0);
+                    })
+                    ->limit(10)
+                    ->get()
+                    ->map(function ($p) {
+                        $imgs = is_string($p->images) ? json_decode($p->images, true) : $p->images;
+                        $img = is_array($imgs) && !empty($imgs) ? $imgs[0] : (is_string($p->images) ? $p->images : null);
+                        $price = (float) ($p->sale_price ?? $p->regular_price ?? 0);
+                        return [
+                            'name' => $p->name,
+                            'qty' => 0,
+                            'revenue' => $price,
+                            'original' => $price,
+                            'profit' => round($price * 0.10, 2),
+                            'image' => $img,
+                        ];
+                    })->values();
+            }
+
             $metrics = [
                 'role' => 'admin',
                 'isAdmin' => true,
@@ -179,6 +220,48 @@ class PageController extends Controller
                     'original' => (float) $r->revenue,
                     'image' => $r->image,
                 ])->values();
+
+            if ($sellByProduct->isEmpty()) {
+                $agentStoreIds = Store::where('agent_id', $user->id)->pluck('id');
+                $sellByProduct = OrderItems::query()
+                    ->selectRaw('order_items.product_name, SUM(order_items.quantity) as qty, SUM(order_items.total) as revenue, MIN(order_items.product_image) as image')
+                    ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                    ->whereIn('orders.store_id', $agentStoreIds)
+                    ->whereNotIn('orders.order_status', ['cancelled', 'returned'])
+                    ->groupBy('order_items.product_name')
+                    ->orderByDesc('revenue')
+                    ->get()
+                    ->map(fn ($r) => [
+                        'name' => $r->product_name,
+                        'qty' => (int) $r->qty,
+                        'revenue' => (float) $r->revenue,
+                        'original' => (float) $r->revenue,
+                        'image' => $r->image,
+                    ])->values();
+
+                if ($sellByProduct->isEmpty()) {
+                    $sellByProduct = Products::query()
+                        ->whereIn('store_id', $agentStoreIds)
+                        ->where(function ($q) {
+                            $q->whereIn('product_type', ['top-selling', 'featured', 'trending'])
+                              ->orWhere('quantity', '>', 0);
+                        })
+                        ->limit(10)
+                        ->get()
+                        ->map(function ($p) {
+                            $imgs = is_string($p->images) ? json_decode($p->images, true) : $p->images;
+                            $img = is_array($imgs) && !empty($imgs) ? $imgs[0] : (is_string($p->images) ? $p->images : null);
+                            $price = (float) ($p->sale_price ?? $p->regular_price ?? 0);
+                            return [
+                                'name' => $p->name,
+                                'qty' => 0,
+                                'revenue' => $price,
+                                'original' => $price,
+                                'image' => $img,
+                            ];
+                        })->values();
+                }
+            }
 
             $metrics = [
                 'role' => 'agent',

@@ -16,6 +16,8 @@ interface AddtoCartButtonProps {
     selectedColor?: string;
     /** Render the inline size/color picker. Disable when the parent renders its own. */
     showVariantPicker?: boolean;
+    /** Callback when options need to be selected before adding to cart (e.g. open modal) */
+    onRequireOptions?: () => void;
 }
 
 const AddtoCartButton = ({
@@ -26,6 +28,7 @@ const AddtoCartButton = ({
     selectedSize,
     selectedColor,
     showVariantPicker = true,
+    onRequireOptions,
 }: AddtoCartButtonProps) => {
     const addtoCart = useStore((state) => state.addToCart)
     const { t } = useTranslation()
@@ -51,6 +54,11 @@ const AddtoCartButton = ({
         }
 
         if (hasVariants && (!chosenSize || !chosenColor)) {
+            if (onRequireOptions) {
+                onRequireOptions();
+                return;
+            }
+
             // On mobile cards or where picker is not shown, navigate to product view to select variants comfortably
             if (!showVariantPicker) {
                 window.location.href = `/products/${product.slug || product.id}`;

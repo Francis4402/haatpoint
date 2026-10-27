@@ -42,7 +42,7 @@ const AboutUs = ({ auth, wishlist, stats = {
     totalCustomers: 0,
     totalVendors: 0
 } }: AboutUsProps) => {
-    const [activeTab, setActiveTab] = useState<'mission' | 'values' | 'team'>('mission');
+    const [activeTab, setActiveTab] = useState<'mission' | 'values'>('mission');
 
     // Features section
     const features = [
@@ -103,34 +103,6 @@ const AboutUs = ({ auth, wishlist, stats = {
             icon: <FiSmile className="text-2xl" />,
             title: 'Joy of Shopping',
             description: 'Making every shopping experience delightful and memorable',
-        },
-    ];
-
-    // Team members (would come from API in real app)
-    const teamMembers = [
-        {
-            name: 'Md. Karim Rahman',
-            role: 'CEO & Founder',
-            bio: 'Visionary leader with 15+ years in e-commerce technology',
-            image: '/team/ceo.jpg',
-        },
-        {
-            name: 'Fatema Akhter',
-            role: 'Head of Operations',
-            bio: 'Expert in supply chain management and logistics optimization',
-            image: '/team/operations.jpg',
-        },
-        {
-            name: 'Rafiq Ahmed',
-            role: 'Lead Developer',
-            bio: 'Full-stack architect specializing in scalable e-commerce solutions',
-            image: '/team/developer.jpg',
-        },
-        {
-            name: 'Rokeya Begum',
-            role: 'Customer Experience',
-            bio: 'Passionate about creating exceptional customer journeys',
-            image: '/team/cx.jpg',
         },
     ];
 
@@ -331,11 +303,10 @@ const AboutUs = ({ auth, wishlist, stats = {
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex justify-center gap-2 mb-8 bg-paper-dim rounded-xl p-1 border border-line max-w-md mx-auto">
+                    <div className="flex justify-center gap-2 mb-8 bg-paper-dim rounded-xl p-1 border border-line max-w-xs mx-auto">
                         {[
                             { id: 'mission', label: 'Mission' },
                             { id: 'values', label: 'Values' },
-                            { id: 'team', label: 'Team' },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -428,33 +399,6 @@ const AboutUs = ({ auth, wishlist, stats = {
                                         </div>
                                     </div>
                                 ))}
-                            </div>
-                        )}
-
-                        {/* Team Tab */}
-                        {activeTab === 'team' && (
-                            <div>
-                                <p className="text-text-soft text-center mb-8 max-w-2xl mx-auto">
-                                    Meet the passionate team behind Shop — dedicated professionals
-                                    working together to create the best shopping experience.
-                                </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    {teamMembers.map((member, index) => (
-                                        <div
-                                            key={index}
-                                            className="text-center p-6 rounded-xl hover:bg-paper-dim transition-all duration-300 group"
-                                        >
-                                            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-marigold/20 to-marigold/5 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                                                <div className="text-4xl text-marigold">
-                                                    {member.name.charAt(0)}
-                                                </div>
-                                            </div>
-                                            <h4 className="font-bold text-ink mb-1">{member.name}</h4>
-                                            <p className="text-sm font-medium text-marigold">{member.role}</p>
-                                            <p className="text-sm text-text-soft mt-2">{member.bio}</p>
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
                         )}
                     </div>

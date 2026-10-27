@@ -11,6 +11,7 @@ import { withMarkup } from "@/Pages/utils/price";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import WishlistButton from "@/Pages/buttons/WishListButton";
 import { parseVariantList } from "@/Pages/utils/parseVariants";
+import SelectOptionsDialog from "@/Components/SelectOptionsDialog";
 
 
 interface ProductCardProps {
@@ -132,6 +133,7 @@ const ProductCard = ({
   const [imageFailed, setImageFailed] = useState(false);
   const [averageRating, setAverageRating] = useState(productRating ?? 0);
   const [loading, setLoading] = useState(productRating === undefined);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
   const productUrl = `/products/${product.slug || product.id}`;
   const imageSrc = getImageSrc(product.images);
@@ -187,7 +189,19 @@ const ProductCard = ({
     >
       {/* Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-        <Link href={productUrl} className="block w-full h-full" aria-label={`View ${product.name}`}>
+        <Link
+          href={productUrl}
+          className="block w-full h-full cursor-pointer"
+          aria-label={`View ${product.name}`}
+          onClick={(e) => {
+            // On mobile view (<768px), if the product has options, open dialog instead of navigating
+            if (hasVariants && typeof window !== "undefined" && window.innerWidth < 768) {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsOptionsOpen(true);
+            }
+          }}
+        >
           {showImage ? (
             <LazyProductImage
               src={imageSrc}
@@ -258,15 +272,24 @@ const ProductCard = ({
         {/* Quick Action - Bottom */}
         <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3 sm:left-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 z-20">
           {hasVariants ? (
-            <Link
-              href={productUrl}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsOptionsOpen(true);
+              }}
               className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-ink hover:bg-marigold text-white text-xs font-semibold shadow-md transition-all duration-200"
             >
               <FaEye className="w-3.5 h-3.5" />
               <span>Select Options</span>
-            </Link>
+            </button>
           ) : (
-            <AddtoCartButton product={product} showVariantPicker={false} />
+            <AddtoCartButton
+              product={product}
+              showVariantPicker={false}
+              onRequireOptions={() => setIsOptionsOpen(true)}
+            />
           )}
         </div>
       </div>
@@ -347,18 +370,52 @@ const ProductCard = ({
             )}
           </div>
           {!showQuickView && (
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="hidden sm:block opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               {hasVariants ? (
-                <Link
-                  href={productUrl}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsOptionsOpen(true);
+                  }}
                   className="px-2.5 py-1.5 rounded-lg bg-ink hover:bg-marigold text-white text-xs font-semibold shadow-sm transition-all"
                 >
                   Options
-                </Link>
+                </button>
               ) : (
-                <AddtoCartButton product={product} showVariantPicker={false} />
+                <AddtoCartButton
+                  product={product}
+                  showVariantPicker={false}
+                  onRequireOptions={() => setIsOptionsOpen(true)}
+                />
               )}
             </div>
+          )}
+        </div>
+
+        {/* Mobile View Direct Action Button */}
+        <div className="sm:hidden mt-2 pt-2 border-t border-line/60">
+          {hasVariants ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsOptionsOpen(true);
+              }}
+              className="w-full py-1.5 px-3 rounded-lg bg-ink hover:bg-marigold text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 active:scale-98 transition-all"
+            >
+              <FaEye className="w-3.5 h-3.5 text-marigold" />
+              <span>Select Options</span>
+            </button>
+          ) : (
+            <AddtoCartButton
+              product={product}
+              showVariantPicker={false}
+              size="sm"
+              onRequireOptions={() => setIsOptionsOpen(true)}
+            />
           )}
         </div>
 
@@ -371,6 +428,16 @@ const ProductCard = ({
           </div>
         )}
       </div>
+
+      {/* Select Options Dialog */}
+      {hasVariants && (
+        <SelectOptionsDialog
+          isOpen={isOptionsOpen}
+          onClose={() => setIsOptionsOpen(false)}
+          product={product}
+          store={store}
+        />
+      )}
     </div>
   );
 };

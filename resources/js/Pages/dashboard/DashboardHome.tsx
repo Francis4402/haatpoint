@@ -78,6 +78,23 @@ interface dashboardhometypes {
     }
 }
 
+function resolveProductImage(images: string | null | undefined): string {
+    if (!images) return '';
+    try {
+        const cleanString = images.startsWith('"') && images.endsWith('"') ? images.slice(1, -1) : images;
+        const parsed = JSON.parse(cleanString);
+        const imagePath = Array.isArray(parsed) ? parsed[0] : parsed;
+        if (typeof imagePath === 'string' && imagePath.length > 0) {
+            return imagePath.startsWith('http') || imagePath.startsWith('/') ? imagePath : `/storage/${imagePath}`;
+        }
+    } catch {
+        // not JSON
+    }
+    const trimmed = images.trim();
+    if (trimmed.startsWith('http') || trimmed.startsWith('/')) return trimmed;
+    return `/storage/${trimmed}`;
+}
+
 const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscriptionPayments }: dashboardhometypes) => {
     const userRole = auth?.user?.role;
     const isAdmin = userRole === 'admin' || userRole === 'superadmin';
@@ -508,43 +525,66 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                         <div className="p-4">
                             <ul className="divide-y divide-line">
                                 {topProducts.length > 0 ? (
-                                    topProducts.map((product, index) => (
-                                        <li key={product.name} className="py-4 hover:bg-paper-dim transition-colors rounded-lg px-3">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center">
-                                                    <div className={`flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-xl font-bold text-sm ${
-                                                        index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                                                        index === 1 ? 'bg-gray-100 text-gray-800' :
-                                                        index === 2 ? 'bg-orange-100 text-orange-800' :
-                                                        'bg-marigold/10 text-marigold'
-                                                    }`}>
-                                                        {index === 0 ? '1' : index === 1 ? '2' : index === 2 ? '3' : `#${index + 1}`}
-                                                    </div>
-                                                    <div className="ml-4">
-                                                        <span className="text-sm font-medium text-ink">{product.name}</span>
-                                                        <p className="text-xs text-text-soft">{product.qty.toLocaleString()} units sold</p>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    {isAdmin ? (
-                                                        <>
-                                                            <p className="text-sm font-semibold text-ink"><FormatPrice price={product.original ?? product.revenue} /></p>
+                                    topProducts.map((product, index) => {
+                                        const imgSrc = resolveProductImage(product.image);
+                                        return (
+                                            <li key={product.name} className="py-4 hover:bg-paper-dim transition-colors rounded-lg px-3">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center min-w-0 pr-4">
+                                                        {imgSrc ? (
+                                                            <div className="relative flex-shrink-0 h-10 w-10">
+                                                                <img
+                                                                    src={imgSrc}
+                                                                    alt={product.name}
+                                                                    className="h-10 w-10 object-cover rounded-xl border border-line"
+                                                                    onError={(e) => {
+                                                                        (e.currentTarget as HTMLElement).style.display = 'none';
+                                                                    }}
+                                                                />
+                                                                <span className="absolute -top-1 -right-1 h-4 w-4 bg-ink text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                                                    {index + 1}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className={`flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-xl font-bold text-sm ${
+                                                                index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                                                                index === 1 ? 'bg-gray-100 text-gray-800' :
+                                                                index === 2 ? 'bg-orange-100 text-orange-800' :
+                                                                'bg-marigold/10 text-marigold'
+                                                            }`}>
+                                                                {index === 0 ? '1' : index === 1 ? '2' : index === 2 ? '3' : `#${index + 1}`}
+                                                            </div>
+                                                        )}
+                                                        <div className="ml-3 min-w-0">
+                                                            <span className="text-sm font-medium text-ink truncate block max-w-[180px] sm:max-w-[280px]" title={product.name}>
+                                                                {product.name}
+                                                            </span>
                                                             <p className="text-xs text-text-soft">
-                                                                Original · <span className="text-marigold font-medium">+<FormatPrice price={product.profit ?? 0} /> (10%)</span>
+                                                                {product.qty > 0 ? `${product.qty.toLocaleString()} units sold` : 'Top catalog item'}
                                                             </p>
-                                                        </>
-                                                    ) : isAgent ? (
-                                                        <>
-                                                            <p className="text-sm font-semibold text-ink"><FormatPrice price={product.original ?? product.revenue} /></p>
-                                                            <p className="text-xs text-text-soft">Your revenue (original price)</p>
-                                                        </>
-                                                    ) : (
-                                                        <p className="text-sm font-semibold text-ink">{product.qty.toLocaleString()}</p>
-                                                    )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right flex-shrink-0">
+                                                        {isAdmin ? (
+                                                            <>
+                                                                <p className="text-sm font-semibold text-ink"><FormatPrice price={product.original ?? product.revenue} /></p>
+                                                                <p className="text-xs text-text-soft">
+                                                                    Original · <span className="text-marigold font-medium">+<FormatPrice price={product.profit ?? 0} /> (10%)</span>
+                                                                </p>
+                                                            </>
+                                                        ) : isAgent ? (
+                                                            <>
+                                                                <p className="text-sm font-semibold text-ink"><FormatPrice price={product.original ?? product.revenue} /></p>
+                                                                <p className="text-xs text-text-soft">Your revenue (original price)</p>
+                                                            </>
+                                                        ) : (
+                                                            <p className="text-sm font-semibold text-ink">{product.qty.toLocaleString()}</p>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </li>
-                                    ))
+                                            </li>
+                                        );
+                                    })
                                 ) : (
                                     <li className="py-8 text-center text-sm text-text-soft">
                                         No delivered products yet.

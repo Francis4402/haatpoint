@@ -55,25 +55,50 @@ interface AnalyticsProps {
   auth: { user: any };
   metrics: Metrics | null;
   userRole?: string;
+  store?: {
+    id: string;
+    name: string;
+  };
 }
 
-const Analytics = ({ auth, metrics }: AnalyticsProps) => {
+function resolveProductImage(images: string | null | undefined): string {
+  if (!images) return '';
+  try {
+    const cleanString = images.startsWith('"') && images.endsWith('"') ? images.slice(1, -1) : images;
+    const parsed = JSON.parse(cleanString);
+    const imagePath = Array.isArray(parsed) ? parsed[0] : parsed;
+    if (typeof imagePath === 'string' && imagePath.length > 0) {
+      return imagePath.startsWith('http') || imagePath.startsWith('/') ? imagePath : `/storage/${imagePath}`;
+    }
+  } catch {
+    // not JSON
+  }
+  const trimmed = images.trim();
+  if (trimmed.startsWith('http') || trimmed.startsWith('/')) return trimmed;
+  return `/storage/${trimmed}`;
+}
+
+const Analytics = ({ auth, metrics, store }: AnalyticsProps) => {
   const isAdmin = metrics?.isAdmin;
 
   return (
     <DashboardLayout user={auth.user}>
-      <Head title="Analytics" />
+      <Head title={store ? `${store.name} Analytics` : "Analytics"} />
 
       <div className="bg-paper-dim">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-6">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
-              <Eyebrow>Performance insights</Eyebrow>
-              <h1 className="text-[30px] sm:text-[36px] lg:text-[44px]">Analytics</h1>
+              <Eyebrow>{store ? store.name : "Performance insights"}</Eyebrow>
+              <h1 className="text-[30px] sm:text-[36px] lg:text-[44px]">
+                {store ? `${store.name} Analytics` : "Analytics"}
+              </h1>
               <p className="text-text-soft mt-1">
                 {isAdmin
                   ? 'Platform revenue from delivered & paid orders'
+                  : store
+                  ? `Performance metrics and top selling products for ${store.name}`
                   : 'Your store sales, revenue and conversion'
                 }
               </p>
@@ -197,32 +222,44 @@ const Analytics = ({ auth, metrics }: AnalyticsProps) => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-line">
-                        {metrics.sellByProduct.map(product => (
-                          <tr key={product.name} className="hover:bg-paper-dim/50 transition-colors duration-150">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center gap-3">
-                                {product.image && (
-                                  <img
-                                    src={product.image}
-                                    alt={product.name}
-                                    className="h-10 w-10 object-cover rounded border border-line"
-                                  />
-                                )}
-                                <span className="text-sm font-medium text-ink">{product.name}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">{product.qty}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">
-                              <FormatPrice price={product.original ?? product.revenue} />
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-marigold">
-                              +<FormatPrice price={product.profit ?? 0} />
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ink">
-                              <FormatPrice price={product.revenue} />
-                            </td>
-                          </tr>
-                        ))}
+                        {metrics.sellByProduct.map(product => {
+                          const imgSrc = resolveProductImage(product.image);
+                          return (
+                            <tr key={product.name} className="hover:bg-paper-dim/50 transition-colors duration-150">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center gap-3">
+                                  {imgSrc ? (
+                                    <img
+                                      src={imgSrc}
+                                      alt={product.name}
+                                      className="h-10 w-10 object-cover rounded-lg border border-line flex-shrink-0"
+                                      onError={(e) => {
+                                        (e.currentTarget as HTMLElement).style.display = 'none';
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="h-10 w-10 rounded-lg bg-paper-dim border border-line flex items-center justify-center flex-shrink-0 text-text-soft">
+                                      <FaBoxOpen className="h-5 w-5" />
+                                    </div>
+                                  )}
+                                  <span className="text-sm font-medium text-ink max-w-[280px] truncate" title={product.name}>
+                                    {product.name}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">{product.qty}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">
+                                <FormatPrice price={product.original ?? product.revenue} />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-marigold">
+                                +<FormatPrice price={product.profit ?? 0} />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ink">
+                                <FormatPrice price={product.revenue} />
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -332,29 +369,41 @@ const Analytics = ({ auth, metrics }: AnalyticsProps) => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-line">
-                        {metrics.sellByProduct.map(product => (
-                          <tr key={product.name} className="hover:bg-paper-dim/50 transition-colors duration-150">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center gap-3">
-                                {product.image && (
-                                  <img
-                                    src={product.image}
-                                    alt={product.name}
-                                    className="h-10 w-10 object-cover rounded border border-line"
-                                  />
-                                )}
-                                <span className="text-sm font-medium text-ink">{product.name}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">{product.qty}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ink">
-                              <FormatPrice price={product.original ?? product.revenue} />
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-text-soft">
-                              <FormatPrice price={product.revenue} />
-                            </td>
-                          </tr>
-                        ))}
+                        {metrics.sellByProduct.map(product => {
+                          const imgSrc = resolveProductImage(product.image);
+                          return (
+                            <tr key={product.name} className="hover:bg-paper-dim/50 transition-colors duration-150">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center gap-3">
+                                  {imgSrc ? (
+                                    <img
+                                      src={imgSrc}
+                                      alt={product.name}
+                                      className="h-10 w-10 object-cover rounded-lg border border-line flex-shrink-0"
+                                      onError={(e) => {
+                                        (e.currentTarget as HTMLElement).style.display = 'none';
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="h-10 w-10 rounded-lg bg-paper-dim border border-line flex items-center justify-center flex-shrink-0 text-text-soft">
+                                      <FaBoxOpen className="h-5 w-5" />
+                                    </div>
+                                  )}
+                                  <span className="text-sm font-medium text-ink max-w-[280px] truncate" title={product.name}>
+                                    {product.name}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-ink">{product.qty}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ink">
+                                <FormatPrice price={product.original ?? product.revenue} />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-text-soft">
+                                <FormatPrice price={product.revenue} />
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

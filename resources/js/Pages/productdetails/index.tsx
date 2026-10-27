@@ -19,7 +19,8 @@ import {
   FaFacebook,
   FaTwitter,
   FaWhatsapp,
-  FaLink
+  FaLink,
+  FaLayerGroup
 } from "react-icons/fa";
 import { Product, storeType, Comments } from "@/types";
 import AppLayout from "@/Layouts/AppLayout";
@@ -83,6 +84,11 @@ const ProductDetailsPage = ({
   const [refreshKey, setRefreshKey] = useState<number>(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
+  const [useSeparateVariants, setUseSeparateVariants] = useState<boolean>(false);
+  const [activeItemIndex, setActiveItemIndex] = useState<number>(0);
+  const [itemConfigs, setItemConfigs] = useState<{ size: string; color: string }[]>([
+    { size: '', color: '' },
+  ]);
 
   const availableSizes = parseVariantList(product.size);
   const availableColors = parseVariantList(product.color);
@@ -202,6 +208,39 @@ const ProductDetailsPage = ({
       return false;
     }
 
+    if (quantity >= 2 && useSeparateVariants) {
+      for (let i = 0; i < quantity; i++) {
+        const config = itemConfigs[i];
+        if (availableSizes.length > 0 && (!config || !config.size)) {
+          toast.error(`Please select a size for Item #${i + 1}`);
+          setActiveItemIndex(i);
+          return false;
+        }
+        if (availableColors.length > 0 && (!config || !config.color)) {
+          toast.error(`Please select a color for Item #${i + 1}`);
+          setActiveItemIndex(i);
+          return false;
+        }
+      }
+
+      // Group identical size + color selections
+      const grouped: Record<string, { size: string; color: string; count: number }> = {};
+      for (let i = 0; i < quantity; i++) {
+        const item = itemConfigs[i];
+        const key = `${item?.size || ''}__${item?.color || ''}`;
+        if (!grouped[key]) {
+          grouped[key] = { size: item?.size || '', color: item?.color || '', count: 0 };
+        }
+        grouped[key].count += 1;
+      }
+
+      Object.values(grouped).forEach((grp) => {
+        addToCart(product, store, grp.count, grp.size, grp.color);
+      });
+
+      return true;
+    }
+
     if (availableSizes.length > 0 && !selectedSize) {
       toast.error('Please select a size');
       return false;
@@ -222,14 +261,56 @@ const ProductDetailsPage = ({
     return true;
   };
 
-  useEffect(() => {
-    setQuantity(1);
-  }, [selectedSize, selectedColor]);
+  const handleQuantityChange = (newQty: number) => {
+    const max = (product.quantity || 0) - currentCartQuantity;
+    if (newQty < 1 || (max > 0 && newQty > max)) return;
+
+    setQuantity(newQty);
+    setItemConfigs((prev) => {
+      const next = [...prev];
+      if (newQty > prev.length) {
+        const defaultChoice = prev[0] || { size: selectedSize, color: selectedColor };
+        while (next.length < newQty) {
+          next.push({ ...defaultChoice });
+        }
+      } else {
+        next.splice(newQty);
+      }
+      return next;
+    });
+
+    if (activeItemIndex >= newQty) {
+      setActiveItemIndex(newQty - 1);
+    }
+  };
+
+  const handleUpdateItemVariant = (index: number, field: 'size' | 'color', value: string) => {
+    if (field === 'size') setSelectedSize(value);
+    if (field === 'color') setSelectedColor(value);
+
+    setItemConfigs((prev) => {
+      const next = [...prev];
+      if (!useSeparateVariants) {
+        return next.map((item) => ({ ...item, [field]: value }));
+      }
+      if (next[index]) {
+        next[index] = { ...next[index], [field]: value };
+      }
+      return next;
+    });
+  };
+
+  const copyFirstItemToAll = () => {
+    if (itemConfigs.length === 0) return;
+    const first = itemConfigs[0];
+    setItemConfigs((prev) => prev.map(() => ({ ...first })));
+    toast.success('Applied Item #1 options to all units');
+  };
 
   const incrementQuantity = (): void => {
     const maxAvailable = (product.quantity || 0) - currentCartQuantity;
     if (quantity < maxAvailable) {
-      setQuantity(prev => prev + 1);
+      handleQuantityChange(quantity + 1);
     } else {
       toast.error(`Only ${maxAvailable} more items available`);
     }
@@ -237,7 +318,7 @@ const ProductDetailsPage = ({
 
   const decrementQuantity = (): void => {
     if (quantity > 1) {
-      setQuantity(prev => prev - 1);
+      handleQuantityChange(quantity - 1);
     }
   };
 
@@ -551,83 +632,208 @@ const ProductDetailsPage = ({
                 </div>
 
                 {/* Size & Color Selectors */}
-                {(availableColors.length > 0 || availableSizes.length > 0) && (
-                  <div className="space-y-5 pt-1">
-                    {availableColors.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2.5">
-                          <span className="text-sm font-semibold text-ink flex items-center gap-2">
-                            <span>Color:</span>
-                            {selectedColor ? (
-                              <span className="text-marigold font-bold capitalize bg-marigold/10 px-2.5 py-0.5 rounded-full text-xs">
-                                {selectedColor}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-red-500 font-normal">(Please select a color)</span>
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2.5">
-                          {availableColors.map((color) => {
-                            const isSelected = selectedColor === color;
-                            return (
-                              <button
-                                key={color}
-                                type="button"
-                                onClick={() => setSelectedColor(color)}
-                                className={`min-h-[44px] px-4 py-2.5 rounded-xl border text-sm font-medium capitalize transition-all flex items-center gap-2 select-none active:scale-95 ${
-                                  isSelected
-                                    ? 'bg-ink text-white border-ink shadow-md ring-2 ring-marigold/30'
-                                    : 'bg-white text-ink border-line hover:border-marigold hover:bg-paper-dim'
-                                }`}
-                              >
-                                {isSelected && <FaCheck className="w-3 h-3 text-marigold" />}
-                                <span>{color}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
+                {(availableColors.length > 0 || availableSizes.length > 0) && (() => {
+                  const activeConfig =
+                    quantity >= 2 && useSeparateVariants
+                      ? itemConfigs[activeItemIndex] || { size: '', color: '' }
+                      : itemConfigs[0] || { size: selectedSize, color: selectedColor };
+                  const targetIdx = quantity >= 2 && useSeparateVariants ? activeItemIndex : 0;
 
-                    {availableSizes.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2.5">
-                          <span className="text-sm font-semibold text-ink flex items-center gap-2">
-                            <span>Size:</span>
-                            {selectedSize ? (
-                              <span className="text-marigold font-bold uppercase bg-marigold/10 px-2.5 py-0.5 rounded-full text-xs">
-                                {selectedSize}
+                  return (
+                    <div className="space-y-4 pt-1">
+                      {/* Multi-Item Toggle when quantity >= 2 */}
+                      {quantity >= 2 && (
+                        <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-2">
+                              <FaLayerGroup className="w-4 h-4 text-marigold flex-shrink-0" />
+                              <span className="text-xs sm:text-sm font-semibold text-ink">
+                                Ordering multiple items?
                               </span>
-                            ) : (
-                              <span className="text-xs text-red-500 font-normal">(Please select a size)</span>
-                            )}
-                          </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setUseSeparateVariants(!useSeparateVariants)}
+                              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border ${
+                                useSeparateVariants
+                                  ? 'bg-ink text-white border-ink shadow-sm'
+                                  : 'bg-white text-ink border-line hover:border-marigold'
+                              }`}
+                            >
+                              {useSeparateVariants ? 'Customize per item: ON' : 'Choose different sizes/colors'}
+                            </button>
+                          </div>
+
+                          {useSeparateVariants && (
+                            <div className="mt-2.5 pt-2 border-t border-amber-200/60 flex items-center justify-between flex-wrap gap-2">
+                              <span className="text-[11px] text-text-soft">
+                                Select size and color for each of your {quantity} items below:
+                              </span>
+                              <button
+                                type="button"
+                                onClick={copyFirstItemToAll}
+                                className="text-[11px] font-semibold text-marigold hover:underline"
+                              >
+                                Copy Item #1 to all
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex flex-wrap gap-2.5">
-                          {availableSizes.map((optionSize) => {
-                            const isSelected = selectedSize === optionSize;
+                      )}
+
+                      {/* Multi-item Tabs */}
+                      {quantity >= 2 && useSeparateVariants && (
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                          {Array.from({ length: quantity }).map((_, i) => {
+                            const cfg = itemConfigs[i];
+                            const isComplete =
+                              (availableSizes.length === 0 || !!cfg?.size) &&
+                              (availableColors.length === 0 || !!cfg?.color);
+                            const isActive = activeItemIndex === i;
+
                             return (
                               <button
-                                key={optionSize}
+                                key={i}
                                 type="button"
-                                onClick={() => setSelectedSize(optionSize)}
-                                className={`min-h-[44px] min-w-[52px] px-4 py-2.5 rounded-xl border text-sm font-bold uppercase transition-all flex items-center justify-center gap-1.5 select-none active:scale-95 ${
-                                  isSelected
-                                    ? 'bg-ink text-white border-ink shadow-md ring-2 ring-marigold/30'
-                                    : 'bg-white text-ink border-line hover:border-marigold hover:bg-paper-dim'
+                                onClick={() => setActiveItemIndex(i)}
+                                className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border flex items-center gap-1.5 ${
+                                  isActive
+                                    ? 'bg-ink text-white border-ink shadow-sm scale-102'
+                                    : isComplete
+                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                                    : 'bg-paper-dim text-text-soft border-line hover:border-ink hover:text-ink'
                                 }`}
                               >
-                                {isSelected && <FaCheck className="w-3 h-3 text-marigold" />}
-                                <span>{optionSize}</span>
+                                <span>Item #{i + 1}</span>
+                                {isComplete ? (
+                                  <FaCheck className="w-2.5 h-2.5 text-emerald-500" />
+                                ) : (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                )}
                               </button>
                             );
                           })}
                         </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+
+                      {quantity >= 2 && useSeparateVariants && (
+                        <div className="flex items-center justify-between pb-1 border-b border-line">
+                          <span className="text-xs font-mono uppercase tracking-wider text-marigold font-bold">
+                            Configuring Item #{targetIdx + 1} of {quantity}
+                          </span>
+                          <span className="text-xs text-text-soft">
+                            {activeConfig.size ? `Size: ${activeConfig.size}` : 'No size selected'}
+                            {' • '}
+                            {activeConfig.color ? `Color: ${activeConfig.color}` : 'No color selected'}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Color Options */}
+                      {availableColors.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2.5">
+                            <span className="text-sm font-semibold text-ink flex items-center gap-2">
+                              <span>Color:</span>
+                              {activeConfig.color ? (
+                                <span className="text-marigold font-bold capitalize bg-marigold/10 px-2.5 py-0.5 rounded-full text-xs">
+                                  {activeConfig.color}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-red-500 font-normal">(Please select a color)</span>
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2.5">
+                            {availableColors.map((color) => {
+                              const isSelected = activeConfig.color === color;
+                              return (
+                                <button
+                                  key={color}
+                                  type="button"
+                                  onClick={() => handleUpdateItemVariant(targetIdx, 'color', color)}
+                                  className={`min-h-[44px] px-4 py-2.5 rounded-xl border text-sm font-medium capitalize transition-all flex items-center gap-2 select-none active:scale-95 ${
+                                    isSelected
+                                      ? 'bg-ink text-white border-ink shadow-md ring-2 ring-marigold/30'
+                                      : 'bg-white text-ink border-line hover:border-marigold hover:bg-paper-dim'
+                                  }`}
+                                >
+                                  {isSelected && <FaCheck className="w-3 h-3 text-marigold" />}
+                                  <span>{color}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Size Options */}
+                      {availableSizes.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2.5">
+                            <span className="text-sm font-semibold text-ink flex items-center gap-2">
+                              <span>Size:</span>
+                              {activeConfig.size ? (
+                                <span className="text-marigold font-bold uppercase bg-marigold/10 px-2.5 py-0.5 rounded-full text-xs">
+                                  {activeConfig.size}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-red-500 font-normal">(Please select a size)</span>
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2.5">
+                            {availableSizes.map((optionSize) => {
+                              const isSelected = activeConfig.size === optionSize;
+                              return (
+                                <button
+                                  key={optionSize}
+                                  type="button"
+                                  onClick={() => handleUpdateItemVariant(targetIdx, 'size', optionSize)}
+                                  className={`min-h-[44px] min-w-[52px] px-4 py-2.5 rounded-xl border text-sm font-bold uppercase transition-all flex items-center justify-center gap-1.5 select-none active:scale-95 ${
+                                    isSelected
+                                      ? 'bg-ink text-white border-ink shadow-md ring-2 ring-marigold/30'
+                                      : 'bg-white text-ink border-line hover:border-marigold hover:bg-paper-dim'
+                                  }`}
+                                >
+                                  {isSelected && <FaCheck className="w-3 h-3 text-marigold" />}
+                                  <span>{optionSize}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Summary Breakdown for separate item options */}
+                      {quantity >= 2 && useSeparateVariants && (
+                        <div className="bg-paper-dim/60 rounded-xl p-3 border border-line">
+                          <span className="text-xs font-mono uppercase tracking-wide text-text-soft block mb-2 font-semibold">
+                            Order Breakdown ({quantity} items):
+                          </span>
+                          <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                            {itemConfigs.slice(0, quantity).map((cfg, i) => (
+                              <div
+                                key={i}
+                                onClick={() => setActiveItemIndex(i)}
+                                className={`flex items-center justify-between text-xs p-2 rounded-lg cursor-pointer transition-colors ${
+                                  activeItemIndex === i
+                                    ? 'bg-white border border-marigold/60 shadow-xs'
+                                    : 'hover:bg-white/60'
+                                }`}
+                              >
+                                <span className="font-semibold text-ink">Item #{i + 1}</span>
+                                <span className="text-text-soft font-mono">
+                                  {cfg.size || 'No size'} • {cfg.color || 'No color'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Stock Status & Quantity */}
                 <div className="space-y-4">
