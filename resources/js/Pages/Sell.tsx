@@ -285,11 +285,11 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
             </p>
 
             {/* Billing Cycle Toggle */}
-            <div className="mt-8 inline-flex items-center rounded-full border border-line bg-white p-1.5 shadow-sm">
+            <div className="mt-8 inline-flex items-center rounded-full border border-line bg-white p-1 sm:p-1.5 shadow-sm max-w-full">
               <button
                 type="button"
                 onClick={() => setBillingCycle('monthly')}
-                className={`rounded-full px-5 py-2 text-xs font-bold transition-all ${
+                className={`rounded-full px-3.5 sm:px-5 py-2 text-xs font-bold transition-all ${
                   billingCycle === 'monthly'
                     ? 'bg-ink text-white shadow-sm'
                     : 'text-text-soft hover:text-ink'
@@ -300,14 +300,14 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
               <button
                 type="button"
                 onClick={() => setBillingCycle('six_month')}
-                className={`relative rounded-full px-5 py-2 text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`relative rounded-full px-3.5 sm:px-5 py-2 text-xs font-bold transition-all flex items-center gap-1.5 ${
                   billingCycle === 'six_month'
                     ? 'bg-marigold text-white shadow-sm'
                     : 'text-text-soft hover:text-ink'
                 }`}
               >
                 <span>6 Months</span>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-mono font-extrabold uppercase ${
+                <span className={`rounded-full px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-mono font-extrabold uppercase ${
                   billingCycle === 'six_month' ? 'bg-white text-marigold' : 'bg-emerald-100 text-emerald-800'
                 }`}>
                   10% OFF
@@ -318,12 +318,12 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
 
           <div className="mx-auto mt-12 grid max-w-[880px] grid-cols-1 gap-6 md:grid-cols-2 items-stretch">
             {/* Free */}
-            <div className="flex flex-col rounded-3xl border border-line bg-white p-8 shadow-hard-sm">
+            <div className="flex flex-col rounded-2xl sm:rounded-3xl border border-line bg-white p-5 sm:p-8 shadow-hard-sm">
               <span className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-text-soft">
                 Free Starter
               </span>
               <div className="mt-4 flex items-end gap-2">
-                <span className="font-display text-[46px] font-extrabold leading-none text-ink">
+                <span className="font-display text-[36px] sm:text-[46px] font-extrabold leading-none text-ink">
                   ৳0
                 </span>
                 <span className="pb-1 text-sm text-text-soft">/ free forever</span>
@@ -351,19 +351,19 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
             </div>
 
             {/* Pro */}
-            <div className="relative flex flex-col rounded-3xl border-[1.5px] border-ink bg-[#1B1B1B] p-8 text-paper shadow-hard-lg">
+            <div className="relative flex flex-col rounded-2xl sm:rounded-3xl border-[1.5px] border-ink bg-[#1B1B1B] p-5 sm:p-8 text-paper shadow-hard-lg">
               <div className="relative z-10 flex flex-col h-full">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-marigold">
                     HaatPoint Pro
                   </span>
-                  <span className="rounded-full bg-marigold px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-wide text-white">
+                  <span className="rounded-full bg-marigold px-2.5 sm:px-3 py-1 font-mono text-[9px] font-bold uppercase tracking-wide text-white">
                     {billingCycle === 'six_month' ? 'Save 10% (৳60 OFF)' : 'Recommended'}
                   </span>
                 </div>
 
                 <div className="mt-4 flex items-end gap-2">
-                  <span className="font-display text-[46px] font-extrabold leading-none text-paper">
+                  <span className="font-display text-[36px] sm:text-[46px] font-extrabold leading-none text-paper">
                     ৳{billingCycle === 'monthly' ? '100' : '540'}
                   </span>
                   <span className="pb-1 text-sm text-[#B9B7B0]">

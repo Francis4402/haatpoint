@@ -610,23 +610,23 @@ const ProductDetailsPage = ({
                 </div>
 
                 {/* Price Section */}
-                <div className="bg-paper-dim p-6 rounded-xl border border-line">
-                  <div className="flex items-baseline space-x-4 mb-2">
-                    <span className="text-3xl sm:text-4xl font-bold text-ink">
+                <div className="bg-paper-dim p-4 sm:p-6 rounded-xl border border-line">
+                  <div className="flex items-baseline flex-wrap gap-x-4 gap-y-1 mb-2">
+                    <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-ink">
                       <FormatPrice price={withMarkup(product.sale_price || product.regular_price)} />
                     </span>
 
                     {product.sale_price && (
-                      <span className="text-xl text-text-soft line-through">
+                      <span className="text-lg sm:text-xl text-text-soft line-through">
                         <FormatPrice price={withMarkup(product.regular_price)} />
                       </span>
                     )}
                   </div>
 
                   {discount > 0 && (
-                    <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-sm font-medium">
-                      <FaTag className="w-4 h-4 mr-1.5" />
-                      Save <FormatPrice price={withMarkup(product.regular_price) - withMarkup(product.sale_price)} /> ({discount}% OFF)
+                    <div className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-green-50 text-green-700 text-xs sm:text-sm font-medium">
+                      <FaTag className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span>Save <FormatPrice price={withMarkup(product.regular_price) - withMarkup(product.sale_price)} /> ({discount}% OFF)</span>
                     </div>
                   )}
                 </div>
@@ -888,14 +888,14 @@ const ProductDetailsPage = ({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-2 sm:pt-4">
                   <button
                     onClick={handleAddToCart}
                     disabled={!product.inStock || product.quantity === 0 || maxAvailable === 0}
-                    className="w-full py-4 bg-gray-900 hover:bg-marigold text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
+                    className="w-full py-3.5 sm:py-4 px-4 bg-gray-900 hover:bg-marigold text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center text-sm sm:text-base"
                   >
-                    <FaShoppingCart className="w-5 h-5 mr-2" />
-                    {currentCartQuantity > 0 ? 'Add More' : 'Add to Cart'}
+                    <FaShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2 shrink-0" />
+                    <span className="truncate">{currentCartQuantity > 0 ? 'Add More' : 'Add to Cart'}</span>
                   </button>
 
                   <button
@@ -908,10 +908,10 @@ const ProductDetailsPage = ({
                       }
                     }}
                     disabled={!product.inStock || product.quantity === 0}
-                    className="w-full py-4 bg-marigold hover:bg-marigold-dark text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
+                    className="w-full py-3.5 sm:py-4 px-4 bg-marigold hover:bg-marigold-dark text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center text-sm sm:text-base"
                   >
-                    <FaShoppingBag className="w-5 h-5 mr-2" />
-                    Buy Now
+                    <FaShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 mr-2 shrink-0" />
+                    <span className="truncate">Buy Now</span>
                   </button>
                 </div>
 

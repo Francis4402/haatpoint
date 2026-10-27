@@ -81,9 +81,9 @@ const AddtoCartButton = ({
 
     // Size configurations
     const sizeClasses = {
-        sm: 'px-2.5 py-1.5 text-xs gap-1.5',
-        md: 'px-4 py-2 text-xs gap-2',
-        lg: 'px-5 py-2.5 text-sm gap-2.5'
+        sm: 'px-2 py-1.5 text-[11px] sm:text-xs gap-1.5 font-semibold',
+        md: 'px-3 sm:px-4 py-2 text-xs gap-1.5 sm:gap-2 font-semibold',
+        lg: 'px-4 sm:px-5 py-2.5 text-xs sm:text-sm gap-2 sm:gap-2.5 font-semibold'
     };
 
     // Variant configurations
@@ -197,8 +197,8 @@ const AddtoCartButton = ({
                 className={`${variantClasses[variant === 'full' ? 'full' : 'default']} ${sizeClasses[size]}`}
                 disabled={!product.inStock || product.quantity <= 0}
             >
-                <FaShoppingCart className={`${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
-                {buttonText}
+                <FaShoppingCart className={`shrink-0 ${size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
+                <span className="truncate">{buttonText}</span>
             </button>
         </div>
     );

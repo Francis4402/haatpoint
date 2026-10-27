@@ -272,27 +272,27 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
                         <FaStore className="w-6 h-6 text-text-soft" />
                       </div>
                     )}
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <h3 className="font-display font-bold text-sm sm:text-base text-ink line-clamp-1">
                         {product.name}
                       </h3>
-                      <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="font-display font-extrabold text-base sm:text-lg text-ink">
+                      <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5 mt-0.5">
+                        <span className="font-display font-extrabold text-sm sm:text-base md:text-lg text-ink">
                           <FormatPrice price={unitPrice} />
                         </span>
                         {hasDiscount && (
-                          <span className="text-xs text-text-soft line-through">
+                          <span className="text-[11px] sm:text-xs text-text-soft line-through">
                             <FormatPrice price={regularUnitPrice} />
                           </span>
                         )}
-                        <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        <span className="text-[10px] sm:text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                           {product.inStock && maxStock > 0 ? `${maxStock} in stock` : 'Out of stock'}
                         </span>
                       </div>
                       {resolvedStore?.name && (
                         <p className="text-xs text-text-soft mt-0.5 flex items-center gap-1 truncate">
-                          <FaStore className="w-3 h-3 text-marigold" />
-                          <span>{resolvedStore.name}</span>
+                          <FaStore className="w-3 h-3 text-marigold shrink-0" />
+                          <span className="truncate">{resolvedStore.name}</span>
                         </p>
                       )}
                     </div>
@@ -557,33 +557,33 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="p-4 sm:p-5 border-t border-line bg-white sticky bottom-0 z-10 flex flex-col gap-2.5">
-                  <div className="flex items-center justify-between text-sm mb-1">
+                <div className="p-3.5 sm:p-5 border-t border-line bg-white sticky bottom-0 z-10 flex flex-col gap-2 sm:gap-2.5">
+                  <div className="flex items-center justify-between text-xs sm:text-sm mb-0.5 sm:mb-1">
                     <span className="text-text-soft font-medium">Subtotal ({quantity} {quantity === 1 ? 'item' : 'items'}):</span>
-                    <span className="font-display font-extrabold text-lg text-ink">
+                    <span className="font-display font-extrabold text-base sm:text-lg text-ink">
                       <FormatPrice price={totalPrice} />
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
                     <button
                       type="button"
                       onClick={() => handleAddAndProceed(false)}
                       disabled={!product.inStock || maxStock === 0}
-                      className="w-full py-3 px-3 rounded-xl bg-ink hover:bg-ink-light text-white font-semibold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl bg-ink hover:bg-ink-light text-white font-semibold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <FaShoppingCart className="w-3.5 h-3.5 text-marigold" />
-                      <span>Add to Cart</span>
+                      <FaShoppingCart className="w-3.5 h-3.5 text-marigold shrink-0" />
+                      <span className="truncate">Add to Cart</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleAddAndProceed(true)}
                       disabled={!product.inStock || maxStock === 0}
-                      className="w-full py-3 px-3 rounded-xl bg-marigold hover:bg-marigold-dark text-white font-semibold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl bg-marigold hover:bg-marigold-dark text-white font-semibold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <FaShoppingBag className="w-3.5 h-3.5" />
-                      <span>Buy Now</span>
+                      <FaShoppingBag className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">Buy Now</span>
                     </button>
                   </div>
                 </div>

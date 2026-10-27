@@ -126,19 +126,19 @@ export default function Hero({ user, categories }: HeroProps) {
             delivered straight to your door.
           </p>
 
-          <div className="flex flex-wrap gap-3 items-center mb-4 sm:mb-5">
+          <div className="flex flex-wrap gap-2.5 sm:gap-3 items-center mb-4 sm:mb-5">
             <Link
               href={route("products.index")}
-              className="group inline-flex items-center gap-2 rounded-sm px-[22px] sm:px-[26px] py-[13px] sm:py-[15px] font-bold text-sm bg-marigold text-white border border-ink shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
+              className="group inline-flex items-center justify-center gap-2 rounded-sm px-5 sm:px-[26px] py-3 sm:py-[15px] font-bold text-xs sm:text-sm bg-marigold text-white border border-ink shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
             >
-              Start shopping
-              <FaArrowRight size={14} className="transition-transform duration-150 group-hover:translate-x-1" />
+              <span>Start shopping</span>
+              <FaArrowRight size={14} className="transition-transform duration-150 group-hover:translate-x-1 shrink-0" />
             </Link>
             <Link
               href={route("products.hotdeals")}
-              className="inline-flex items-center gap-2 rounded-sm px-[22px] sm:px-[26px] py-[13px] sm:py-[15px] font-bold text-sm bg-white border border-ink shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
+              className="inline-flex items-center justify-center gap-2 rounded-sm px-5 sm:px-[26px] py-3 sm:py-[15px] font-bold text-xs sm:text-sm bg-white border border-ink shadow-hard transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
             >
-              Explore deals
+              <span>Explore deals</span>
             </Link>
           </div>
 

@@ -496,7 +496,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                 />
               </div>
             </div>
-            <div className="flex items-center gap-x-3 lg:gap-x-5">
+            <div className="flex items-center gap-x-2 sm:gap-x-3 lg:gap-x-5 shrink-0">
               {/* Language Switcher */}
               <div className="flex items-center notranslate" translate="no">
                 <div
@@ -507,7 +507,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                   <button
                     type="button"
                     onClick={() => setLanguage('en')}
-                    className={`px-2 py-1 text-xs font-bold rounded-sm transition-all flex items-center gap-1 ${
+                    className={`px-1.5 sm:px-2 py-1 text-xs font-bold rounded-sm transition-all flex items-center gap-1 ${
                       language === 'en'
                         ? 'bg-white text-ink shadow-sm'
                         : 'text-text-soft hover:text-ink'
@@ -521,7 +521,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                   <button
                     type="button"
                     onClick={() => setLanguage('bn')}
-                    className={`px-2 py-1 text-xs font-bold rounded-sm transition-all flex items-center gap-1 ${
+                    className={`px-1.5 sm:px-2 py-1 text-xs font-bold rounded-sm transition-all flex items-center gap-1 ${
                       language === 'bn'
                         ? 'bg-marigold text-white shadow-sm'
                         : 'text-text-soft hover:text-ink'
@@ -570,7 +570,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right bg-white rounded-2xl shadow-xl border border-line focus:outline-none z-50 overflow-hidden">
+                  <div className="absolute right-0 mt-2 w-[calc(100vw-1.5rem)] max-w-sm sm:w-96 origin-top-right bg-white rounded-2xl shadow-xl border border-line focus:outline-none z-50 overflow-hidden">
                     <div className="px-4 py-3 bg-gradient-to-r from-gray-900 to-gray-800 text-white flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <FiBell className="h-4 w-4 text-marigold" />
@@ -711,7 +711,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white rounded-xl shadow-hard-sm border border-line divide-y divide-line focus:outline-none z-50">
+                  <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-1.5rem)] origin-top-right bg-white rounded-xl shadow-hard-sm border border-line divide-y divide-line focus:outline-none z-50">
                     {/* User Info */}
                     <div className="px-4 py-3">
                       <div className="flex items-center gap-3">

@@ -210,11 +210,11 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                         <div>
                             <Eyebrow>Manage your inventory</Eyebrow>
-                            <h1 className="text-[30px] sm:text-[36px] lg:text-[44px]">Products</h1>
-                            <p className="text-text-soft mt-1">Manage your inventory and products</p>
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-extrabold text-ink">Products</h1>
+                            <p className="text-text-soft text-xs sm:text-sm mt-1">Manage your inventory and products</p>
                         </div>
 
-                        <div>
+                        <div className="w-full sm:w-auto">
                             {isLimitReached ? (
                                 <div className="flex items-center gap-3 flex-wrap">
                                     <span className="text-xs font-mono font-bold text-red-600 bg-red-50 border border-red-200 px-3.5 py-2.5 rounded-xl">
@@ -222,27 +222,27 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                                     </span>
                                     <Link
                                         href={route('dashboard.upgrade')}
-                                        className="inline-flex items-center gap-2 px-6 py-3 bg-marigold hover:bg-marigold-dark text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105"
+                                        className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-marigold hover:bg-marigold-dark text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 w-full sm:w-auto text-sm sm:text-base"
                                     >
-                                        <FaCrown className="h-4 w-4" />
-                                        Upgrade for Unlimited
+                                        <FaCrown className="h-4 w-4 shrink-0" />
+                                        <span>Upgrade for Unlimited</span>
                                     </Link>
                                 </div>
                             ) : store ? (
                                 <Link
                                     href={route('dashboard.createproduct')}
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-marigold text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105"
+                                    className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-gray-900 hover:bg-marigold text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 w-full sm:w-auto text-sm sm:text-base"
                                 >
-                                    <FaPlus className="h-4 w-4" />
-                                    Add New Product
+                                    <FaPlus className="h-4 w-4 shrink-0" />
+                                    <span>Add New Product</span>
                                 </Link>
                             ) : (
                                 <button
                                     onClick={handleToast}
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-marigold text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105"
+                                    className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-gray-900 hover:bg-marigold text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 w-full sm:w-auto text-sm sm:text-base"
                                 >
-                                    <FaPlus className="h-4 w-4" />
-                                    Add New Product
+                                    <FaPlus className="h-4 w-4 shrink-0" />
+                                    <span>Add New Product</span>
                                 </button>
                             )}
                         </div>
@@ -433,60 +433,60 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                     </div>
 
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0 flex-1">
                                     <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Products</p>
-                                    <p className="text-2xl font-bold text-ink mt-1">{stats.totalProducts}</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">{stats.totalProducts}</p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-marigold/10 flex items-center justify-center">
-                                    <FaBox className="h-6 w-6 text-marigold" />
+                                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-marigold/10 flex items-center justify-center shrink-0">
+                                    <FaBox className="h-5 w-5 sm:h-6 sm:w-6 text-marigold" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <div>
+                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0 flex-1">
                                     <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Inventory Value</p>
-                                    <p className="text-2xl font-bold text-ink mt-1">
+                                    <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">
                                         <FormatPrice price={stats.totalValue} />
                                     </p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                                    <FaDollarSign className="h-6 w-6 text-green-600" />
+                                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                                    <FaDollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <div>
+                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0 flex-1">
                                     <p className="text-xs font-mono text-text-soft uppercase tracking-wide">In Stock</p>
-                                    <p className="text-2xl font-bold text-ink mt-1">{stats.inStock}</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">{stats.inStock}</p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                                    <FaChartLine className="h-6 w-6 text-purple-600" />
+                                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+                                    <FaChartLine className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                            <div className="flex items-center justify-between">
-                                <div>
+                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0 flex-1">
                                     <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Avg. Rating</p>
-                                    <p className="text-2xl font-bold text-ink mt-1">{stats.averageRating.toFixed(1)}</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">{stats.averageRating.toFixed(1)}</p>
                                 </div>
-                                <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
-                                    <FaTag className="h-6 w-6 text-orange-600" />
+                                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                                    <FaTag className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Filters and Search */}
-                    <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 mb-8">
+                    <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 mb-8">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                             {/* Search */}
                             <div className="relative">
@@ -743,27 +743,27 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="grid grid-cols-3 gap-2">
+                                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                                                 <Link
                                                     href={`/products/${product.slug}`}
-                                                    className="inline-flex items-center justify-center px-3 py-2 bg-paper-dim text-ink rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 text-sm font-medium border border-line"
+                                                    className="inline-flex items-center justify-center px-1.5 sm:px-3 py-1.5 sm:py-2 bg-paper-dim text-ink rounded-lg sm:rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 text-xs sm:text-sm font-semibold border border-line"
                                                 >
-                                                    <FaEye className="h-3 w-3 mr-1" />
-                                                    View
+                                                    <FaEye className="h-3 w-3 mr-1 shrink-0" />
+                                                    <span className="truncate">View</span>
                                                 </Link>
                                                 <Link
                                                     href={route('dashboard.productedit', product.slug)}
-                                                    className="inline-flex items-center justify-center px-3 py-2 bg-paper-dim text-ink rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 text-sm font-medium border border-line"
+                                                    className="inline-flex items-center justify-center px-1.5 sm:px-3 py-1.5 sm:py-2 bg-paper-dim text-ink rounded-lg sm:rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 text-xs sm:text-sm font-semibold border border-line"
                                                 >
-                                                    <FaEdit className="h-3 w-3 mr-1" />
-                                                    Edit
+                                                    <FaEdit className="h-3 w-3 mr-1 shrink-0" />
+                                                    <span className="truncate">Edit</span>
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDeleteClick(product.id)}
-                                                    className="inline-flex items-center justify-center px-3 py-2 bg-paper-dim text-red-600 rounded-xl hover:bg-red-50 hover:text-red-700 transition-all duration-300 text-sm font-medium border border-red-200"
+                                                    className="inline-flex items-center justify-center px-1.5 sm:px-3 py-1.5 sm:py-2 bg-paper-dim text-red-600 rounded-lg sm:rounded-xl hover:bg-red-50 hover:text-red-700 transition-all duration-300 text-xs sm:text-sm font-semibold border border-red-200"
                                                 >
-                                                    <FaTrash className="h-3 w-3 mr-1" />
-                                                    Delete
+                                                    <FaTrash className="h-3 w-3 mr-1 shrink-0" />
+                                                    <span className="truncate">Delete</span>
                                                 </button>
                                             </div>
 

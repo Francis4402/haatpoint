@@ -368,18 +368,18 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
 
                 {/* Stats Cards */}
                 {(isAdmin || isAgent) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                         {/* Agent — what the agent earns (original price they set) */}
                         {isAgent && (
-                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
+                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
                                         <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Profit</h3>
-                                        <p className="text-2xl font-bold text-ink mt-2"><FormatPrice price={stats?.originalRevenue ?? 0} /></p>
-                                        <p className="text-xs text-text-soft mt-1">Your earnings (original price)</p>
+                                        <p className="text-xl sm:text-2xl font-bold text-ink mt-1.5 sm:mt-2 truncate"><FormatPrice price={stats?.originalRevenue ?? 0} /></p>
+                                        <p className="text-[11px] sm:text-xs text-text-soft mt-1 leading-snug">Your earnings (original price)</p>
                                     </div>
-                                    <div className="bg-marigold/10 p-3 rounded-xl">
-                                        <FiTrendingUp className="h-6 w-6 text-marigold" />
+                                    <div className="bg-marigold/10 p-2.5 sm:p-3 rounded-xl shrink-0">
+                                        <FiTrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-marigold" />
                                     </div>
                                 </div>
                             </div>
@@ -387,15 +387,15 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
 
                         {/* Admin — customer paid total */}
                         {isAdmin && (
-                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
+                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
                                         <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Revenue</h3>
-                                        <p className="text-2xl font-bold text-ink mt-2"><FormatPrice price={stats?.totalRevenue ?? 0} /></p>
-                                        <p className="text-xs text-text-soft mt-1">Customer paid (delivered &amp; paid)</p>
+                                        <p className="text-xl sm:text-2xl font-bold text-ink mt-1.5 sm:mt-2 truncate"><FormatPrice price={stats?.totalRevenue ?? 0} /></p>
+                                        <p className="text-[11px] sm:text-xs text-text-soft mt-1 leading-snug">Customer paid (delivered &amp; paid)</p>
                                     </div>
-                                    <div className="bg-marigold/10 p-3 rounded-xl">
-                                        <FiTrendingUp className="h-6 w-6 text-marigold" />
+                                    <div className="bg-marigold/10 p-2.5 sm:p-3 rounded-xl shrink-0">
+                                        <FiTrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-marigold" />
                                     </div>
                                 </div>
                             </div>
@@ -403,15 +403,15 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
 
                         {/* Admin — original (agent) price side */}
                         {isAdmin && (
-                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
+                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
                                         <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Original Price</h3>
-                                        <p className="text-2xl font-bold text-ink mt-2"><FormatPrice price={stats?.originalRevenue ?? 0} /></p>
-                                        <p className="text-xs text-text-soft mt-1">Agent prices (delivered &amp; paid)</p>
+                                        <p className="text-xl sm:text-2xl font-bold text-ink mt-1.5 sm:mt-2 truncate"><FormatPrice price={stats?.originalRevenue ?? 0} /></p>
+                                        <p className="text-[11px] sm:text-xs text-text-soft mt-1 leading-snug">Agent prices (delivered &amp; paid)</p>
                                     </div>
-                                    <div className="bg-blue-100 p-3 rounded-xl">
-                                        <FaBoxOpen className="h-6 w-6 text-blue-600" />
+                                    <div className="bg-blue-100 p-2.5 sm:p-3 rounded-xl shrink-0">
+                                        <FaBoxOpen className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                                     </div>
                                 </div>
                             </div>
@@ -419,69 +419,69 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
 
                         {/* Admin — the 10% platform profit */}
                         {isAdmin && (
-                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
+                            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
                                         <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">10% Profit</h3>
-                                        <p className="text-2xl font-bold text-ink mt-2"><FormatPrice price={stats?.totalProfit ?? 0} /></p>
-                                        <p className="text-xs text-text-soft mt-1">Platform markup (delivered &amp; paid)</p>
+                                        <p className="text-xl sm:text-2xl font-bold text-ink mt-1.5 sm:mt-2 truncate"><FormatPrice price={stats?.totalProfit ?? 0} /></p>
+                                        <p className="text-[11px] sm:text-xs text-text-soft mt-1 leading-snug">Platform markup (delivered &amp; paid)</p>
                                     </div>
-                                    <div className="bg-yellow-100 p-3 rounded-xl">
-                                        <FiTrendingUp className="h-6 w-6 text-yellow-600" />
+                                    <div className="bg-yellow-100 p-2.5 sm:p-3 rounded-xl shrink-0">
+                                        <FiTrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
                                     </div>
                                 </div>
                             </div>
                         )}
 
                         {/* Products Sold — both roles */}
-                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                            <div className="flex items-center justify-between">
-                                <div>
+                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0 flex-1">
                                     <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Products Sold</h3>
-                                    <p className="text-2xl font-bold text-ink mt-2">{stats?.totalProductsSold ?? 0}</p>
-                                    <p className="text-xs text-text-soft mt-1">Units delivered</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-ink mt-1.5 sm:mt-2 truncate">{stats?.totalProductsSold ?? 0}</p>
+                                    <p className="text-[11px] sm:text-xs text-text-soft mt-1 leading-snug">Units delivered</p>
                                 </div>
-                                <div className="bg-yellow-100 p-3 rounded-xl">
-                                    <FaBoxOpen className="h-6 w-6 text-yellow-600" />
+                                <div className="bg-yellow-100 p-2.5 sm:p-3 rounded-xl shrink-0">
+                                    <FaBoxOpen className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                            <div className="flex items-center justify-between">
-                                <div>
+                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0 flex-1">
                                     <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Conversion Rate</h3>
-                                    <p className="text-2xl font-bold text-ink mt-2">{conversionRate}%</p>
-                                    <p className="text-xs text-text-soft mt-1">{stats?.deliveredPaidOrders ?? 0} delivered & paid / {stats?.totalOrders ?? 0} orders</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-ink mt-1.5 sm:mt-2 truncate">{conversionRate}%</p>
+                                    <p className="text-[11px] sm:text-xs text-text-soft mt-1 leading-snug">{stats?.deliveredPaidOrders ?? 0} delivered & paid / {stats?.totalOrders ?? 0} orders</p>
                                 </div>
-                                <div className="bg-marigold/10 p-3 rounded-xl">
-                                    <FiPercent className="h-6 w-6 text-marigold" />
+                                <div className="bg-marigold/10 p-2.5 sm:p-3 rounded-xl shrink-0">
+                                    <FiPercent className="h-5 w-5 sm:h-6 sm:w-6 text-marigold" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                            <div className="flex items-center justify-between">
-                                <div>
+                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0 flex-1">
                                     <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Orders</h3>
-                                    <p className="text-2xl font-bold text-ink mt-2">{stats?.totalOrders ?? orders.length}</p>
-                                    <p className="text-xs text-text-soft mt-1">Orders Placed</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-ink mt-1.5 sm:mt-2 truncate">{stats?.totalOrders ?? orders.length}</p>
+                                    <p className="text-[11px] sm:text-xs text-text-soft mt-1 leading-snug">Orders Placed</p>
                                 </div>
-                                <div className="bg-green-100 p-3 rounded-xl">
-                                    <FiShoppingCart className="h-6 w-6 text-green-600" />
+                                <div className="bg-green-100 p-2.5 sm:p-3 rounded-xl shrink-0">
+                                    <FiShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                            <div className="flex items-center justify-between">
-                                <div>
+                        <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0 flex-1">
                                     <h3 className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Users</h3>
-                                    <p className="text-2xl font-bold text-ink mt-2">{totalUsers}</p>
-                                    <p className="text-xs text-text-soft mt-1">Registered Users</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-ink mt-1.5 sm:mt-2 truncate">{totalUsers}</p>
+                                    <p className="text-[11px] sm:text-xs text-text-soft mt-1 leading-snug">Registered Users</p>
                                 </div>
-                                <div className="bg-marigold/10 p-3 rounded-xl">
-                                    <BsFillPeopleFill className="h-6 w-6 text-marigold" />
+                                <div className="bg-marigold/10 p-2.5 sm:p-3 rounded-xl shrink-0">
+                                    <BsFillPeopleFill className="h-5 w-5 sm:h-6 sm:w-6 text-marigold" />
                                 </div>
                             </div>
                         </div>
@@ -510,27 +510,27 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
 
                     {/* Top Products */}
                     <div className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden">
-                        <div className="px-6 py-5 border-b border-line flex justify-between items-center">
+                        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-line flex justify-between items-center">
                             <div>
-                                <h3 className="text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Top Selling Products</h3>
-                                <p className="mt-1 text-sm text-text-soft">Best performing products this month</p>
+                                <h3 className="text-base sm:text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Top Selling Products</h3>
+                                <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-text-soft">Best performing products this month</p>
                             </div>
                             <Link
                                 href={route('products.index')}
-                                className="text-xs font-mono uppercase tracking-wide border-b-2 border-ink pb-0.5 hover:border-marigold hover:text-marigold transition-colors flex items-center"
+                                className="text-xs font-mono uppercase tracking-wide border-b-2 border-ink pb-0.5 hover:border-marigold hover:text-marigold transition-colors flex items-center shrink-0"
                             >
                                 View all →
                             </Link>
                         </div>
-                        <div className="p-4">
+                        <div className="p-3 sm:p-4">
                             <ul className="divide-y divide-line">
                                 {topProducts.length > 0 ? (
                                     topProducts.map((product, index) => {
                                         const imgSrc = resolveProductImage(product.image);
                                         return (
-                                            <li key={product.name} className="py-4 hover:bg-paper-dim transition-colors rounded-lg px-3">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center min-w-0 pr-4">
+                                            <li key={product.name} className="py-3 sm:py-4 hover:bg-paper-dim transition-colors rounded-lg px-2 sm:px-3">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                                    <div className="flex items-center min-w-0 pr-2 sm:pr-4">
                                                         {imgSrc ? (
                                                             <div className="relative flex-shrink-0 h-10 w-10">
                                                                 <img
@@ -556,7 +556,7 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                                                             </div>
                                                         )}
                                                         <div className="ml-3 min-w-0">
-                                                            <span className="text-sm font-medium text-ink truncate block max-w-[180px] sm:max-w-[280px]" title={product.name}>
+                                                            <span className="text-sm font-medium text-ink truncate block max-w-[220px] sm:max-w-[280px]" title={product.name}>
                                                                 {product.name}
                                                             </span>
                                                             <p className="text-xs text-text-soft">
@@ -564,7 +564,7 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div className="text-right flex-shrink-0">
+                                                    <div className="text-left sm:text-right flex-shrink-0 pl-[52px] sm:pl-0">
                                                         {isAdmin ? (
                                                             <>
                                                                 <p className="text-sm font-semibold text-ink"><FormatPrice price={product.original ?? product.revenue} /></p>
@@ -598,54 +598,54 @@ const DashboardHome = ({ auth, totalUsers, orders, stats, onboarding, subscripti
                 {/* Quick Actions */}
                 {(isAdmin || isAgent) && (
                     <div className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden">
-                        <div className="px-6 py-5 border-b border-line">
-                            <h3 className="text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Quick Actions</h3>
-                            <p className="mt-1 text-sm text-text-soft">Common tasks you might want to do</p>
+                        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-line">
+                            <h3 className="text-base sm:text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Quick Actions</h3>
+                            <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-text-soft">Common tasks you might want to do</p>
                         </div>
-                        <div className="p-6">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="p-4 sm:p-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                                 <Link
                                     href={route('dashboard.products')}
-                                    className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
+                                    className="flex flex-col items-center justify-center p-3 sm:p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
                                 >
-                                    <FiPackage className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-medium text-ink">Add Product</span>
-                                    <span className="text-xs text-text-soft mt-1">Add new items</span>
+                                    <FiPackage className="h-6 w-6 sm:h-8 sm:w-8 text-marigold mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform" />
+                                    <span className="text-xs sm:text-sm font-medium text-ink">Add Product</span>
+                                    <span className="text-[11px] sm:text-xs text-text-soft mt-0.5 sm:mt-1 text-center">Add new items</span>
                                 </Link>
                                 <Link
                                     href={route('dashboard.createstore')}
-                                    className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
+                                    className="flex flex-col items-center justify-center p-3 sm:p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
                                 >
-                                    <FaStore className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-medium text-ink">Add Store</span>
-                                    <span className="text-xs text-text-soft mt-1">Create a new store</span>
+                                    <FaStore className="h-6 w-6 sm:h-8 sm:w-8 text-marigold mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform" />
+                                    <span className="text-xs sm:text-sm font-medium text-ink">Add Store</span>
+                                    <span className="text-[11px] sm:text-xs text-text-soft mt-0.5 sm:mt-1 text-center">Create a new store</span>
                                 </Link>
                                 {isAdmin ? (
                                     <Link
                                         href={route('dashboard.customers')}
-                                        className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
+                                        className="flex flex-col items-center justify-center p-3 sm:p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
                                     >
-                                        <FiUsers className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
-                                        <span className="text-sm font-medium text-ink">Customers</span>
-                                        <span className="text-xs text-text-soft mt-1">Manage users &amp; customers</span>
+                                        <FiUsers className="h-6 w-6 sm:h-8 sm:w-8 text-marigold mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform" />
+                                        <span className="text-xs sm:text-sm font-medium text-ink">Customers</span>
+                                        <span className="text-[11px] sm:text-xs text-text-soft mt-0.5 sm:mt-1 text-center">Manage users</span>
                                     </Link>
                                 ) : (
                                     <Link
                                         href={route('dashboard.orders')}
-                                        className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
+                                        className="flex flex-col items-center justify-center p-3 sm:p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
                                     >
-                                        <FiShoppingCart className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
-                                        <span className="text-sm font-medium text-ink">Manage Orders</span>
-                                        <span className="text-xs text-text-soft mt-1">View &amp; update orders</span>
+                                        <FiShoppingCart className="h-6 w-6 sm:h-8 sm:w-8 text-marigold mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform" />
+                                        <span className="text-xs sm:text-sm font-medium text-ink">Manage Orders</span>
+                                        <span className="text-[11px] sm:text-xs text-text-soft mt-0.5 sm:mt-1 text-center">View &amp; update orders</span>
                                     </Link>
                                 )}
                                 <Link
                                     href={route('dashboard.analytics')}
-                                    className="flex flex-col items-center justify-center p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
+                                    className="flex flex-col items-center justify-center p-3 sm:p-4 border border-line rounded-xl hover:border-marigold hover:bg-marigold/5 transition-all duration-300 hover:shadow-hard-sm group"
                                 >
-                                    <FiTrendingUp className="h-8 w-8 text-marigold mb-2 group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-medium text-ink">View Reports</span>
-                                    <span className="text-xs text-text-soft mt-1">Detailed analytics</span>
+                                    <FiTrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-marigold mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform" />
+                                    <span className="text-xs sm:text-sm font-medium text-ink">View Reports</span>
+                                    <span className="text-[11px] sm:text-xs text-text-soft mt-0.5 sm:mt-1 text-center">Detailed analytics</span>
                                 </Link>
                             </div>
                         </div>

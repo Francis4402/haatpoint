@@ -393,10 +393,10 @@ const StatusDropdown = ({
                                 >
                                     {/* Card top row */}
                                     <div
-                                        className="px-5 py-4 cursor-pointer select-none"
+                                        className="px-4 sm:px-5 py-3.5 sm:py-4 cursor-pointer select-none"
                                         onClick={() => setExpandedId(isOpen ? null : order.id)}
                                     >
-                                        <div className="flex items-start justify-between gap-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
 
                                             {/* Left content */}
                                             <div className="flex-1 min-w-0">
@@ -485,9 +485,9 @@ const StatusDropdown = ({
                                             </div>
 
                                             {/* Right: price + actions */}
-                                            <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                                                <div className="text-right">
-                                                    <p className="text-xl font-bold text-ink leading-none">
+                                            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto pt-2.5 sm:pt-0 border-t sm:border-t-0 border-line/60 gap-2 sm:gap-3 flex-shrink-0">
+                                                <div className="text-left sm:text-right">
+                                                    <p className="text-lg sm:text-xl font-bold text-ink leading-none">
                                                         <FormatPrice price={order.total} />
                                                     </p>
                                                     {order.payment_method === 'cash_on_delivery' && (

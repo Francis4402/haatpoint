@@ -91,10 +91,10 @@ const Analytics = ({ auth, metrics, store }: AnalyticsProps) => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
               <Eyebrow>{store ? store.name : "Performance insights"}</Eyebrow>
-              <h1 className="text-[30px] sm:text-[36px] lg:text-[44px]">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-extrabold text-ink break-words">
                 {store ? `${store.name} Analytics` : "Analytics"}
               </h1>
-              <p className="text-text-soft mt-1">
+              <p className="text-text-soft text-xs sm:text-sm mt-1">
                 {isAdmin
                   ? 'Platform revenue from delivered & paid orders'
                   : store
@@ -108,106 +108,106 @@ const Analytics = ({ auth, metrics, store }: AnalyticsProps) => {
           {/* Key Metrics — Admin */}
           {isAdmin && metrics && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 mb-8">
                 {/* Platform Profit (Total Revenue) */}
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-mono text-text-soft uppercase tracking-wide">10% Profit</p>
-                      <p className="text-2xl font-bold text-ink mt-1">
+                      <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">
                         <FormatPrice price={metrics.totalProfit ?? 0} />
                       </p>
                       <div className="flex items-center mt-2 text-green-600">
-                        <span className="font-medium text-sm">
+                        <span className="font-medium text-xs sm:text-sm leading-snug">
                           {metrics.profitCommissionRate}% of subtotal • {metrics.profitOrdersCount} delivered & paid
                         </span>
                       </div>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-marigold/10 flex items-center justify-center">
-                      <FaDollarSign className="h-6 w-6 text-marigold" />
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-marigold/10 flex items-center justify-center shrink-0">
+                      <FaDollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-marigold" />
                     </div>
                   </div>
                 </div>
 
                 {/* Original (Agent) Price */}
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Original Price</p>
-                      <p className="text-2xl font-bold text-ink mt-1">
+                      <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">
                         <FormatPrice price={metrics.originalRevenue ?? 0} />
                       </p>
                       <div className="flex items-center mt-2 text-text-soft">
-                        <FaTags className="h-3 w-3 mr-1" />
-                        <span className="font-medium text-sm">Agent price • delivered & paid</span>
+                        <FaTags className="h-3 w-3 mr-1 shrink-0" />
+                        <span className="font-medium text-xs sm:text-sm leading-snug">Agent price • delivered & paid</span>
                       </div>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                      <FaTags className="h-6 w-6 text-blue-600" />
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                      <FaTags className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                     </div>
                   </div>
                 </div>
 
                 {/* Total Sells */}
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Sells (Delivered)</p>
-                      <p className="text-2xl font-bold text-ink mt-1">
+                      <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">
                         <FormatPrice price={metrics.totalSells ?? 0} />
                       </p>
                       <div className="flex items-center mt-2 text-text-soft">
-                        <FaBoxes className="h-3 w-3 mr-1" />
-                        <span className="font-medium text-sm">{metrics.totalProductsSold} products delivered</span>
+                        <FaBoxes className="h-3 w-3 mr-1 shrink-0" />
+                        <span className="font-medium text-xs sm:text-sm leading-snug">{metrics.totalProductsSold} products delivered</span>
                       </div>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                      <FaShoppingCart className="h-6 w-6 text-green-600" />
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                      <FaShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                     </div>
                   </div>
                 </div>
 
                 {/* Delivered & Paid Orders */}
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Delivered & Paid Orders</p>
-                      <p className="text-2xl font-bold text-ink mt-1">{metrics.profitOrdersCount}</p>
+                      <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">{metrics.profitOrdersCount}</p>
                       <div className="flex items-center mt-2 text-green-600">
-                        <FaCheckCircle className="h-3 w-3 mr-1" />
-                        <span className="font-medium text-sm">{metrics.paidOrders} paid</span>
+                        <FaCheckCircle className="h-3 w-3 mr-1 shrink-0" />
+                        <span className="font-medium text-xs sm:text-sm leading-snug">{metrics.paidOrders} paid</span>
                       </div>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                      <FaCheckCircle className="h-6 w-6 text-purple-600" />
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+                      <FaCheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                     </div>
                   </div>
                 </div>
 
                 {/* Order Status Mix */}
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Order Status</p>
-                      <p className="text-2xl font-bold text-ink mt-1">{metrics.totalOrders}</p>
+                      <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">{metrics.totalOrders}</p>
                       <div className="flex items-center mt-2 text-text-soft">
-                        <FaClock className="h-3 w-3 mr-1" />
-                        <span className="font-medium text-sm">
+                        <FaClock className="h-3 w-3 mr-1 shrink-0" />
+                        <span className="font-medium text-xs sm:text-sm leading-snug">
                           {metrics.deliveredOrders} delivered • {metrics.cancelledOrders} cancelled
                         </span>
                       </div>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
-                      <FaChartPie className="h-6 w-6 text-orange-600" />
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                      <FaChartPie className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Top Products */}
-              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 mb-8">
-                <h3 className="text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink mb-6 flex items-center gap-2">
-                  <FaBoxOpen className="h-5 w-5 text-marigold" /> Top Selling Products
+              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 mb-8 overflow-hidden">
+                <h3 className="text-lg sm:text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink mb-4 sm:mb-6 flex items-center gap-2">
+                  <FaBoxOpen className="h-5 w-5 text-marigold shrink-0" /> Top Selling Products
                 </h3>
                 {metrics.sellByProduct && metrics.sellByProduct.length > 0 ? (
                   <div className="overflow-x-auto">
@@ -277,84 +277,84 @@ const Analytics = ({ auth, metrics, store }: AnalyticsProps) => {
           {/* Key Metrics — Agent */}
           {!isAdmin && metrics && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
                 {/* Total Revenue */}
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Profit (Your Price)</p>
-                      <p className="text-2xl font-bold text-ink mt-1">
+                      <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">
                         <FormatPrice price={metrics.totalRevenue ?? 0} />
                       </p>
                       <div className="flex items-center mt-2 text-green-600">
-                        <FaCheckCircle className="h-3 w-3 mr-1" />
-                        <span className="font-medium text-sm">{metrics.deliveredOrders} delivered & paid • original price</span>
+                        <FaCheckCircle className="h-3 w-3 mr-1 shrink-0" />
+                        <span className="font-medium text-xs sm:text-sm leading-snug">{metrics.deliveredOrders} delivered & paid • original price</span>
                       </div>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-marigold/10 flex items-center justify-center">
-                      <FaDollarSign className="h-6 w-6 text-marigold" />
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-marigold/10 flex items-center justify-center shrink-0">
+                      <FaDollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-marigold" />
                     </div>
                   </div>
                 </div>
 
                 {/* Conversion Rate */}
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Conversion Rate</p>
-                      <p className="text-2xl font-bold text-ink mt-1">{metrics.conversionRate}%</p>
+                      <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">{metrics.conversionRate}%</p>
                       <div className="flex items-center mt-2 text-text-soft">
-                        <FaChartLine className="h-3 w-3 mr-1" />
-                        <span className="font-medium text-sm">delivered & paid / total orders</span>
+                        <FaChartLine className="h-3 w-3 mr-1 shrink-0" />
+                        <span className="font-medium text-xs sm:text-sm leading-snug">delivered & paid / total orders</span>
                       </div>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                      <FaPercent className="h-6 w-6 text-green-600" />
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+                      <FaPercent className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                     </div>
                   </div>
                 </div>
 
                 {/* Total Orders */}
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Orders</p>
-                      <p className="text-2xl font-bold text-ink mt-1">{metrics.totalOrders}</p>
+                      <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">{metrics.totalOrders}</p>
                       <div className="flex items-center mt-2 text-text-soft">
-                        <FaShoppingCart className="h-3 w-3 mr-1" />
-                        <span className="font-medium text-sm">orders placed on your store</span>
+                        <FaShoppingCart className="h-3 w-3 mr-1 shrink-0" />
+                        <span className="font-medium text-xs sm:text-sm leading-snug">orders placed on your store</span>
                       </div>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                      <FaShoppingCart className="h-6 w-6 text-purple-600" />
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+                      <FaShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                     </div>
                   </div>
                 </div>
 
                 {/* Order Status Mix */}
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div>
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Order Status</p>
-                      <p className="text-2xl font-bold text-ink mt-1">{metrics.totalOrders}</p>
+                      <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">{metrics.totalOrders}</p>
                       <div className="flex items-center mt-2 text-text-soft">
-                        <FaClock className="h-3 w-3 mr-1" />
-                        <span className="font-medium text-sm">
+                        <FaClock className="h-3 w-3 mr-1 shrink-0" />
+                        <span className="font-medium text-xs sm:text-sm leading-snug">
                           {metrics.pendingOrders} pending • {metrics.cancelledOrders} cancelled
                         </span>
                       </div>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
-                      <FaChartPie className="h-6 w-6 text-orange-600" />
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                      <FaChartPie className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Top Products */}
-              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 mb-8">
-                <h3 className="text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink mb-6 flex items-center gap-2">
-                  <FaStore className="h-5 w-5 text-marigold" /> Top Selling Products
+              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 mb-8 overflow-hidden">
+                <h3 className="text-lg sm:text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink mb-4 sm:mb-6 flex items-center gap-2">
+                  <FaStore className="h-5 w-5 text-marigold shrink-0" /> Top Selling Products
                 </h3>
                 {metrics.sellByProduct && metrics.sellByProduct.length > 0 ? (
                   <div className="overflow-x-auto">

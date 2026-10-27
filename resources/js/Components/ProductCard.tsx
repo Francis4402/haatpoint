@@ -358,13 +358,13 @@ const ProductCard = ({
         )}
 
         {/* Price */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-baseline gap-1.5 sm:gap-2">
-            <span className="font-display font-extrabold text-base sm:text-xl" aria-label={`Price: ${displayPrice}`}>
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-baseline flex-wrap gap-x-1.5 gap-y-0.5 sm:gap-2 min-w-0">
+            <span className="font-display font-extrabold text-sm sm:text-base md:text-xl truncate" aria-label={`Price: ${displayPrice}`}>
               <FormatPrice price={displayPrice} />
             </span>
             {hasSalePrice && (
-              <span className="text-xs sm:text-sm text-[#767470] line-through" aria-label={`Original price: ${regularDisplayPrice}`}>
+              <span className="text-[11px] sm:text-xs md:text-sm text-[#767470] line-through truncate" aria-label={`Original price: ${regularDisplayPrice}`}>
                 <FormatPrice price={regularDisplayPrice} />
               </span>
             )}
@@ -404,10 +404,10 @@ const ProductCard = ({
                 e.stopPropagation();
                 setIsOptionsOpen(true);
               }}
-              className="w-full py-1.5 px-3 rounded-lg bg-ink hover:bg-marigold text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 active:scale-98 transition-all"
+              className="w-full py-1.5 px-2 rounded-lg bg-ink hover:bg-marigold text-white text-[11px] font-semibold shadow-xs flex items-center justify-center gap-1.5 active:scale-98 transition-all truncate"
             >
-              <FaEye className="w-3.5 h-3.5 text-marigold" />
-              <span>Select Options</span>
+              <FaEye className="w-3.5 h-3.5 text-marigold shrink-0" />
+              <span className="truncate">Select Options</span>
             </button>
           ) : (
             <AddtoCartButton
@@ -422,7 +422,7 @@ const ProductCard = ({
         {/* Save Amount */}
         {hasDiscount && (
           <div className="mt-1.5">
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-600">
+            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[9.5px] sm:text-[10px] font-semibold text-green-600 truncate max-w-full">
               Save <FormatPrice price={regularDisplayPrice - displayPrice} />
             </span>
           </div>
