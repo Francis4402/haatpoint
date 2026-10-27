@@ -21,6 +21,7 @@ import {
   FaShieldAlt,
   FaPauseCircle,
   FaCheckCircle,
+  FaCopy,
 } from 'react-icons/fa';
 import { PageProps, Product, storeType } from '@/types';
 import { toast } from 'sonner';
@@ -743,24 +744,35 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
                                                 <Link
                                                     href={`/products/${product.slug}`}
-                                                    className="inline-flex items-center justify-center px-1.5 sm:px-3 py-1.5 sm:py-2 bg-paper-dim text-ink rounded-lg sm:rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 text-xs sm:text-sm font-semibold border border-line"
+                                                    className="inline-flex items-center justify-center px-1.5 sm:px-2.5 py-1.5 sm:py-2 bg-paper-dim text-ink rounded-lg sm:rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 text-xs sm:text-sm font-semibold border border-line"
+                                                    title="View product details"
                                                 >
                                                     <FaEye className="h-3 w-3 mr-1 shrink-0" />
                                                     <span className="truncate">View</span>
                                                 </Link>
                                                 <Link
                                                     href={route('dashboard.productedit', product.slug)}
-                                                    className="inline-flex items-center justify-center px-1.5 sm:px-3 py-1.5 sm:py-2 bg-paper-dim text-ink rounded-lg sm:rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 text-xs sm:text-sm font-semibold border border-line"
+                                                    className="inline-flex items-center justify-center px-1.5 sm:px-2.5 py-1.5 sm:py-2 bg-paper-dim text-ink rounded-lg sm:rounded-xl hover:bg-marigold/10 hover:text-marigold transition-all duration-300 text-xs sm:text-sm font-semibold border border-line"
+                                                    title="Edit product"
                                                 >
                                                     <FaEdit className="h-3 w-3 mr-1 shrink-0" />
                                                     <span className="truncate">Edit</span>
                                                 </Link>
+                                                <Link
+                                                    href={route('dashboard.createproduct', { duplicate: product.slug })}
+                                                    className="inline-flex items-center justify-center px-1.5 sm:px-2.5 py-1.5 sm:py-2 bg-paper-dim text-marigold rounded-lg sm:rounded-xl hover:bg-marigold/15 transition-all duration-300 text-xs sm:text-sm font-semibold border border-marigold/30"
+                                                    title="Duplicate this product into a new form"
+                                                >
+                                                    <FaCopy className="h-3 w-3 mr-1 shrink-0" />
+                                                    <span className="truncate">Clone</span>
+                                                </Link>
                                                 <button
                                                     onClick={() => handleDeleteClick(product.id)}
-                                                    className="inline-flex items-center justify-center px-1.5 sm:px-3 py-1.5 sm:py-2 bg-paper-dim text-red-600 rounded-lg sm:rounded-xl hover:bg-red-50 hover:text-red-700 transition-all duration-300 text-xs sm:text-sm font-semibold border border-red-200"
+                                                    className="inline-flex items-center justify-center px-1.5 sm:px-2.5 py-1.5 sm:py-2 bg-paper-dim text-red-600 rounded-lg sm:rounded-xl hover:bg-red-50 hover:text-red-700 transition-all duration-300 text-xs sm:text-sm font-semibold border border-red-200"
+                                                    title="Delete product"
                                                 >
                                                     <FaTrash className="h-3 w-3 mr-1 shrink-0" />
                                                     <span className="truncate">Delete</span>

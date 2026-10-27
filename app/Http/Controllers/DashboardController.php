@@ -109,32 +109,55 @@ class DashboardController extends Controller
     }
 
     /**
-     * Build real dashboard KPIs from database queries with 3-minute caching.
+     * Build real dashboard KPIs from database queries in real-time.
      */
     private function computeStats($ordersQuery, string $userRole, string $userId)
     {
-        return Cache::remember("dashboard_stats_{$userRole}_{$userId}", now()->addMinutes(3), function () use ($ordersQuery) {
-            $base = clone $ordersQuery;
-            $deliveredPaidQuery = (clone $base)->where('order_status', 'delivered')->where('payment_status', 'paid');
-            $deliveredQuery = (clone $base)->where('order_status', 'delivered');
+        // Clear any previous stale cache key if it existed
+        Cache::forget("dashboard_stats_{$userRole}_{$userId}");
 
-            $totalOrders = (clone $base)->count();
-            $deliveredOrders = (clone $deliveredQuery)->count();
-            $deliveredPaidOrders = (clone $deliveredPaidQuery)->count();
-            $paidOrders = (clone $base)->where('payment_status', 'paid')->count();
-            $cancelledOrders = (clone $base)->where('order_status', 'cancelled')->count();
-            $pendingOrders = (clone $base)->where('order_status', 'pending')->count();
+        $base = clone $ordersQuery;
+        $deliveredPaidQuery = (clone $base)->where('order_status', 'delivered')->where('payment_status', 'paid');
+        $deliveredQuery = (clone $base)->where('order_status', 'delivered');
 
-            $subtotalSum = (float) ((clone $deliveredPaidQuery)->sum('subtotal') ?? 0);
-            $totalSells = (float) ((clone $deliveredQuery)->sum('total') ?? 0);
-            $totalRevenue = (float) ((clone $deliveredPaidQuery)->sum('total') ?? 0);
-            $totalProductsSold = (int) ((clone $deliveredQuery)->sum('item_quantity') ?? 0);
+        $totalOrders = (clone $base)->count();
+        $deliveredOrders = (clone $deliveredQuery)->count();
+        $deliveredPaidOrders = (clone $deliveredPaidQuery)->count();
+        $paidOrders = (clone $base)->where('payment_status', 'paid')->count();
+        $cancelledOrders = (clone $base)->where('order_status', 'cancelled')->count();
+        $pendingOrders = (clone $base)->where('order_status', 'pending')->count();
 
-            $deliveredOrderIds = (clone $deliveredQuery)->limit(300)->pluck('id');
-            $topProducts = $deliveredOrderIds->isNotEmpty()
-                ? OrderItems::query()
+        $subtotalSum = (float) ((clone $deliveredPaidQuery)->sum('subtotal') ?? 0);
+        $totalSells = (float) ((clone $deliveredQuery)->sum('total') ?? 0);
+        $totalRevenue = (float) ((clone $deliveredPaidQuery)->sum('total') ?? 0);
+        $totalProductsSold = (int) ((clone $deliveredQuery)->sum('item_quantity') ?? 0);
+
+        $deliveredOrderIds = (clone $deliveredQuery)->limit(300)->pluck('id');
+        $topProducts = $deliveredOrderIds->isNotEmpty()
+            ? OrderItems::query()
+                ->selectRaw('order_items.product_name, SUM(order_items.quantity) as qty, SUM(order_items.total) as revenue, MIN(order_items.product_image) as image')
+                ->whereIn('order_items.order_id', $deliveredOrderIds)
+                ->groupBy('order_items.product_name')
+                ->orderByDesc('revenue')
+                ->limit(5)
+                ->get()
+                ->map(fn ($r) => [
+                    'name' => $r->product_name,
+                    'qty' => (int) $r->qty,
+                    'revenue' => (float) $r->revenue,
+                    'original' => (float) $r->revenue,
+                    'profit' => round((float) $r->revenue * 0.10, 2),
+                    'image' => $r->image,
+                ])
+                ->values()
+            : collect();
+
+        if ($topProducts->isEmpty()) {
+            $activeOrderIds = (clone $base)->whereNotIn('order_status', ['cancelled', 'returned'])->limit(300)->pluck('id');
+            if ($activeOrderIds->isNotEmpty()) {
+                $topProducts = OrderItems::query()
                     ->selectRaw('order_items.product_name, SUM(order_items.quantity) as qty, SUM(order_items.total) as revenue, MIN(order_items.product_image) as image')
-                    ->whereIn('order_items.order_id', $deliveredOrderIds)
+                    ->whereIn('order_items.order_id', $activeOrderIds)
                     ->groupBy('order_items.product_name')
                     ->orderByDesc('revenue')
                     ->limit(5)
@@ -147,77 +170,55 @@ class DashboardController extends Controller
                         'profit' => round((float) $r->revenue * 0.10, 2),
                         'image' => $r->image,
                     ])
-                    ->values()
-                : collect();
-
-            if ($topProducts->isEmpty()) {
-                $activeOrderIds = (clone $base)->whereNotIn('order_status', ['cancelled', 'returned'])->limit(300)->pluck('id');
-                if ($activeOrderIds->isNotEmpty()) {
-                    $topProducts = OrderItems::query()
-                        ->selectRaw('order_items.product_name, SUM(order_items.quantity) as qty, SUM(order_items.total) as revenue, MIN(order_items.product_image) as image')
-                        ->whereIn('order_items.order_id', $activeOrderIds)
-                        ->groupBy('order_items.product_name')
-                        ->orderByDesc('revenue')
-                        ->limit(5)
-                        ->get()
-                        ->map(fn ($r) => [
-                            'name' => $r->product_name,
-                            'qty' => (int) $r->qty,
-                            'revenue' => (float) $r->revenue,
-                            'original' => (float) $r->revenue,
-                            'profit' => round((float) $r->revenue * 0.10, 2),
-                            'image' => $r->image,
-                        ])
-                        ->values();
-                }
-            }
-
-            if ($topProducts->isEmpty()) {
-                $catalogQuery = Products::query();
-                if ($userRole === 'agent') {
-                    $storeIds = Store::where('agent_id', $userId)->pluck('id');
-                    $catalogQuery->whereIn('store_id', $storeIds);
-                }
-                $topProducts = $catalogQuery->where(function ($q) {
-                        $q->whereIn('product_type', ['top-selling', 'featured', 'trending'])
-                          ->orWhere('quantity', '>', 0);
-                    })
-                    ->limit(5)
-                    ->get()
-                    ->map(function ($p) {
-                        $imgs = is_string($p->images) ? json_decode($p->images, true) : $p->images;
-                        $img = is_array($imgs) && !empty($imgs) ? $imgs[0] : (is_string($p->images) ? $p->images : null);
-                        $price = (float) ($p->sale_price ?? $p->regular_price ?? 0);
-                        return [
-                            'name' => $p->name,
-                            'qty' => 0,
-                            'revenue' => $price,
-                            'original' => $price,
-                            'profit' => round($price * 0.10, 2),
-                            'image' => $img,
-                        ];
-                    })
                     ->values();
             }
+        }
 
-            return [
-                'totalProfit' => round($subtotalSum * 0.10, 2),
-                'originalRevenue' => round($subtotalSum, 2),
-                'totalSells' => round($totalSells, 2),
-                'totalRevenue' => round($totalRevenue, 2),
-                'totalProductsSold' => $totalProductsSold,
-                'deliveredPaidOrders' => $deliveredPaidOrders,
-                'deliveredOrders' => $deliveredOrders,
-                'paidOrders' => $paidOrders,
-                'cancelledOrders' => $cancelledOrders,
-                'pendingOrders' => $pendingOrders,
-                'totalOrders' => $totalOrders,
-                'conversionRate' => $totalOrders > 0
-                    ? round(($deliveredPaidOrders / $totalOrders) * 100, 2)
-                    : 0,
-                'topProducts' => $topProducts,
-            ];
-        });
+        if ($topProducts->isEmpty()) {
+            $catalogQuery = Products::query();
+            if ($userRole === 'agent') {
+                $storeIds = Store::where('agent_id', $userId)->pluck('id');
+                $catalogQuery->whereIn('store_id', $storeIds);
+            }
+            $topProducts = $catalogQuery->where(function ($q) {
+                    $q->whereIn('product_type', ['top-selling', 'featured', 'trending'])
+                      ->orWhere('quantity', '>', 0);
+                })
+                ->limit(5)
+                ->get()
+                ->map(function ($p) {
+                    $imgs = is_string($p->images) ? json_decode($p->images, true) : $p->images;
+                    $img = is_array($imgs) && !empty($imgs) ? $imgs[0] : (is_string($p->images) ? $p->images : null);
+                    $price = (float) ($p->sale_price ?? $p->regular_price ?? 0);
+                    return [
+                        'name' => $p->name,
+                        'qty' => 0,
+                        'revenue' => $price,
+                        'original' => $price,
+                        'profit' => round($price * 0.10, 2),
+                        'image' => $img,
+                    ];
+                })
+                ->values();
+        }
+
+        return [
+            'totalProfit' => round($subtotalSum * 0.10, 2),
+            'originalRevenue' => round($subtotalSum, 2),
+            'totalSells' => round($totalSells, 2),
+            'totalRevenue' => round($totalRevenue, 2),
+            'totalProductsSold' => $totalProductsSold,
+            'deliveredPaidOrders' => $deliveredPaidOrders,
+            'deliveredOrders' => $deliveredOrders,
+            'paidOrders' => $paidOrders,
+            'cancelledOrders' => $cancelledOrders,
+            'pendingOrders' => $pendingOrders,
+            'totalOrders' => $totalOrders,
+            'conversionRate' => $totalOrders > 0
+                ? round(($deliveredPaidOrders / $totalOrders) * 100, 2)
+                : 0,
+            'topProducts' => $topProducts,
+        ];
     }
 
     /**

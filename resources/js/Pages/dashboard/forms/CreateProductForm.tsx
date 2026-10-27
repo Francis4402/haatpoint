@@ -31,6 +31,7 @@ import {
   FaFire,
   FaRocket,
   FaCrown,
+  FaCopy,
 } from 'react-icons/fa';
 import {
   HiCheck,
@@ -52,7 +53,48 @@ interface productFormType {
     productLimit?: number | null;
     productsCount?: number;
     canAddProduct?: boolean;
+    duplicateProduct?: any;
+    retained?: {
+        store_id?: string | null;
+        category?: string | null;
+        subcategory?: string | null;
+        brand?: string | null;
+        item_weight?: string | null;
+    };
 }
+
+const parseJsonArray = (val: any): string[] => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  try {
+    const parsed = JSON.parse(val);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return typeof val === 'string' && val.trim() ? [val.trim()] : [];
+  }
+};
+
+const POPULAR_COLORS = [
+  { name: 'Black', hex: '#000000', border: false },
+  { name: 'White', hex: '#FFFFFF', border: true },
+  { name: 'Navy Blue', hex: '#001f3f', border: false },
+  { name: 'Red', hex: '#dc2626', border: false },
+  { name: 'Maroon', hex: '#800000', border: false },
+  { name: 'Olive Green', hex: '#556b2f', border: false },
+  { name: 'Grey', hex: '#64748b', border: false },
+  { name: 'Beige', hex: '#f5f5dc', border: true },
+  { name: 'Royal Blue', hex: '#2563eb', border: false },
+  { name: 'Brown', hex: '#78350f', border: false },
+  { name: 'Pink', hex: '#ec4899', border: false },
+  { name: 'Yellow', hex: '#eab308', border: false },
+];
+
+const SIZE_PRESETS = [
+  { label: '👕 Apparel (S, M, L, XL, XXL)', sizes: ['S', 'M', 'L', 'XL', 'XXL'] },
+  { label: '👔 Extended (S to 3XL)', sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL'] },
+  { label: '👟 Shoes (39-44)', sizes: ['39', '40', '41', '42', '43', '44'] },
+  { label: '🏷️ Free Size', sizes: ['Free Size'] },
+];
 
 const quillModules = {
   toolbar: [
@@ -86,6 +128,8 @@ export default function CreateProductForm({
   productLimit,
   productsCount,
   canAddProduct,
+  duplicateProduct,
+  retained,
 }: productFormType) {
   const { props } = usePage<PageProps>();
   const sub = props.auth?.subscription;
@@ -96,7 +140,7 @@ export default function CreateProductForm({
   const isBlocked = isAgent && maxLimit !== null && currentCount >= maxLimit;
   const imagesInputRef = useRef<HTMLInputElement>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [showSalePrice, setShowSalePrice] = useState(false);
+  const [showSalePrice, setShowSalePrice] = useState(Boolean(duplicateProduct?.sale_price && Number(duplicateProduct.sale_price) > 0));
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showSubcategoryDropdown, setShowSubcategoryDropdown] = useState(false);
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
@@ -104,7 +148,11 @@ export default function CreateProductForm({
   const [availableSubcategories, setAvailableSubcategories] = useState<string[]>([]);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [availableSizes, setAvailableSizes] = useState<string[]>([]);
-  const [colorInputs, setColorInputs] = useState<string[]>(['']);
+
+  const initialColors = duplicateProduct?.color ? parseJsonArray(duplicateProduct.color) : [];
+  const initialSizes = duplicateProduct?.size ? parseJsonArray(duplicateProduct.size) : [];
+
+  const [colorInputs, setColorInputs] = useState<string[]>(initialColors.length > 0 ? initialColors : ['']);
   const [showNewBrandInput, setShowNewBrandInput] = useState(false);
   const [newBrandValue, setNewBrandValue] = useState('');
 
@@ -112,7 +160,7 @@ export default function CreateProductForm({
   const formRef = useRef<HTMLFormElement>(null);
 
   // ✅ Track manual slug edits (state so hint re-renders live)
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(Boolean(duplicateProduct?.slug));
 
   const productTypes = [
     { value: 'regular', label: 'Regular', icon: FaTag, color: 'text-gray-500' },
@@ -123,22 +171,22 @@ export default function CreateProductForm({
   ];
 
   const { data, setData, processing, errors, reset } = useForm({
-    name: '',
+    name: duplicateProduct ? `${duplicateProduct.name} (Copy)` : '',
     images: [] as File[],
-    slug: '',
-    category: '',
-    subcategory: '',
-    brand: '',
-    quantity: '1',
-    regular_price: '',
-    sale_price: '',
-    description: '',
-    color: [] as string[],
-    size: [] as string[],
-    inStock: true,
-    item_weight: '',
-    store_id: store.id || '',
-    product_type: 'regular',
+    slug: duplicateProduct ? `${duplicateProduct.slug}-copy` : '',
+    category: duplicateProduct?.category || retained?.category || '',
+    subcategory: duplicateProduct?.subcategory || retained?.subcategory || '',
+    brand: duplicateProduct?.brand || retained?.brand || '',
+    quantity: duplicateProduct ? String(duplicateProduct.quantity ?? '1') : '1',
+    regular_price: duplicateProduct?.regular_price ? String(duplicateProduct.regular_price) : '',
+    sale_price: duplicateProduct?.sale_price ? String(duplicateProduct.sale_price) : '',
+    description: duplicateProduct?.description || '',
+    color: initialColors,
+    size: initialSizes,
+    inStock: duplicateProduct?.inStock !== undefined ? Boolean(duplicateProduct.inStock) : true,
+    item_weight: duplicateProduct?.item_weight ? String(duplicateProduct.item_weight) : (retained?.item_weight || '0.5'),
+    store_id: duplicateProduct?.store_id || retained?.store_id || store.id || '',
+    product_type: duplicateProduct?.product_type || 'regular',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -200,6 +248,34 @@ export default function CreateProductForm({
     }
     setData('size', [...current, ...toAdd]);
     setSizeInput('');
+  };
+
+  const addQuickColor = (colorName: string) => {
+    const trimmed = colorName.trim();
+    if (!trimmed) return;
+    const current = (data.color || []).filter(Boolean);
+    if (current.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
+      const updated = current.filter(c => c.toLowerCase() !== trimmed.toLowerCase());
+      setData('color', updated);
+      setColorInputs(updated.length > 0 ? updated : ['']);
+      toast.info(`Removed ${trimmed}`);
+      return;
+    }
+    const updated = [...current, trimmed];
+    setData('color', updated);
+    setColorInputs(updated);
+    toast.success(`Added ${trimmed}`);
+  };
+
+  const applySizePreset = (presetSizes: string[]) => {
+    const current = data.size || [];
+    const toAdd = presetSizes.filter((s) => !current.includes(s));
+    if (toAdd.length === 0) {
+      toast.info('Selected sizes are already added');
+      return;
+    }
+    setData('size', [...current, ...toAdd]);
+    toast.success(`Added ${toAdd.length} sizes`);
   };
 
   const closeAllDropdowns = () => {
@@ -351,8 +427,8 @@ export default function CreateProductForm({
   };
 
   // ✅ FIXED submit: use router.post + forceFormData + graceful empty subcategory/brand
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent, addAnother: boolean = false) => {
+    if (e) e.preventDefault();
 
     if (isBlocked) {
       toast.error(
@@ -379,8 +455,11 @@ export default function CreateProductForm({
     formData.append('size', JSON.stringify(data.size));
     formData.append('inStock', data.inStock ? '1' : '0');
     formData.append('store_id', data.store_id);
-    formData.append('item_weight', data.item_weight);
+    formData.append('item_weight', data.item_weight || '0.5');
     formData.append('product_type', data.product_type);
+    if (addAnother) {
+      formData.append('add_another', '1');
+    }
 
     data.images.forEach((image, index) => {
       formData.append(`images[${index}]`, image);
@@ -392,25 +471,25 @@ export default function CreateProductForm({
       onStart: () => setIsSubmitting(true),
       onFinish: () => setIsSubmitting(false),
       onSuccess: () => {
-        toast.success('Product created successfully!');
-        router.visit(route('dashboard.products'));
-        reset();
-        setShowSalePrice(false);
-        imagePreviews.forEach(p => {
-          if (p.startsWith('blob:')) URL.revokeObjectURL(p);
-        });
-        setImagePreviews([]);
-        setShowCategoryDropdown(false);
-        setShowSubcategoryDropdown(false);
-        setShowBrandDropdown(false);
-        setShowProductTypeDropdown(false);
-        setAvailableSubcategories([]);
-        setAvailableBrands([]);
-        setAvailableSizes([]);
-        setColorInputs(['']);
-        setShowNewBrandInput(false);
-        setNewBrandValue('');
-        setSlugManuallyEdited(false);
+        toast.success(addAnother ? 'Product published! Form ready for your next item.' : 'Product created successfully!');
+        if (addAnother) {
+          setData((prev) => ({
+            ...prev,
+            name: '',
+            slug: '',
+            images: [],
+            regular_price: '',
+            sale_price: '',
+          }));
+          imagePreviews.forEach(p => {
+            if (p.startsWith('blob:')) URL.revokeObjectURL(p);
+          });
+          setImagePreviews([]);
+          setSlugManuallyEdited(false);
+          setShowSalePrice(false);
+        } else {
+          reset();
+        }
       },
       onError: (errs) => {
         console.error('Create failed:', errs);
@@ -456,6 +535,27 @@ export default function CreateProductForm({
             Back to Products
           </Link>
         </div>
+
+        {/* Duplicate Notice Banner */}
+        {duplicateProduct && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-amber-100 text-amber-800 shrink-0">
+                <FaCopy className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-bold text-sm">Duplicating: {duplicateProduct.name}</p>
+                <p className="text-xs text-amber-700 mt-0.5">Specifications, categories, sizes, and pricing prefilled. Upload new photos and adjust details to publish.</p>
+              </div>
+            </div>
+            <Link
+              href={route('dashboard.createproduct')}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border border-amber-200 text-amber-800 hover:bg-amber-100 transition-colors shrink-0 text-center"
+            >
+              Start Blank Form
+            </Link>
+          </div>
+        )}
 
         {/* Store Status */}
         <div className="mb-6 bg-gradient-to-r from-marigold to-marigold-dark rounded-2xl shadow-hard-sm p-6 text-white border border-line/20">
@@ -997,9 +1097,46 @@ export default function CreateProductForm({
 
                     {/* Colors */}
                     <div>
-                      <label className="block text-sm font-medium text-ink mb-2">
-                        Colors <span className="text-xs font-normal text-text-soft">(Add multiple)</span>
-                      </label>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-ink">
+                          Colors <span className="text-xs font-normal text-text-soft">(Add multiple)</span>
+                        </label>
+                      </div>
+
+                      {/* Quick Color Presets */}
+                      <div className="mb-3 p-2.5 rounded-xl bg-paper-dim border border-line">
+                        <p className="text-[11px] font-mono uppercase tracking-wide text-text-soft mb-2 font-semibold">
+                          Quick Palette (Tap to add/remove)
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {POPULAR_COLORS.map((c) => {
+                            const isSelected = (data.color || []).some(
+                              (item) => item.toLowerCase() === c.name.toLowerCase()
+                            );
+                            return (
+                              <button
+                                key={c.name}
+                                type="button"
+                                onClick={() => addQuickColor(c.name)}
+                                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                                  isSelected
+                                    ? 'bg-marigold text-white shadow-sm ring-1 ring-marigold'
+                                    : 'bg-white hover:bg-white/80 text-ink border border-line'
+                                }`}
+                              >
+                                <span
+                                  className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                    c.border ? 'border border-gray-400' : ''
+                                  }`}
+                                  style={{ backgroundColor: c.hex }}
+                                />
+                                <span>{c.name}</span>
+                                {isSelected && <HiCheck className="h-3 w-3" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
 
                       <div className="space-y-2">
                         {colorInputs.map((color, index) => (
@@ -1010,7 +1147,7 @@ export default function CreateProductForm({
                                 type="text"
                                 value={color}
                                 onChange={(e) => updateColorInput(index, e.target.value)}
-                                placeholder="Enter color name..."
+                                placeholder="Or enter custom color..."
                                 className="w-full rounded-xl border border-line px-10 py-3 focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft"
                               />
                             </div>
@@ -1047,7 +1184,10 @@ export default function CreateProductForm({
                             </span>
                             <button
                               type="button"
-                              onClick={() => setColorInputs([''])}
+                              onClick={() => {
+                                setColorInputs(['']);
+                                setData('color', []);
+                              }}
                               className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
                             >
                               <FaTimes className="h-3 w-3" />
@@ -1081,6 +1221,25 @@ export default function CreateProductForm({
                     <label className="block text-sm font-medium text-ink mb-2">
                       Sizes <span className="text-xs font-normal text-text-soft">(Select available sizes or add your own)</span>
                     </label>
+
+                    {/* 1-Click Size Preset Bundles */}
+                    <div className="mb-3 p-2.5 rounded-xl bg-paper-dim border border-line">
+                      <p className="text-[11px] font-mono uppercase tracking-wide text-text-soft mb-2 font-semibold">
+                        1-Click Size Bundles
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {SIZE_PRESETS.map((p) => (
+                          <button
+                            key={p.label}
+                            type="button"
+                            onClick={() => applySizePreset(p.sizes)}
+                            className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white hover:bg-marigold/10 hover:text-marigold border border-line transition-colors"
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     {availableSizes.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-3">
                         {availableSizes.map((size) => (
@@ -1626,23 +1785,36 @@ export default function CreateProductForm({
                     )}
                   </div>
                 ) : (
-                  <button
-                    type="submit"
-                    disabled={isSubmitting || processing || !data.name || !data.category || !data.regular_price || !data.description || !data.item_weight}
-                    className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-                  >
-                    {isSubmitting || processing ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                        Uploading Product...
-                      </>
-                    ) : (
-                      <>
-                        <FaCheck className="h-4 w-4" />
-                        Upload Product
-                      </>
-                    )}
-                  </button>
+                  <div className="space-y-3">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || processing || !data.name || !data.category || !data.regular_price || !data.description || !data.item_weight}
+                      className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3.5 rounded-xl transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-hard-sm"
+                    >
+                      {isSubmitting || processing ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                          Publishing Product...
+                        </>
+                      ) : (
+                        <>
+                          <FaCheck className="h-4 w-4" />
+                          Publish Product
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleSubmit(undefined, true)}
+                      disabled={isSubmitting || processing || !data.name || !data.category || !data.regular_price || !data.description || !data.item_weight}
+                      className="w-full bg-paper-dim hover:bg-marigold/10 border border-line hover:border-marigold text-ink font-semibold py-3 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                      title="Publish and immediately start adding the next product while keeping store, category, and specifications"
+                    >
+                      <FaPlus className="h-3.5 w-3.5 text-marigold" />
+                      Save &amp; Add Another
+                    </button>
+                  </div>
                 )}
 
                 <div className="mt-6 pt-6 border-t border-line">

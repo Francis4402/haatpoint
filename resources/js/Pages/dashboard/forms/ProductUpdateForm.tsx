@@ -30,6 +30,8 @@ import {
   FaRocket,
   FaEdit,
   FaTrash,
+  FaCheck,
+  FaCopy,
 } from 'react-icons/fa';
 import {
   HiCheck,
@@ -40,6 +42,28 @@ import { toast } from 'sonner';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import Eyebrow from '@/Pages/Components/Eyebrow';
+
+const POPULAR_COLORS = [
+  { name: 'Black', hex: '#000000', border: false },
+  { name: 'White', hex: '#FFFFFF', border: true },
+  { name: 'Navy Blue', hex: '#001f3f', border: false },
+  { name: 'Red', hex: '#dc2626', border: false },
+  { name: 'Maroon', hex: '#800000', border: false },
+  { name: 'Olive Green', hex: '#556b2f', border: false },
+  { name: 'Grey', hex: '#64748b', border: false },
+  { name: 'Beige', hex: '#f5f5dc', border: true },
+  { name: 'Royal Blue', hex: '#2563eb', border: false },
+  { name: 'Brown', hex: '#78350f', border: false },
+  { name: 'Pink', hex: '#ec4899', border: false },
+  { name: 'Yellow', hex: '#eab308', border: false },
+];
+
+const SIZE_PRESETS = [
+  { label: '👕 Apparel (S, M, L, XL, XXL)', sizes: ['S', 'M', 'L', 'XL', 'XXL'] },
+  { label: '👔 Extended (S to 3XL)', sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL'] },
+  { label: '👟 Shoes (39-44)', sizes: ['39', '40', '41', '42', '43', '44'] },
+  { label: '🏷️ Free Size', sizes: ['Free Size'] },
+];
 
 interface EditProductFormProps {
   auth: {
@@ -186,6 +210,34 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
     }
     setData('size', [...current, ...toAdd]);
     setSizeInput('');
+  };
+
+  const addQuickColor = (colorName: string) => {
+    const trimmed = colorName.trim();
+    if (!trimmed) return;
+    const current = (data.color || []).filter(Boolean);
+    if (current.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      const updated = current.filter((c) => c.toLowerCase() !== trimmed.toLowerCase());
+      setData('color', updated);
+      setColorInputs(updated.length > 0 ? updated : ['']);
+      toast.info(`Removed ${trimmed}`);
+      return;
+    }
+    const updated = [...current, trimmed];
+    setData('color', updated);
+    setColorInputs(updated);
+    toast.success(`Added ${trimmed}`);
+  };
+
+  const applySizePreset = (presetSizes: string[]) => {
+    const current = data.size || [];
+    const toAdd = presetSizes.filter((s) => !current.includes(s));
+    if (toAdd.length === 0) {
+      toast.info('Selected sizes are already added');
+      return;
+    }
+    setData('size', [...current, ...toAdd]);
+    toast.success(`Added ${toAdd.length} sizes`);
   };
 
   const closeAllDropdowns = () => {
@@ -487,13 +539,23 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
               Product ID: <span className="font-mono">{product.id}</span>
             </p>
           </div>
-          <Link
-            href={route('dashboard.products')}
-            className="inline-flex items-center gap-2 px-6 py-3 border border-line text-text-soft hover:text-ink hover:bg-paper-dim font-medium rounded-xl transition-all duration-300"
-          >
-            <FaArrowLeft className="h-4 w-4" />
-            Back to Products
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href={route('dashboard.createproduct', { duplicate: product.slug })}
+              className="inline-flex items-center gap-2 px-5 py-3 border border-marigold/40 text-marigold bg-marigold/5 hover:bg-marigold/15 font-semibold rounded-xl transition-all duration-300 text-sm"
+              title="Duplicate this product into a new product form"
+            >
+              <FaCopy className="h-4 w-4" />
+              Duplicate as New
+            </Link>
+            <Link
+              href={route('dashboard.products')}
+              className="inline-flex items-center gap-2 px-6 py-3 border border-line text-text-soft hover:text-ink hover:bg-paper-dim font-medium rounded-xl transition-all duration-300 text-sm"
+            >
+              <FaArrowLeft className="h-4 w-4" />
+              Back to Products
+            </Link>
+          </div>
         </div>
 
         {/* Store Status */}
@@ -954,9 +1016,46 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
 
                     {/* Colors */}
                     <div>
-                      <label className="block text-sm font-medium text-ink mb-2">
-                        Colors <span className="text-xs font-normal text-text-soft">(Add multiple)</span>
-                      </label>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-medium text-ink">
+                          Colors <span className="text-xs font-normal text-text-soft">(Add multiple)</span>
+                        </label>
+                      </div>
+
+                      {/* Quick Color Presets */}
+                      <div className="mb-3 p-2.5 rounded-xl bg-paper-dim border border-line">
+                        <p className="text-[11px] font-mono uppercase tracking-wide text-text-soft mb-2 font-semibold">
+                          Quick Palette (Tap to add/remove)
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {POPULAR_COLORS.map((c) => {
+                            const isSelected = (data.color || []).some(
+                              (item) => item.toLowerCase() === c.name.toLowerCase()
+                            );
+                            return (
+                              <button
+                                key={c.name}
+                                type="button"
+                                onClick={() => addQuickColor(c.name)}
+                                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-all ${
+                                  isSelected
+                                    ? 'bg-marigold text-white shadow-sm ring-1 ring-marigold'
+                                    : 'bg-white hover:bg-white/80 text-ink border border-line'
+                                }`}
+                              >
+                                <span
+                                  className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                    c.border ? 'border border-gray-400' : ''
+                                  }`}
+                                  style={{ backgroundColor: c.hex }}
+                                />
+                                <span>{c.name}</span>
+                                {isSelected && <HiCheck className="h-3 w-3" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
 
                       <div className="space-y-2">
                         {colorInputs.map((color, index) => (
@@ -967,7 +1066,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                                 type="text"
                                 value={color}
                                 onChange={(e) => updateColorInput(index, e.target.value)}
-                                placeholder="Enter color name..."
+                                placeholder="Or enter custom color..."
                                 className="w-full rounded-xl border border-line px-10 py-3 focus:ring-2 focus:ring-marigold focus:border-transparent bg-white text-ink placeholder:text-text-soft"
                               />
                             </div>
@@ -995,6 +1094,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                         ))}
                       </div>
 
+                      {/* Display added colors */}
                       {getValidColors().length > 0 && (
                         <div className="mt-3">
                           <div className="flex items-center justify-between mb-2">
@@ -1003,7 +1103,10 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                             </span>
                             <button
                               type="button"
-                              onClick={() => setColorInputs([''])}
+                              onClick={() => {
+                                setColorInputs(['']);
+                                setData('color', []);
+                              }}
                               className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
                             >
                               <FaTimes className="h-3 w-3" />
@@ -1037,6 +1140,25 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                     <label className="block text-sm font-medium text-ink mb-2">
                       Sizes <span className="text-xs font-normal text-text-soft">(Select available sizes or add your own)</span>
                     </label>
+
+                    {/* 1-Click Size Preset Bundles */}
+                    <div className="mb-3 p-2.5 rounded-xl bg-paper-dim border border-line">
+                      <p className="text-[11px] font-mono uppercase tracking-wide text-text-soft mb-2 font-semibold">
+                        1-Click Size Bundles
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {SIZE_PRESETS.map((p) => (
+                          <button
+                            key={p.label}
+                            type="button"
+                            onClick={() => applySizePreset(p.sizes)}
+                            className="px-2.5 py-1 rounded-lg text-xs font-medium bg-white hover:bg-marigold/10 hover:text-marigold border border-line transition-colors"
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     {availableSizes.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-3">
                         {availableSizes.map((size) => (
@@ -1600,23 +1722,34 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
 
               {/* Action Card */}
               <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
-                <button
-                  type="submit"
-                  disabled={isSubmitting || processing || !data.name || !data.category || !data.regular_price || !data.description || !data.item_weight}
-                  className="w-full bg-gray-900 hover:bg-marigold text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting || processing ? (
-                    <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                      Uploading Product...
-                    </>
-                  ) : (
-                    <>
-                      <FaEdit className="h-4 w-4" />
-                      Upload Product
-                    </>
-                  )}
-                </button>
+                <div className="space-y-3">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || processing || !data.name || !data.category || !data.regular_price || !data.description || !data.item_weight}
+                    className="w-full bg-marigold hover:bg-marigold-dark text-white font-semibold py-3.5 rounded-xl transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-hard-sm"
+                  >
+                    {isSubmitting || processing ? (
+                      <>
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                        Saving Changes...
+                      </>
+                    ) : (
+                      <>
+                        <FaCheck className="h-4 w-4" />
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+
+                  <Link
+                    href={route('dashboard.createproduct', { duplicate: product.slug })}
+                    className="w-full bg-paper-dim hover:bg-marigold/10 border border-line hover:border-marigold text-ink font-semibold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm text-center"
+                    title="Duplicate this product into a brand new listing"
+                  >
+                    <FaCopy className="h-3.5 w-3.5 text-marigold" />
+                    Duplicate as New Product
+                  </Link>
+                </div>
 
                 <div className="mt-6 pt-6 border-t border-line">
                   <div className="text-xs text-text-soft space-y-2">

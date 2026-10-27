@@ -69,7 +69,7 @@ class ProductsController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $user = Auth::user();
         $stores = $this->roleStores($user);
@@ -90,13 +90,49 @@ class ProductsController extends Controller
                 ->with('error', $limitMsg);
         }
 
+        $duplicateSlug = $request->query('duplicate');
+        $duplicateProduct = null;
+        if ($duplicateSlug) {
+            $duplicateProduct = Products::where('slug', $duplicateSlug)
+                ->orWhere('id', $duplicateSlug)
+                ->with('store')
+                ->first();
+            if ($duplicateProduct && ! ($user instanceof Admin)) {
+                $store = $duplicateProduct->store;
+                $owns = $store && ($user instanceof Agent ? $store->agent_id === $user->id : $store->user_id === $user->id);
+                if (! $owns) {
+                    $duplicateProduct = null;
+                }
+            }
+        }
+
+        // Retained selections from "Save & Add Another"
+        $retained = [
+            'store_id' => $request->query('retained_store'),
+            'category' => $request->query('retained_category'),
+            'subcategory' => $request->query('retained_subcategory'),
+            'brand' => $request->query('retained_brand'),
+            'item_weight' => $request->query('retained_weight'),
+        ];
+
+        $targetStore = null;
+        if ($duplicateProduct && $stores->firstWhere('id', $duplicateProduct->store_id)) {
+            $targetStore = $stores->firstWhere('id', $duplicateProduct->store_id);
+        } elseif ($retained['store_id'] && $stores->firstWhere('id', $retained['store_id'])) {
+            $targetStore = $stores->firstWhere('id', $retained['store_id']);
+        } else {
+            $targetStore = $stores->first();
+        }
+
         return Inertia::render('dashboard/forms/CreateProductForm', [
             'stores' => $stores,
-            'store' => $stores->first(),
+            'store' => $targetStore,
             'categories' => Categories::all(),
             'productLimit' => $user instanceof Agent ? $user->getProductLimit() : null,
             'productsCount' => $user instanceof Agent ? $user->getProductsCount() : 0,
             'canAddProduct' => $user instanceof Agent ? $user->canAddProduct() : true,
+            'duplicateProduct' => $duplicateProduct,
+            'retained' => $retained,
         ]);
     }
 
@@ -231,6 +267,16 @@ class ProductsController extends Controller
         if ($product->is_blocked) {
             return redirect()->route('dashboard.products')
                 ->with('error', "{$product->blocked_reason} This product has been blocked from the marketplace and submitted for admin review.");
+        }
+
+        if ($request->boolean('add_another')) {
+            return redirect()->route('dashboard.createproduct', [
+                'retained_store' => $product->store_id,
+                'retained_category' => $product->category,
+                'retained_subcategory' => $product->subcategory,
+                'retained_brand' => $product->brand,
+                'retained_weight' => $product->item_weight,
+            ])->with('success', 'Product published! Form ready for your next item.');
         }
 
         return redirect()->route('dashboard.products')
