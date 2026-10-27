@@ -422,9 +422,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
     formData.append('brand', data.brand || '');
     formData.append('quantity', data.quantity);
     formData.append('regular_price', data.regular_price);
-    if (data.sale_price) {
-      formData.append('sale_price', data.sale_price);
-    }
+    formData.append('sale_price', showSalePrice && data.sale_price ? String(data.sale_price) : '');
     formData.append('description', data.description);
     formData.append('color', JSON.stringify(data.color));
     formData.append('size', JSON.stringify(data.size));
@@ -449,7 +447,6 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
         toast.success('Product updated successfully!');
         setImagesToRemove([]);
         reset('images');
-        router.visit('/dashboard/products');
       },
       onError: (errs) => {
         console.error('Update failed:', errs);

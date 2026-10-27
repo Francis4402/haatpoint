@@ -544,7 +544,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
     <AppLayout user={auth.user} wishlist={wishlist}>
       <SeoHead />
 
-      <ClearCartDialog isOpen={isOpen} confirmClearCart={confirmClearCart} />
+      <ClearCartDialog isOpen={isOpen} onClose={close} confirmClearCart={confirmClearCart} />
 
       <div className="min-h-screen bg-paper-dim py-20">
         <div className="container">

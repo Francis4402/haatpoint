@@ -1,7 +1,7 @@
 
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { FaTrash, FaTimes } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 
 interface clearCartProps {
     isOpen: boolean;
@@ -44,24 +44,16 @@ const ClearCartDialog = ({ isOpen, confirmClearCart, onClose }: clearCartProps) 
                         >
                             <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-hard-sm border border-line transition-all">
                                 {/* Header */}
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center">
-                                        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mr-4">
-                                            <FaTrash className="h-6 w-6 text-red-600" />
-                                        </div>
-                                        <Dialog.Title
-                                            as="h3"
-                                            className="text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink"
-                                        >
-                                            Clear Shopping Cart
-                                        </Dialog.Title>
+                                <div className="flex items-center mb-4">
+                                    <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mr-4 shrink-0">
+                                        <FaTrash className="h-6 w-6 text-red-600" />
                                     </div>
-                                    <button
-                                        onClick={handleClose}
-                                        className="text-text-soft hover:text-ink transition-colors p-1 rounded-lg hover:bg-paper-dim"
+                                    <Dialog.Title
+                                        as="h3"
+                                        className="text-lg font-display font-extrabold uppercase tracking-[-0.01em] text-ink"
                                     >
-                                        <FaTimes className="h-5 w-5" />
-                                    </button>
+                                        Clear Shopping Cart
+                                    </Dialog.Title>
                                 </div>
 
                                 {/* Message */}

@@ -315,7 +315,10 @@ class ProductsController extends Controller
      */
     public function edit($slug)
     {
-        $product = Products::where('slug', $slug)->with('store')->firstOrFail();
+        $product = Products::where('slug', $slug)
+            ->orWhere('id', $slug)
+            ->with('store')
+            ->firstOrFail();
 
         $this->abortUnlessOwnsProduct($product);
 
@@ -428,7 +431,12 @@ class ProductsController extends Controller
      */
     public function update(Request $request, $slug)
     {
-        $product = Products::where('slug', $slug)->with('store')->firstOrFail();
+        $user = Auth::user();
+
+        $product = Products::where('slug', $slug)
+            ->orWhere('id', $slug)
+            ->with('store')
+            ->firstOrFail();
 
         $this->abortUnlessOwnsProduct($product);
 
@@ -455,22 +463,38 @@ class ProductsController extends Controller
 
         // store_id is mass-assignable (Products::$guarded is empty), so an
         // unchecked value here would let anyone move a product into any store.
-        if (! $this->canUseStore($request->user(), $validated['store_id'])) {
+        if (! $this->canUseStore($user, $validated['store_id'])) {
             abort(403, 'You can only move a product to one of your own stores.');
         }
 
         // Normalize inStock ("1"/"0" from FormData → bool)
         $validated['inStock'] = $request->boolean('inStock');
 
-        // ✅ Fill everything EXCEPT slug + images + images_to_remove
+        // ✅ Fill everything EXCEPT slug + images + images_to_remove + sale_price
         $product->fill(collect($validated)->except([
             'images',
             'images_to_remove',
-            'slug',                    // ⬅️ exclude slug so we can set it manually below
+            'slug',
+            'sale_price',
         ])->toArray());
 
-        // ✅ Now set slug with timestamp (same as store)
-        $product->slug = Str::slug($validated['name']).'-'.time();
+        // Explicitly set sale_price (handles null if user cleared it)
+        $product->sale_price = (isset($validated['sale_price']) && $validated['sale_price'] !== '' && is_numeric($validated['sale_price']))
+            ? (float) $validated['sale_price']
+            : null;
+
+        // Keep slug intact if unchanged, or validate and assign if changed
+        $requestedSlug = Str::slug($validated['slug'] ?? $validated['name']);
+        if (empty($requestedSlug)) {
+            $requestedSlug = Str::slug($validated['name']);
+        }
+        if ($requestedSlug !== $product->slug) {
+            $slugExists = Products::where('slug', $requestedSlug)->where('id', '!=', $product->id)->exists();
+            if ($slugExists) {
+                $requestedSlug .= '-'.time();
+            }
+            $product->slug = $requestedSlug;
+        }
 
         // Keep category brand list in sync when a new brand is typed by an agent.
         $this->registerCategoryBrand($validated['category'] ?? '', $validated['brand'] ?? '');

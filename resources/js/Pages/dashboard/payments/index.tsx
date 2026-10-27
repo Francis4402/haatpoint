@@ -14,7 +14,8 @@ import {
   FaExclamationTriangle,
   FaUser,
   FaCreditCard,
-  FaAddressCard
+  FaAddressCard,
+  FaTimes
 } from 'react-icons/fa';
 import { PageProps } from '@/types';
 import { Orders } from '@/types';
@@ -72,38 +73,38 @@ const Payments: React.FC<PaymentsProps> = ({ orders = [], auth }) => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Paid Orders</p>
-                  <p className="text-2xl font-bold text-ink mt-1">{paidOrders.length}</p>
+            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 min-w-0">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-mono text-text-soft uppercase tracking-wide truncate">Paid Orders</p>
+                  <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate">{paidOrders.length}</p>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                  <FaCheckCircle className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Total Paid Amount</p>
-                  <p className="text-2xl font-bold text-ink mt-1"><FormatPrice price={totalPaid} /></p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-marigold/10 flex items-center justify-center">
-                  <FaDollarSign className="h-6 w-6 text-marigold" />
+                <div className="w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-green-100 flex items-center justify-center">
+                  <FaCheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Unpaid Amount</p>
-                  <p className="text-2xl font-bold text-ink mt-1"><FormatPrice price={totalPending} /></p>
+            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 min-w-0">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-mono text-text-soft uppercase tracking-wide truncate">Total Paid Amount</p>
+                  <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate"><FormatPrice price={totalPaid} /></p>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center">
-                  <FaClock className="h-6 w-6 text-yellow-600" />
+                <div className="w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-marigold/10 flex items-center justify-center">
+                  <FaDollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-marigold" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 min-w-0">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-mono text-text-soft uppercase tracking-wide truncate">Unpaid Amount</p>
+                  <p className="text-xl sm:text-2xl font-bold text-ink mt-1 truncate"><FormatPrice price={totalPending} /></p>
+                </div>
+                <div className="w-11 h-11 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-yellow-100 flex items-center justify-center">
+                  <FaClock className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
                 </div>
               </div>
             </div>
@@ -112,21 +113,21 @@ const Payments: React.FC<PaymentsProps> = ({ orders = [], auth }) => {
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Orders List */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Paid Orders</h2>
-                  <span className="text-sm text-text-soft font-mono">{orders.length} orders</span>
+            <div className="lg:col-span-2 min-w-0">
+              <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 min-w-0">
+                <div className="flex items-center justify-between mb-5 sm:mb-6">
+                  <h2 className="text-lg sm:text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Paid Orders</h2>
+                  <span className="text-xs sm:text-sm text-text-soft font-mono">{orders.length} orders</span>
                 </div>
 
                 {orders.length === 0 ? (
                   <div className="text-center py-12">
-                    <FaCreditCard className="h-16 w-16 text-text-soft mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-ink mb-2">No Payment Orders</h3>
-                    <p className="text-text-soft">Orders will appear here once payment status is set to paid.</p>
+                    <FaCreditCard className="h-14 w-14 sm:h-16 sm:w-16 text-text-soft mx-auto mb-4" />
+                    <h3 className="text-lg sm:text-xl font-bold text-ink mb-2">No Payment Orders</h3>
+                    <p className="text-sm text-text-soft">Orders will appear here once payment status is set to paid.</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {orders.map(order => {
                       const paymentBadge = getPaymentBadge(order.payment_status);
                       const orderBadge = getOrderBadge(order.order_status);
@@ -134,81 +135,88 @@ const Payments: React.FC<PaymentsProps> = ({ orders = [], auth }) => {
                       return (
                         <div
                           key={order.id}
-                          className={`border border-line rounded-xl p-4 hover:shadow-hard-sm transition-all duration-300 cursor-pointer ${
+                          className={`border border-line rounded-xl p-3.5 sm:p-4 hover:shadow-hard-sm transition-all duration-300 cursor-pointer overflow-hidden ${
                             selectedOrder?.id === order.id ? 'ring-2 ring-marigold bg-marigold/5' : ''
                           } ${isPaid ? 'border-green-200' : ''}`}
                           onClick={() => setSelectedOrder(order)}
                         >
-                          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-start justify-between mb-3">
-                                <div>
-                                  <div className="flex items-center space-x-2">
-                                    <h3 className="font-bold text-ink">Order #{order.order_number}</h3>
-                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${paymentBadge.cls}`}>
-                                      {isPaid ? <FaCheckCircle className="h-3 w-3" /> : <FaExclamationTriangle className="h-3 w-3" />}
-                                      <span>{paymentBadge.label}</span>
-                                    </span>
-                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${orderBadge.cls}`}>
-                                      {orderBadge.label}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-text-soft mt-1">
-                                    <FaCalendarAlt className="h-3 w-3 inline mr-1" />
-                                    Placed: {new Date(order.created_at).toLocaleDateString()}
-                                  </p>
+                          <div className="w-full min-w-0">
+                            {/* Card Header: Order Number, Badges, Total Amount */}
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 sm:gap-4 mb-3 pb-3 border-b border-line/60">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                  <h3 className="font-bold text-ink text-sm sm:text-base break-all">
+                                    Order #{order.order_number}
+                                  </h3>
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${paymentBadge.cls}`}>
+                                    {isPaid ? <FaCheckCircle className="h-3 w-3 shrink-0" /> : <FaExclamationTriangle className="h-3 w-3 shrink-0" />}
+                                    <span>{paymentBadge.label}</span>
+                                  </span>
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${orderBadge.cls}`}>
+                                    {orderBadge.label}
+                                  </span>
                                 </div>
-
-                                <div className="text-right">
-                                  <p className="font-bold text-ink">
-                                    <FormatPrice price={order.total} />
-                                  </p>
-                                  <p className="text-xs text-text-soft">Total Amount</p>
-                                </div>
+                                <p className="text-xs sm:text-sm text-text-soft mt-1 flex items-center">
+                                  <FaCalendarAlt className="h-3 w-3 shrink-0 mr-1.5" />
+                                  <span>Placed: {new Date(order.created_at).toLocaleDateString()}</span>
+                                </p>
                               </div>
 
-                              <div className="mb-3">
-                                <div className="flex items-center text-sm text-text-soft mb-1">
-                                  <FaUser className="h-3 w-3 mr-2" />
-                                  <span className="font-medium text-ink">{order.recipient_name}</span>
-                                </div>
-                                <div className="flex items-center text-sm text-text-soft">
-                                  <FaMapMarkerAlt className="h-3 w-3 mr-2" />
-                                  <span>{order.recipient_address}</span>
-                                </div>
+                              <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-start gap-1 shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-line/40">
+                                <span className="text-xs text-text-soft sm:order-2">Total Amount</span>
+                                <p className="font-bold text-ink text-base sm:text-lg sm:order-1">
+                                  <FormatPrice price={order.total} />
+                                </p>
                               </div>
+                            </div>
 
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                <div className="p-2 bg-paper-dim rounded-xl">
-                                  <div className="flex items-center">
-                                    <FaBox className="h-3 w-3 text-text-soft mr-1" />
-                                    <span className="text-xs text-text-soft">Items</span>
-                                  </div>
-                                  <p className="font-medium text-ink text-sm">{order.item_quantity}</p>
+                            {/* Customer & Address */}
+                            <div className="mb-3 space-y-1.5 min-w-0">
+                              <div className="flex items-center text-xs sm:text-sm text-text-soft min-w-0">
+                                <FaUser className="h-3 w-3 shrink-0 mr-2 text-text-soft" />
+                                <span className="font-medium text-ink truncate">{order.recipient_name}</span>
+                              </div>
+                              <div className="flex items-start text-xs sm:text-sm text-text-soft min-w-0">
+                                <FaMapMarkerAlt className="h-3 w-3 shrink-0 mr-2 mt-0.5 text-text-soft" />
+                                <span className="break-words line-clamp-2">{order.recipient_address}</span>
+                              </div>
+                            </div>
+
+                            {/* Details 4-Column Grid */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 min-w-0">
+                              <div className="p-2 sm:p-2.5 bg-paper-dim rounded-xl min-w-0">
+                                <div className="flex items-center">
+                                  <FaBox className="h-3 w-3 shrink-0 text-text-soft mr-1" />
+                                  <span className="text-[11px] sm:text-xs text-text-soft">Items</span>
                                 </div>
-                                <div className="p-2 bg-paper-dim rounded-xl">
-                                  <div className="flex items-center">
-                                    <FaCreditCard className="h-3 w-3 text-text-soft mr-1" />
-                                    <span className="text-xs text-text-soft">Payment</span>
-                                  </div>
-                                  <p className="font-medium text-ink text-sm capitalize">{order.payment_method?.replace(/_/g, ' ')}</p>
+                                <p className="font-medium text-ink text-xs sm:text-sm mt-0.5 truncate">{order.item_quantity}</p>
+                              </div>
+                              <div className="p-2 sm:p-2.5 bg-paper-dim rounded-xl min-w-0">
+                                <div className="flex items-center">
+                                  <FaCreditCard className="h-3 w-3 shrink-0 text-text-soft mr-1" />
+                                  <span className="text-[11px] sm:text-xs text-text-soft">Payment</span>
                                 </div>
-                                <div className="p-2 bg-paper-dim rounded-xl">
-                                  <div className="flex items-center">
-                                    <FaAddressCard className="h-3 w-3 text-text-soft mr-1" />
-                                    <span className="text-xs text-text-soft">Store</span>
-                                  </div>
-                                  <p className="font-medium text-ink text-sm truncate">{order.store_name}</p>
+                                <p className="font-medium text-ink text-xs sm:text-sm capitalize mt-0.5 truncate" title={order.payment_method?.replace(/_/g, ' ')}>
+                                  {order.payment_method?.replace(/_/g, ' ')}
+                                </p>
+                              </div>
+                              <div className="p-2 sm:p-2.5 bg-paper-dim rounded-xl min-w-0">
+                                <div className="flex items-center">
+                                  <FaAddressCard className="h-3 w-3 shrink-0 text-text-soft mr-1" />
+                                  <span className="text-[11px] sm:text-xs text-text-soft">Store</span>
                                 </div>
-                                <div className="p-2 bg-paper-dim rounded-xl">
-                                  <div className="flex items-center">
-                                    <FaDollarSign className="h-3 w-3 text-text-soft mr-1" />
-                                    <span className="text-xs text-text-soft">Delivery</span>
-                                  </div>
-                                  <p className="font-medium text-ink text-sm">
-                                    <FormatPrice price={order.delivery_charge} />
-                                  </p>
+                                <p className="font-medium text-ink text-xs sm:text-sm mt-0.5 truncate" title={order.store_name}>
+                                  {order.store_name}
+                                </p>
+                              </div>
+                              <div className="p-2 sm:p-2.5 bg-paper-dim rounded-xl min-w-0">
+                                <div className="flex items-center">
+                                  <FaDollarSign className="h-3 w-3 shrink-0 text-text-soft mr-1" />
+                                  <span className="text-[11px] sm:text-xs text-text-soft">Delivery</span>
                                 </div>
+                                <p className="font-medium text-ink text-xs sm:text-sm mt-0.5 truncate">
+                                  <FormatPrice price={order.delivery_charge} />
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -221,81 +229,82 @@ const Payments: React.FC<PaymentsProps> = ({ orders = [], auth }) => {
             </div>
 
             {/* Order Details Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-6 min-w-0">
               {selectedOrder ? (
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 sticky top-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Payment Details</h3>
+                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 sticky top-6 min-w-0">
+                  <div className="flex items-center justify-between mb-5 sm:mb-6">
+                    <h3 className="text-lg sm:text-xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink">Payment Details</h3>
                     <button
                       onClick={() => setSelectedOrder(null)}
-                      className="p-1 text-text-soft hover:text-marigold rounded-lg hover:bg-paper-dim transition-colors"
+                      className="p-1.5 text-text-soft hover:text-marigold rounded-lg hover:bg-paper-dim transition-colors"
+                      title="Close details"
                     >
-                      <FaUser className="h-5 w-5" />
+                      <FaTimes className="h-4 w-4" />
                     </button>
                   </div>
 
                   <div className="mb-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h4 className="text-lg font-bold text-ink">Order #{selectedOrder.order_number}</h4>
-                        <div className="flex items-center mt-1 space-x-2">
-                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${getPaymentBadge(selectedOrder.payment_status).cls}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3 pb-3 border-b border-line/60">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-base sm:text-lg font-bold text-ink break-all">Order #{selectedOrder.order_number}</h4>
+                        <div className="flex flex-wrap items-center mt-1.5 gap-1.5">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${getPaymentBadge(selectedOrder.payment_status).cls}`}>
                             {getPaymentBadge(selectedOrder.payment_status).label}
                           </span>
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getOrderBadge(selectedOrder.order_status).cls}`}>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${getOrderBadge(selectedOrder.order_status).cls}`}>
                             {getOrderBadge(selectedOrder.order_status).label}
                           </span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-ink">
+                      <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-start gap-0.5 shrink-0 pt-1 sm:pt-0">
+                        <span className="text-xs text-text-soft sm:order-2">Total Amount</span>
+                        <p className="text-xl sm:text-2xl font-bold text-ink sm:order-1">
                           <FormatPrice price={selectedOrder.total} />
                         </p>
-                        <p className="text-sm text-text-soft">Total Amount</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mb-6">
+                  <div className="mb-6 min-w-0">
                     <h5 className="text-xs font-mono text-text-soft uppercase tracking-wide mb-3">Customer Information</h5>
                     <div className="space-y-2">
-                      <div className="flex items-center p-3 bg-paper-dim rounded-xl border border-line">
-                        <FaUser className="h-4 w-4 text-text-soft mr-3" />
-                        <div>
-                          <p className="font-medium text-ink">{selectedOrder.recipient_name}</p>
+                      <div className="flex items-center p-3 bg-paper-dim rounded-xl border border-line min-w-0">
+                        <FaUser className="h-4 w-4 shrink-0 text-text-soft mr-3" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-ink text-sm truncate">{selectedOrder.recipient_name}</p>
                           <p className="text-xs text-text-soft">Customer Name</p>
                         </div>
                       </div>
-                      <div className="flex items-center p-3 bg-paper-dim rounded-xl border border-line">
-                        <FaEnvelope className="h-4 w-4 text-text-soft mr-3" />
-                        <div>
-                          <p className="font-medium text-ink">{selectedOrder.recipient_email}</p>
+                      <div className="flex items-center p-3 bg-paper-dim rounded-xl border border-line min-w-0">
+                        <FaEnvelope className="h-4 w-4 shrink-0 text-text-soft mr-3" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-ink text-sm truncate">{selectedOrder.recipient_email}</p>
                           <p className="text-xs text-text-soft">Email Address</p>
                         </div>
                       </div>
-                      <div className="flex items-center p-3 bg-paper-dim rounded-xl border border-line">
-                        <FaPhone className="h-4 w-4 text-text-soft mr-3" />
-                        <div>
-                          <p className="font-medium text-ink">{selectedOrder.recipient_phone}</p>
+                      <div className="flex items-center p-3 bg-paper-dim rounded-xl border border-line min-w-0">
+                        <FaPhone className="h-4 w-4 shrink-0 text-text-soft mr-3" />
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-ink text-sm truncate">{selectedOrder.recipient_phone}</p>
                           <p className="text-xs text-text-soft">Phone Number</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mb-6">
+                  <div className="mb-6 min-w-0">
                     <h5 className="text-xs font-mono text-text-soft uppercase tracking-wide mb-3">Delivery Address</h5>
-                    <div className="p-3 bg-marigold/5 rounded-xl border border-marigold/20">
+                    <div className="p-3 bg-marigold/5 rounded-xl border border-marigold/20 min-w-0">
                       <div className="flex items-center mb-2">
-                        <FaMapMarkerAlt className="h-4 w-4 text-marigold mr-2" />
-                        <span className="font-medium text-ink">Address</span>
+                        <FaMapMarkerAlt className="h-4 w-4 shrink-0 text-marigold mr-2" />
+                        <span className="font-medium text-ink text-sm">Address</span>
                       </div>
-                      <p className="text-sm text-text-soft">{selectedOrder.recipient_address}</p>
-                      <p className="text-xs text-text-soft mt-2">City: {selectedOrder.recipient_city} • Zone: {selectedOrder.recipient_zone} • Area: {selectedOrder.recipient_area}</p>
+                      <p className="text-sm text-text-soft break-words">{selectedOrder.recipient_address}</p>
+                      <p className="text-xs text-text-soft mt-2 break-words">City: {selectedOrder.recipient_city} • Zone: {selectedOrder.recipient_zone} • Area: {selectedOrder.recipient_area}</p>
                     </div>
                   </div>
 
-                  <div className="mb-6">
+                  <div className="mb-6 min-w-0">
                     <h5 className="text-xs font-mono text-text-soft uppercase tracking-wide mb-3">Payment Breakdown</h5>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between p-3 bg-paper-dim rounded-xl border border-line">
@@ -320,24 +329,24 @@ const Payments: React.FC<PaymentsProps> = ({ orders = [], auth }) => {
                   </div>
 
                   {selectedOrder.order_items && selectedOrder.order_items.length > 0 && (
-                    <div className="mb-6">
+                    <div className="mb-6 min-w-0">
                       <h5 className="text-xs font-mono text-text-soft uppercase tracking-wide mb-3">Order Items ({selectedOrder.order_items.length})</h5>
                       <div className="space-y-2">
                         {selectedOrder.order_items.map(item => (
-                          <div key={item.id} className="flex items-center p-3 bg-paper-dim rounded-xl border border-line">
-                            <div className="w-10 h-10 rounded overflow-hidden mr-3 border border-line">
+                          <div key={item.id} className="flex items-center p-2.5 sm:p-3 bg-paper-dim rounded-xl border border-line min-w-0">
+                            <div className="w-10 h-10 rounded overflow-hidden mr-3 border border-line shrink-0">
                               <img
                                 src={item.product_image ? (item.product_image.startsWith('http') || item.product_image.startsWith('/') ? item.product_image : `/storage/${item.product_image}`) : `https://ui-avatars.com/api/?name=${encodeURIComponent(item.product_name)}&background=random`}
                                 alt={item.product_name}
                                 className="w-full h-full object-cover"
                               />
                             </div>
-                            <div className="flex-1">
-                              <p className="font-medium text-ink text-sm">{item.product_name}</p>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-ink text-xs sm:text-sm truncate">{item.product_name}</p>
                               <p className="text-xs text-text-soft">Qty: {item.quantity}</p>
                             </div>
-                            <div className="text-right">
-                              <p className="font-medium text-ink">
+                            <div className="text-right shrink-0 ml-2">
+                              <p className="font-medium text-ink text-xs sm:text-sm">
                                 <FormatPrice price={item.total} />
                               </p>
                             </div>
@@ -348,13 +357,13 @@ const Payments: React.FC<PaymentsProps> = ({ orders = [], auth }) => {
                   )}
                 </div>
               ) : (
-                <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-hard-sm border border-line p-6 text-white sticky top-6">
-                  <h3 className="text-lg font-display font-extrabold uppercase tracking-[-0.01em] mb-4">Payment Details</h3>
+                <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-hard-sm border border-line p-5 sm:p-6 text-white sticky top-6 min-w-0">
+                  <h3 className="text-base sm:text-lg font-display font-extrabold uppercase tracking-[-0.01em] mb-4">Payment Details</h3>
                   <p className="text-sm text-gray-300 mb-6">
                     Select an order from the list to view detailed payment information, delivery details, and customer information.
                   </p>
-                  <div className="text-center">
-                    <FaCreditCard className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <div className="text-center py-4">
+                    <FaCreditCard className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 opacity-50" />
                     <p className="text-sm text-gray-400">No order selected</p>
                   </div>
                 </div>
