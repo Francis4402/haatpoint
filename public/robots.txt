@@ -3,14 +3,16 @@ Allow: /
 
 # Disallow admin and sensitive areas
 Disallow: /admin/
+Disallow: /superadmin/
+Disallow: /agent/
 Disallow: /dashboard/
 Disallow: /api/
 Disallow: /vendor/
-Disallow: /login/
-Disallow: /register/
+Disallow: /login
+Disallow: /register
 Disallow: /password/reset
 Disallow: /_debugbar/
-Disallow: /checkout/
+Disallow: /checkout
 Disallow: /cart
 Disallow: /wishlist
 Disallow: /orders/

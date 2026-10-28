@@ -50,7 +50,7 @@ Route::get('/', function () {
     $showcase = function (?string $productType, int $limit = 6) {
         $cacheKey = 'showcase_pool_' . ($productType ?? 'all');
         $poolIds = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($productType) {
-            $q = Products::visible();
+            $q = Products::visible()->withProBoost();
             if ($productType !== null) {
                 $q->where('product_type', $productType);
             }
@@ -68,7 +68,7 @@ Route::get('/', function () {
         }
 
         $rail = !empty($chosenIds)
-            ? Products::with('store')->visible()->whereIn('id', $chosenIds)->get()
+            ? Products::with('store.agent')->visible()->whereIn('id', $chosenIds)->get()
             : collect();
 
         if ($rail->count() >= $limit) {
@@ -78,7 +78,7 @@ Route::get('/', function () {
         $needed = $limit - $rail->count();
         $topUpCacheKey = 'showcase_topup_' . ($productType ?? 'all');
         $topUpPoolIds = Cache::remember($topUpCacheKey, now()->addMinutes(5), function () use ($productType) {
-            $q = Products::visible();
+            $q = Products::visible()->withProBoost();
             if ($productType !== null) {
                 $q->where('product_type', '!=', $productType);
             }
@@ -98,7 +98,7 @@ Route::get('/', function () {
         }
 
         $topUp = !empty($topUpChosen)
-            ? Products::with('store')->visible()->whereIn('id', $topUpChosen)->get()
+            ? Products::with('store.agent')->visible()->whereIn('id', $topUpChosen)->get()
             : collect();
 
         return $rail->concat($topUp)->values();

@@ -156,6 +156,12 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (summary.item_count > 5) {
+      toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+      setError('You can only order up to 5 products per order. Please return to your cart and reduce to 5 or fewer items.');
+      return;
+    }
+
     if (!validateForm()) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -275,6 +281,30 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                     ))}
                   </ul>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Per-order Limit Warning */}
+          {summary.item_count > 5 && (
+            <div className="mb-6 bg-red-50 border-2 border-red-300 text-red-900 p-4 sm:p-5 rounded-xl flex items-start gap-3.5 shadow-sm">
+              <FaExclamationCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-sm sm:text-base text-red-800">
+                  Per-Order Limit Exceeded ({summary.item_count}/5 products)
+                </h4>
+                <p className="text-xs sm:text-sm text-red-700 mt-1">
+                  A customer can order a maximum of 5 products per order. Please return to your cart and reduce the total quantity to 5 or fewer items to complete this order. You can place another order for any additional products.
+                </p>
+                <div className="mt-3">
+                  <Link
+                    href="/cart"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <FaArrowLeft className="w-3 h-3" />
+                    Back to Cart to Adjust
+                  </Link>
+                </div>
               </div>
             </div>
           )}
@@ -812,11 +842,13 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
 
                         <button
                           type="submit"
-                          disabled={processing || isProcessing || cartItems.length === 0 || !selectedCity || !selectedZone || !pathaoCharges || !termsAccepted}
-                          className="w-full py-4 bg-gray-900 hover:bg-marigold text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center"
+                          disabled={processing || isProcessing || cartItems.length === 0 || !selectedCity || !selectedZone || !pathaoCharges || !termsAccepted || summary.item_count > 5}
+                          className="w-full py-4 bg-gray-900 hover:bg-marigold text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center text-sm sm:text-base"
                         >
                           <FaLock className="h-5 w-5 mr-2" />
-                          {(processing || isProcessing) ? (
+                          {summary.item_count > 5 ? (
+                            'Max 5 Products Allowed (Adjust Cart)'
+                          ) : (processing || isProcessing) ? (
                             <span className="flex items-center">
                               <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

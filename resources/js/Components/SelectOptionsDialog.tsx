@@ -54,7 +54,7 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
   product,
   store,
 }) => {
-  const { addToCart } = useStore();
+  const { addToCart, getTotalItems } = useStore();
 
   const availableSizes = parseVariantList(product.size);
   const availableColors = parseVariantList(product.color);
@@ -63,6 +63,9 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
 
   const resolvedStore = store || product.store;
   const maxStock = product.quantity || 0;
+  const currentCartTotal = getTotalItems();
+  const maxAllowedForOrder = Math.max(0, 5 - currentCartTotal);
+  const effectiveMaxQty = Math.min(maxStock, maxAllowedForOrder > 0 ? maxAllowedForOrder : 5);
 
   const [quantity, setQuantity] = useState<number>(1);
   const [useSeparateVariants, setUseSeparateVariants] = useState<boolean>(false);
@@ -93,7 +96,11 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
 
   // Adjust itemConfigs array length when quantity changes
   const handleQuantityChange = (newQty: number) => {
-    if (newQty < 1 || (maxStock > 0 && newQty > maxStock)) return;
+    if (newQty < 1 || (maxStock > 0 && newQty > maxStock) || newQty > 5) return;
+    if (currentCartTotal + newQty > 5) {
+      toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+      return;
+    }
 
     setQuantity(newQty);
     setItemConfigs((prev) => {
@@ -197,6 +204,11 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
     if (!validateSelections()) return;
 
     if (!resolvedStore) return;
+
+    if (currentCartTotal + quantity > 5) {
+      toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+      return;
+    }
 
     // Group matching items by (size + color) so cart doesn't have duplicate identical lines
     const grouped: Record<string, { size: string; color: string; count: number }> = {};
@@ -309,12 +321,25 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
 
                 {/* Body Content (scrollable) */}
                 <div className="p-4 sm:p-5 overflow-y-auto space-y-5 text-left flex-1">
+                  {currentCartTotal >= 5 && (
+                    <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl p-3 flex items-start gap-2">
+                      <span className="font-bold">⚠️</span>
+                      <div>
+                        <strong className="block font-semibold">Per-order limit reached (Max 5)</strong>
+                        <span>You currently have 5 items in your cart. You can only order up to 5 products per order. For additional items, please place another order.</span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Quantity Selector */}
                   <div className="bg-paper-dim/60 p-3.5 rounded-xl border border-line flex items-center justify-between">
                     <div>
                       <span className="text-sm font-semibold text-ink block">Quantity</span>
                       <span className="text-xs text-text-soft">
                         {quantity > 1 ? `${quantity} items selected` : 'Select quantity to order'}
+                      </span>
+                      <span className="text-[11px] text-amber-700 block font-medium mt-0.5">
+                        Max 5 products per order
                       </span>
                     </div>
 
@@ -334,7 +359,7 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
                       <button
                         type="button"
                         onClick={() => handleQuantityChange(quantity + 1)}
-                        disabled={quantity >= maxStock}
+                        disabled={quantity >= maxStock || quantity >= 5 || currentCartTotal + quantity >= 5}
                         className="px-3.5 py-2 text-text-soft hover:text-ink hover:bg-paper-dim transition-colors disabled:opacity-40 disabled:cursor-not-allowed border-l border-line"
                         aria-label="Increase quantity"
                       >
@@ -569,21 +594,21 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
                     <button
                       type="button"
                       onClick={() => handleAddAndProceed(false)}
-                      disabled={!product.inStock || maxStock === 0}
+                      disabled={!product.inStock || maxStock === 0 || currentCartTotal >= 5}
                       className="w-full py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl bg-ink hover:bg-ink-light text-white font-semibold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <FaShoppingCart className="w-3.5 h-3.5 text-marigold shrink-0" />
-                      <span className="truncate">Add to Cart</span>
+                      <span className="truncate">{currentCartTotal >= 5 ? 'Order Limit Reached' : 'Add to Cart'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleAddAndProceed(true)}
-                      disabled={!product.inStock || maxStock === 0}
+                      disabled={!product.inStock || maxStock === 0 || currentCartTotal >= 5}
                       className="w-full py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl bg-marigold hover:bg-marigold-dark text-white font-semibold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5 sm:gap-2 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <FaShoppingBag className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">Buy Now</span>
+                      <span className="truncate">{currentCartTotal >= 5 ? 'Order Limit Reached' : 'Buy Now'}</span>
                     </button>
                   </div>
                 </div>

@@ -41,12 +41,16 @@
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="630">
         <meta property="og:locale" content="en_US">
+        @if(!empty($seo['ogPrice']))
+            <meta property="product:price:amount" content="{{ $seo['ogPrice'] }}">
+            <meta property="product:price:currency" content="{{ $seo['ogCurrency'] ?? 'BDT' }}">
+        @endif
 
         {{-- Twitter Card Meta Tags --}}
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{{ $seo['ogTitle'] ?? 'HaatPoint - Bangladesh\'s Premier Marketplace' }}">
         <meta name="twitter:description" content="{{ $seo['ogDescription'] ?? 'Shop thousands of products from trusted vendors across Bangladesh. Find electronics, fashion, home goods & more at HaatPoint.' }}">
-        <meta name="twitter:image" content="https://www.haatpoint.com/summary_large_image.jpg">
+        <meta name="twitter:image" content="{{ $seo['ogImage'] ?? 'https://www.haatpoint.com/summary_large_image.jpg' }}">
 
         {{-- Additional Meta Tags --}}
         <meta name="author" content="HaatPoint Team">

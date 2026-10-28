@@ -57,15 +57,15 @@ const STEPS = [
 const FAQ = [
   {
     q: 'How much does it cost to start selling?',
-    a: 'Getting started is completely free! Every agent account is free forever with up to 150 products upload limit, full store management, order handling, and zero upfront costs.',
+    a: 'Getting started is completely free! Every agent account is free forever with up to 150 products upload limit, full store management, order handling, and standard 10% sales commission.',
   },
   {
     q: 'What is HaatPoint Pro and how much does it cost?',
-    a: 'HaatPoint Pro is built for active and scaling sellers. You can pay monthly for ৳100/month or pay 6 months in advance for ৳540 (a 10% discount saving ৳60). Pro unlocks unlimited product uploads, continuous selling, and priority support.',
+    a: 'HaatPoint Pro is built for active and scaling sellers. You can pay monthly for ৳100/month or pay 6 months in advance for ৳540 (a 10% discount saving ৳60). Pro lowers your sales commission from 10% down to only 7%, boosts your products to show more often to buyers, and unlocks unlimited product uploads.',
   },
   {
     q: 'What extra advantages do I get with HaatPoint Pro?',
-    a: 'Pro members enjoy unlimited product uploads (no 150-product cap), continuous storefront visibility without pauses, a Verified Pro Seller badge, advanced sales analytics, and priority customer support.',
+    a: 'Pro members enjoy reduced 7% sales commission taken from agent (saving 3% on every order), boosted product ranking so your products appear more often across search and discovery rails, unlimited product uploads (no 150-product cap), a Verified Pro Seller badge, and priority customer support.',
   },
   {
     q: 'How do I pay for HaatPoint Pro?',
@@ -335,7 +335,8 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
               <ul className="mt-6 space-y-3.5 text-sm text-ink flex-1">
                 {[
                   'Upload up to 150 products (Free forever)',
-                  '10% platform sales commission',
+                  '10% platform sales commission taken from agent',
+                  'Standard product search and showcase ranking',
                   'Lifetime free agent account (no expiry)',
                   'Custom storefront branding & profile',
                   'Basic sales dashboard & order management',
@@ -380,13 +381,15 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
                   </p>
                 )}
                 <p className="mt-3 text-sm text-[#B9B7B0]">
-                  List unlimited products, keep your store always active, and gain maximum customer visibility.
+                  List unlimited products, get only 7% commission taken from sales, and have your products boosted to show more often to buyers.
                 </p>
 
                 <ul className="mt-6 space-y-3.5 text-sm flex-1">
                   {[
-                    'Unlimited product listings for agent',
-                    'Only 7% sales commission (Save 3% on every order)',
+                    'Only 7% sales commission taken from agent (Keep 93% — save 3% on every order)',
+                    'Products will be boosted & shown more often across the marketplace',
+                    'High-priority algorithm ranking in search, category rails & home showcases',
+                    'Unlimited product listings for agent (no 150-product cap)',
                     'Continuous, always-on selling without storefront pauses',
                     'Verified Pro Seller badge on your shop and items',
                     'Advanced sales, performance, and revenue analytics',

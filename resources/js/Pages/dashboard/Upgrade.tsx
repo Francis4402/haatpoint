@@ -93,12 +93,13 @@ export default function Upgrade({ user, pricing }: { user?: User; pricing?: { mo
                 {isActive ? (
                   <>
                     your HaatPoint access{endDate ? ` ends on ${endDate}` : ''}. Renew now to
-                    stay online without interruption.
+                    keep your 7% low commission rate and boosted product placement without interruption.
                   </>
                 ) : (
                   <>
                     upgrade to <strong className="text-paper">HaatPoint Pro</strong> to unlock unlimited products,
-                    keep your storefront active, and get direct customer orders.
+                    enjoy a reduced 7% sales commission (save 3% on every order), and have your products boosted
+                    to appear more often across search and discovery rails.
                   </>
                 )}
               </p>
@@ -117,7 +118,7 @@ export default function Upgrade({ user, pricing }: { user?: User; pricing?: { mo
               </div>
 
               <p className="mt-4 max-w-[460px] text-xs leading-relaxed text-[#8f8d87]">
-                Free agent accounts are free forever and limited to 150 product uploads. Upgrade to Pro for unlimited product uploads at ৳{monthlyPrice}/month, or ৳{sixMonthPrice} for 6 months (10% discount applied). Pay via bKash to {bkashNumber}, submit your TrxID, and admin will activate your Pro access upon verification.
+                Free agent accounts are free forever with 150 product uploads at 10% sales commission. Upgrade to Pro for unlimited product uploads, reduced 7% sales commission taken from agent, and automatic product boosting to show your products more often to buyers. Pay via bKash to {bkashNumber}, submit your TrxID, and admin will activate your Pro access upon verification.
               </p>
             </div>
 
@@ -180,11 +181,13 @@ export default function Upgrade({ user, pricing }: { user?: User; pricing?: { mo
               <ul className="mt-6 space-y-3.5 text-sm">
                 {[
                   isActive ? `Extend your store by ${currentMonths} month${currentMonths > 1 ? 's' : ''}` : 'Re-open your store immediately upon verification',
-                  'Unlimited product listings for agent',
-                  'Only 7% sales commission (Save 3% on every order)',
+                  'Only 7% sales commission taken from agent (Keep 93% — save 3% on every sale)',
+                  'Products boosted & shown more often across search, categories & homepage',
+                  'High-priority algorithm ranking for all your store products',
+                  'Unlimited product listings for agent (no 150-product cap)',
+                  'Continuous, always-on storefront visibility without pauses',
                   'Auto re-enables all of your paused products upon renewal',
-                  'Continuous, always-on storefront visibility',
-                  'Verified Pro Seller badge',
+                  'Verified Pro Seller badge on store & items',
                   'Advanced sales & performance analytics',
                   'Priority 24/7 seller support',
                 ].map((f) => (

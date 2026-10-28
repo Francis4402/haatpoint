@@ -666,7 +666,7 @@ class ProductsController extends Controller
         $minPrice = (float) $request->input('min_price', 0);
         $maxPrice = (float) $request->input('max_price', 0);
 
-        $query = Products::with('store')->visible();
+        $query = Products::with('store.agent')->visible();
 
         if ($category !== '' && $category !== 'all') {
             $query->where('category', $category);
@@ -705,11 +705,11 @@ class ProductsController extends Controller
         }
 
         match ($sortBy) {
-            'price-low' => $query->orderByRaw('COALESCE(sale_price, regular_price) asc'),
-            'price-high' => $query->orderByRaw('COALESCE(sale_price, regular_price) desc'),
-            'rating' => $query->withAvg('comments as average_rating', 'rating')->orderByDesc('average_rating'),
-            'popularity' => $query->withCount(['comments as ratings_count' => fn ($q) => $q->whereNotNull('rating')])->orderByDesc('ratings_count'),
-            default => $query->latest(),
+            'price-low' => $query->withProBoost()->orderByRaw('COALESCE(sale_price, regular_price) asc'),
+            'price-high' => $query->withProBoost()->orderByRaw('COALESCE(sale_price, regular_price) desc'),
+            'rating' => $query->withProBoost()->withAvg('comments as average_rating', 'rating')->orderByDesc('average_rating'),
+            'popularity' => $query->withProBoost()->withCount(['comments as ratings_count' => fn ($q) => $q->whereNotNull('rating')])->orderByDesc('ratings_count'),
+            default => $query->withProBoost()->latest(),
         };
 
         $products = $query->paginate(20)->withQueryString();

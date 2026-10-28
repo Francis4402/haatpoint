@@ -315,10 +315,20 @@ export default function SubscriptionPayment({
                     ৳100/month • Flexible monthly subscription
                   </p>
                 )}
-                <p className="mt-2 text-xs text-paper flex items-center gap-1.5 font-medium">
-                  <FaCheck className="text-marigold h-3 w-3 shrink-0" />
-                  Unlimited product uploads included with Pro
-                </p>
+                <div className="mt-3 space-y-2 border-t border-white/10 pt-3 text-xs text-paper">
+                  <p className="flex items-center gap-1.5 font-medium">
+                    <FaCheck className="text-marigold h-3 w-3 shrink-0" />
+                    <span><strong>Only 7% sales commission</strong> taken from agent (Save 3% on every order)</span>
+                  </p>
+                  <p className="flex items-center gap-1.5 font-medium">
+                    <FaCheck className="text-marigold h-3 w-3 shrink-0" />
+                    <span><strong>Boosted products:</strong> prioritized &amp; shown more often across search &amp; discovery</span>
+                  </p>
+                  <p className="flex items-center gap-1.5 font-medium">
+                    <FaCheck className="text-marigold h-3 w-3 shrink-0" />
+                    <span>Unlimited product listings without restrictions</span>
+                  </p>
+                </div>
               </div>
 
               {/* Form */}

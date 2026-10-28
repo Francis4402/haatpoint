@@ -185,9 +185,9 @@ class OrdersController extends Controller
                 'recipient_city' => 'required|integer',
                 'recipient_zone' => 'required|integer',
                 'recipient_area' => 'nullable|integer',
-                'items' => 'required|array|min:1',
+                'items' => 'required|array|min:1|max:5',
                 'items.*.product_id' => 'required|string',
-                'items.*.quantity' => 'required|integer|min:1',
+                'items.*.quantity' => 'required|integer|min:1|max:5',
                 'items.*.price' => 'required|numeric',
                 'items.*.size' => 'nullable|string|max:255',
                 'items.*.color' => 'nullable|string|max:255',
@@ -195,7 +195,7 @@ class OrdersController extends Controller
                 'delivery_charge' => 'required|numeric',
                 'total' => 'required|numeric',
                 'amount_to_collect' => 'required|numeric',
-                'item_quantity' => 'required|integer',
+                'item_quantity' => 'required|integer|min:1|max:5',
                 'item_weight' => 'required|numeric|min:0.1',
                 'item_description' => 'required|string',
                 'store_name' => 'required|string',
@@ -212,7 +212,19 @@ class OrdersController extends Controller
                 'tracking_number' => 'nullable|string',
                 'special_instruction' => 'nullable|string',
                 'sender_email' => 'required|email',
+            ], [
+                'items.max' => 'You can only order up to 5 products per order. For additional items, please place another order.',
+                'item_quantity.max' => 'You can only order up to 5 products per order. For additional items, please place another order.',
+                'items.*.quantity.max' => 'You can only order up to 5 products per order. For additional items, please place another order.',
             ]);
+
+            // Enforce maximum 5 total units per single order
+            $totalOrderQty = array_sum(array_column($validated['items'], 'quantity'));
+            if ($totalOrderQty > 5 || $validated['item_quantity'] > 5) {
+                return back()->withErrors([
+                    'error' => 'You can only order up to 5 products per order. For additional items, please place another order.'
+                ]);
+            }
 
             $firstProduct = Products::find($validated['items'][0]['product_id']);
             if (!$firstProduct) return back()->withErrors(['error' => 'Product not found']);

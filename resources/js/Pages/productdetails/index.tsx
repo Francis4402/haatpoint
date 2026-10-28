@@ -93,9 +93,10 @@ const ProductDetailsPage = ({
   const availableSizes = parseVariantList(product.size);
   const availableColors = parseVariantList(product.color);
 
-  const { addToCart, getItemByKey } = useStore();
+  const { addToCart, getItemByKey, getTotalItems } = useStore();
   const cartItem = getItemByKey(makeCartKey(product.id.toString(), selectedSize, selectedColor));
   const currentCartQuantity = cartItem?.cartQty || 0;
+  const totalCartQuantity = getTotalItems();
 
   // Fetch comments and ratings from API
   const fetchComments = async () => {
@@ -118,7 +119,11 @@ const ProductDetailsPage = ({
   };
 
   useEffect(() => {
-    fetchComments();
+    // Only re-fetch if a comment was added or refreshed, as initial comments and ratings
+    // are already loaded in server props.
+    if (refreshKey > 0) {
+      fetchComments();
+    }
   }, [product.id, refreshKey]);
 
   // Function to refresh comments after a new post
@@ -208,6 +213,11 @@ const ProductDetailsPage = ({
       return false;
     }
 
+    if (totalCartQuantity - currentCartQuantity + quantity > 5) {
+      toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+      return false;
+    }
+
     if (quantity >= 2 && useSeparateVariants) {
       for (let i = 0; i < quantity; i++) {
         const config = itemConfigs[i];
@@ -261,9 +271,16 @@ const ProductDetailsPage = ({
     return true;
   };
 
+  const maxStockAvailable = (product.quantity || 0) - currentCartQuantity;
+  const remainingAllowedForOrder = Math.max(0, 5 - (totalCartQuantity - currentCartQuantity));
+  const maxAvailable = Math.min(maxStockAvailable, remainingAllowedForOrder);
+
   const handleQuantityChange = (newQty: number) => {
-    const max = (product.quantity || 0) - currentCartQuantity;
-    if (newQty < 1 || (max > 0 && newQty > max)) return;
+    if (newQty < 1 || (maxAvailable > 0 && newQty > maxAvailable)) return;
+    if (totalCartQuantity - currentCartQuantity + newQty > 5) {
+      toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+      return;
+    }
 
     setQuantity(newQty);
     setItemConfigs((prev) => {
@@ -308,11 +325,14 @@ const ProductDetailsPage = ({
   };
 
   const incrementQuantity = (): void => {
-    const maxAvailable = (product.quantity || 0) - currentCartQuantity;
     if (quantity < maxAvailable) {
       handleQuantityChange(quantity + 1);
     } else {
-      toast.error(`Only ${maxAvailable} more items available`);
+      if (quantity >= remainingAllowedForOrder) {
+        toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+      } else {
+        toast.error(`Only ${maxAvailable} more items available`);
+      }
     }
   };
 
@@ -327,7 +347,6 @@ const ProductDetailsPage = ({
     return html.replace(/<[^>]*>/g, '');
   };
 
-  const maxAvailable = (product.quantity || 0) - currentCartQuantity;
   const totalReviews = reviewCount;
   const totalComments = comments.length;
 
@@ -389,7 +408,7 @@ const ProductDetailsPage = ({
             category: product.category,
             offers: {
               '@type': 'Offer',
-              url: `https://www.haatpoint.com/products/${product.id}`,
+              url: `https://www.haatpoint.com/products/${product.slug || product.id}`,
               priceCurrency: 'BDT',
               price: String(withMarkup(Number(product.sale_price) || Number(product.regular_price) || 0)),
               priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
@@ -416,7 +435,7 @@ const ProductDetailsPage = ({
               { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.haatpoint.com/' },
               { '@type': 'ListItem', position: 2, name: 'Products', item: 'https://www.haatpoint.com/products' },
               { '@type': 'ListItem', position: 3, name: product.category, item: `https://www.haatpoint.com/products?category=${encodeURIComponent(product.category)}` },
-              { '@type': 'ListItem', position: 4, name: product.name, item: `https://www.haatpoint.com/products/${product.id}` },
+              { '@type': 'ListItem', position: 4, name: product.name, item: `https://www.haatpoint.com/products/${product.slug || product.id}` },
             ],
           },
         ]} />
@@ -578,12 +597,19 @@ const ProductDetailsPage = ({
                         <FaStore className="w-4 h-4 sm:w-5 sm:h-5 text-marigold" />
                       </div>
                       <div>
-                        <Link
-                          href={`/stores/${store.id}`}
-                          className="text-sm sm:text-base font-semibold text-ink hover:text-marigold transition-colors"
-                        >
-                          {store.name}
-                        </Link>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Link
+                            href={`/stores/${store.id}`}
+                            className="text-sm sm:text-base font-semibold text-ink hover:text-marigold transition-colors"
+                          >
+                            {store.name}
+                          </Link>
+                          {(Boolean((product as any).is_pro_seller) || (store as any)?.agent?.plan === 'pro') && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-700 border border-amber-300">
+                              ★ Verified Pro Seller
+                            </span>
+                          )}
+                        </div>
                         <div className="text-[11px] sm:text-xs text-text-soft">{store.storetype} Store</div>
                       </div>
                     </div>
@@ -856,6 +882,16 @@ const ProductDetailsPage = ({
                     )}
                   </div>
 
+                  {totalCartQuantity >= 5 && currentCartQuantity === 0 && (
+                    <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl p-3 flex items-start gap-2">
+                      <span className="font-bold text-sm">⚠️</span>
+                      <div>
+                        <strong className="block font-semibold">Per-order limit reached (Max 5 items)</strong>
+                        <span>You currently have 5 items in your cart. You can only order up to 5 products per order. For additional items, please place another order.</span>
+                      </div>
+                    </div>
+                  )}
+
                   {product.inStock && product.quantity > 0 && maxAvailable > 0 && (
                     <div className="flex items-center flex-wrap gap-4">
                       <span className="text-text-soft font-medium">Quantity:</span>
@@ -878,11 +914,16 @@ const ProductDetailsPage = ({
                           <FaPlus className="w-4 h-4" />
                         </button>
                       </div>
-                      {maxAvailable > 0 && (
-                        <span className="text-sm text-text-soft">
-                          {maxAvailable} available
+                      <div className="flex items-center gap-2">
+                        {maxAvailable > 0 && (
+                          <span className="text-sm text-text-soft">
+                            {maxAvailable} available for this order
+                          </span>
+                        )}
+                        <span className="text-xs text-amber-700 font-medium bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                          Max 5 per order
                         </span>
-                      )}
+                      </div>
                     </div>
                   )}
                 </div>

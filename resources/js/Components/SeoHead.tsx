@@ -89,7 +89,7 @@ export default function SeoHead({
         image.startsWith('http') ? image : `${SITE_URL}${image.startsWith('/') ? image : `/${image}`}`;
 
     const resolvedOgImage = resolveImage(finalOgImage);
-    const resolvedTwitterImage = twitterImage ? resolveImage(twitterImage) : DEFAULT_TWITTER_IMAGE;
+    const resolvedTwitterImage = twitterImage ? resolveImage(twitterImage) : resolvedOgImage;
 
     const renderJsonLd = (data: JsonLd | JsonLd[] | undefined) => {
         if (!data) return null;

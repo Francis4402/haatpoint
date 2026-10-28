@@ -302,7 +302,7 @@ const ProductCard = ({
             {store ? (
               <Link
                 href={`/stores/${store.id}`}
-                className="shrink-0"
+                className="shrink-0 flex items-center gap-1.5 min-w-0"
                 title={`Visit ${vendor}`}
                 aria-label={`Visit ${vendor}`}
               >
@@ -319,9 +319,18 @@ const ProductCard = ({
                     {vendor.charAt(0)}
                   </span>
                 )}
+                <span className="truncate max-w-[100px] sm:max-w-[130px]">{vendor}</span>
               </Link>
             ) : (
               <span className="min-w-0 truncate">{vendor}</span>
+            )}
+            {(Boolean((product as any).is_pro_seller) || (product.store as any)?.agent?.plan === 'pro') && (
+              <span
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 border border-amber-300 font-mono text-[9px] font-extrabold uppercase shrink-0"
+                title="Verified Pro Seller — Boosted Listing"
+              >
+                ★ Pro
+              </span>
             )}
           </div>
           {variant === "trending" && !badge && !product.brand && (

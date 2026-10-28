@@ -19,6 +19,34 @@ class Products extends Model
         'inStock' => 'boolean',
     ];
 
+    protected $appends = ['is_pro_seller'];
+
+    public function getIsProSellerAttribute(): bool
+    {
+        if ($this->relationLoaded('store') && $this->store) {
+            $agent = $this->store->relationLoaded('agent') ? $this->store->agent : null;
+            if ($agent && method_exists($agent, 'isPro')) {
+                return $agent->isPro();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Boost products owned by active Pro agents so they appear first and more often.
+     */
+    public function scopeWithProBoost($query)
+    {
+        $now = now()->toDateTimeString();
+        return $query->orderByDesc(
+            \Illuminate\Support\Facades\DB::raw("(SELECT CASE WHEN agents.plan = 'pro' AND agents.subscription_ends_at > '{$now}' THEN 1 ELSE 0 END 
+                       FROM stores 
+                       INNER JOIN agents ON agents.id = stores.agent_id 
+                       WHERE stores.id = products.store_id 
+                       LIMIT 1)")
+        );
+    }
+
     public function scopeVisible($query)
     {
         return $query->where('is_active', true)

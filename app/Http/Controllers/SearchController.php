@@ -48,7 +48,7 @@ class SearchController extends Controller
             ]);
         }
 
-        $products = Products::with('store')
+        $products = Products::with('store.agent')
             ->visible()
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
@@ -57,6 +57,7 @@ class SearchController extends Controller
                     ->orWhere('subcategory', 'like', "%{$query}%")
                     ->orWhere('description', 'like', "%{$query}%");
             })
+            ->withProBoost()
             ->orderByRaw('CASE WHEN name LIKE ? THEN 0 WHEN brand LIKE ? THEN 1 ELSE 2 END', ["%{$query}%", "%{$query}%"])
             ->latest()
             ->limit($productLimit)

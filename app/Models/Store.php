@@ -72,10 +72,18 @@ class Store extends Model
 
     public function getAuthorNameAttribute()
     {
-        return $this->agent?->name
-            ?? $this->admin?->name
-            ?? $this->user?->name
-            ?? 'Unknown';
+        if ($this->relationLoaded('agent') && $this->agent) {
+            return $this->agent->name;
+        }
+        if ($this->relationLoaded('admin') && $this->admin) {
+            return $this->admin->name;
+        }
+        if ($this->relationLoaded('user') && $this->user) {
+            return $this->user->name;
+        }
+
+        // Avoid triggering N+1 queries when relations are not eager-loaded
+        return 'Unknown';
     }
 
     protected $appends = ['author_name'];

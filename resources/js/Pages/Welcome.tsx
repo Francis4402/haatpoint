@@ -85,7 +85,7 @@ export default function Welcome({
         '@type': 'ListItem',
         position: index + 1,
         name: product.name,
-        url: `https://www.haatpoint.com/products/${product.id}`,
+        url: `https://www.haatpoint.com/products/${product.slug || product.id}`,
     }));
 
     return (

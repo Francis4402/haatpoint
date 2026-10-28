@@ -362,6 +362,10 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
   const cartTotals = calculateTotals();
 
   const handleIncreaseQuantity = async (key: string) => {
+    if (getTotalItems() >= 5) {
+      toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+      return;
+    }
     const item = getItemByKey(key);
     if (item && item.cartQty && item.cartQty < item.quantity) {
       increaseQty(key);
@@ -504,7 +508,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
   };
 
   const isCheckoutDisabled = () => {
-    return !selectedCity || !selectedZone || !pathaoCharges || loadingPathao;
+    return !selectedCity || !selectedZone || !pathaoCharges || loadingPathao || cartTotals.item_count > 5;
   };
 
   const stripHtml = (html: string) => {
@@ -625,6 +629,20 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
               </div>
             </div>
           </div>
+
+          {cartTotals.item_count > 5 && (
+            <div className="bg-red-50 border-2 border-red-300 text-red-900 rounded-xl p-4 sm:p-5 mb-8 flex items-start gap-3.5 shadow-sm">
+              <FaInfoCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-sm sm:text-base text-red-800">
+                  Maximum 5 Products Per Order ({cartTotals.item_count}/5 items selected)
+                </h4>
+                <p className="text-xs sm:text-sm text-red-700 mt-1">
+                  A customer can order a maximum of 5 products per order. Please reduce your cart quantity to 5 or fewer items to proceed with this checkout. Any additional products can be ordered in a separate order.
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
@@ -784,7 +802,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                                       </span>
                                       <button
                                         onClick={() => handleIncreaseQuantity(itemCartKey)}
-                                        disabled={quantity >= item.quantity}
+                                        disabled={quantity >= item.quantity || cartTotals.item_count >= 5}
                                         className="px-2 sm:px-3 py-1.5 sm:py-2 text-text-soft hover:bg-paper-dim disabled:opacity-50 disabled:cursor-not-allowed rounded-r-lg transition-colors"
                                       >
                                         <FaPlus className="h-3 w-3" />
@@ -1176,6 +1194,10 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                     {/* Checkout Button */}
                     <button
                       onClick={() => {
+                        if (cartTotals.item_count > 5) {
+                          toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+                          return;
+                        }
                         if (!isCheckoutDisabled()) {
                           router.visit('/checkout');
                         }
@@ -1188,7 +1210,9 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                       }`}
                     >
                       <FaLock className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                      {isCheckoutDisabled()
+                      {cartTotals.item_count > 5
+                        ? 'Max 5 products per order (adjust cart)'
+                        : isCheckoutDisabled()
                         ? 'Complete delivery details to continue'
                         : 'Proceed to Checkout'}
                     </button>

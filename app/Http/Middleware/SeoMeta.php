@@ -92,6 +92,10 @@ class SeoMeta
             'title' => 'My Wishlist',
             'description' => 'The products you saved on HaatPoint.',
         ],
+        'sell' => [
+            'title' => 'Become an Agent & Sell Products',
+            'description' => 'Open a free store on HaatPoint or upgrade to Pro with 7% sales commission, boosted product visibility, and unlimited listings across Bangladesh.',
+        ],
     ];
 
     /**
@@ -107,6 +111,9 @@ class SeoMeta
     private const NO_INDEX_PREFIXES = [
         'login',
         'register',
+        'superadmin.',
+        'admin.',
+        'agent.',
         'password.',
         'dashboard.',
         'cart.',
@@ -151,7 +158,7 @@ class SeoMeta
         // exception renderer, which is the only place that knows the status.
         $routeName = $request->route()?->getName();
 
-        [$title, $description, $ogType, $ogImage] = $this->contentFor($request, $routeName);
+        [$title, $description, $ogType, $ogImage, $extra] = $this->contentFor($request, $routeName);
 
         return [
             'title' => $title,
@@ -163,6 +170,8 @@ class SeoMeta
             'ogDescription' => $description,
             'ogImage' => $ogImage,
             'ogUrl' => $this->canonicalFor($request),
+            'ogPrice' => $extra['price'] ?? null,
+            'ogCurrency' => !empty($extra['price']) ? 'BDT' : null,
         ];
     }
 
@@ -196,7 +205,7 @@ class SeoMeta
     }
 
     /**
-     * @return array{0: string, 1: string, 2: string, 3: string}
+     * @return array{0: string, 1: string, 2: string, 3: string, 4: array}
      */
     private function contentFor(Request $request, ?string $routeName): array
     {
@@ -205,6 +214,7 @@ class SeoMeta
             self::DEFAULT_DESCRIPTION,
             'website',
             self::SITE_URL . '/og-image.png',
+            [],
         ];
 
         if ($routeName === 'products.details') {
@@ -221,6 +231,7 @@ class SeoMeta
                 self::PAGES[$routeName]['description'],
                 'website',
                 $defaults[3],
+                [],
             ];
         }
 
@@ -231,8 +242,8 @@ class SeoMeta
      * A product page is titled after the product itself, which is what a
      * shopper types into the search box.
      *
-     * @param  array{0: string, 1: string, 2: string, 3: string}  $defaults
-     * @return array{0: string, 1: string, 2: string, 3: string}
+     * @param  array{0: string, 1: string, 2: string, 3: string, 4: array}  $defaults
+     * @return array{0: string, 1: string, 2: string, 3: string, 4: array}
      */
     private function productContent(Request $request, array $defaults): array
     {
@@ -254,17 +265,20 @@ class SeoMeta
         $description = $this->trimDescription($product->description)
             ?: 'Buy ' . $product->name . ' on HaatPoint from verified local vendors across Bangladesh.';
 
+        $price = $product->sale_price ?: $product->regular_price;
+
         return [
             $product->name . ' | ' . self::SITE_NAME,
             $description,
             'product',
             $this->productImage($product->images) ?? $defaults[3],
+            ['price' => $price ? (string) $price : null],
         ];
     }
 
     /**
-     * @param  array{0: string, 1: string, 2: string, 3: string}  $defaults
-     * @return array{0: string, 1: string, 2: string, 3: string}
+     * @param  array{0: string, 1: string, 2: string, 3: string, 4: array}  $defaults
+     * @return array{0: string, 1: string, 2: string, 3: string, 4: array}
      */
     private function storeContent(Request $request, array $defaults): array
     {
@@ -283,6 +297,7 @@ class SeoMeta
             $store->logo
                 ? self::SITE_URL . '/storage/' . ltrim($store->logo, '/')
                 : $defaults[3],
+            [],
         ];
     }
 
@@ -315,7 +330,12 @@ class SeoMeta
             return $path;
         }
 
-        return self::SITE_URL . '/storage/' . ltrim($path, '/');
+        $cleanPath = ltrim($path, '/');
+        if (str_starts_with($cleanPath, 'storage/')) {
+            $cleanPath = substr($cleanPath, 8);
+        }
+
+        return self::SITE_URL . '/storage/' . $cleanPath;
     }
 
     /**

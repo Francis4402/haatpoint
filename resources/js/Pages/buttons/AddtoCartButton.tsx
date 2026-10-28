@@ -31,6 +31,7 @@ const AddtoCartButton = ({
     onRequireOptions,
 }: AddtoCartButtonProps) => {
     const addtoCart = useStore((state) => state.addToCart)
+    const getTotalItems = useStore((state) => state.getTotalItems)
     const { t } = useTranslation()
 
     const availableSizes = parseVariantList(product.size)
@@ -45,6 +46,12 @@ const AddtoCartButton = ({
 
     const handleAddToCart = (e: React.MouseEvent) => {
         e.stopPropagation();
+
+        const currentTotal = getTotalItems();
+        if (currentTotal + 1 > 5) {
+            toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+            return;
+        }
 
         const resolvedStore = product.store;
 

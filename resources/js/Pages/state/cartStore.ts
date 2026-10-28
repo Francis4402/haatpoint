@@ -144,6 +144,12 @@ export const useStore = create<Store>()(
                             return state;
                         }
 
+                        const currentTotal = state.cart.reduce((sum, item) => sum + (item.cartQty || 1), 0);
+                        if (currentTotal + quantity > 5) {
+                            toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+                            return state;
+                        }
+
                         const variantKey = makeCartKey(product.id, selectedSize, selectedColor);
                         const existing = state.cart.find(
                             (item) => itemKey(item) === variantKey
@@ -189,6 +195,12 @@ export const useStore = create<Store>()(
                     set((state) => {
                         const item = state.cart.find(item => itemKey(item) === key);
                         if (item) {
+                            const currentTotal = state.cart.reduce((sum, it) => sum + (it.cartQty || 1), 0);
+                            if (currentTotal + 1 > 5) {
+                                toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+                                return state;
+                            }
+
                             if (item.cartQty! >= (item.quantity || 0)) {
                                 toast.error('Maximum quantity reached');
                                 return state;
@@ -222,6 +234,12 @@ export const useStore = create<Store>()(
                     set((state) => {
                         const item = state.cart.find(item => itemKey(item) === key);
                         if (item) {
+                            const otherItemsTotal = state.cart.reduce((sum, it) => itemKey(it) === key ? sum : sum + (it.cartQty || 1), 0);
+                            if (otherItemsTotal + quantity > 5) {
+                                toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+                                return state;
+                            }
+
                             if (quantity > (item.quantity || 0)) {
                                 toast.error('Maximum quantity reached');
                                 return state;
@@ -469,8 +487,13 @@ export const useStore = create<Store>()(
                         return Promise.reject('Cart is empty');
                     }
 
-                    const formattedItems = state.getFormattedCartItems();
                     const summary = state.getOrderSummary();
+                    if (summary.item_count > 5) {
+                        toast.error('You can only order up to 5 products per order. Please place another order for additional items.');
+                        return Promise.reject('You can only order up to 5 products per order.');
+                    }
+
+                    const formattedItems = state.getFormattedCartItems();
 
                     const storeInfo = state.cart[0]?.store;
                     if (!storeInfo) {
