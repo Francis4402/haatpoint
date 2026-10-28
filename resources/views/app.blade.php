@@ -89,6 +89,10 @@
             }
         </style>
 
+        <!-- Google AdSense -->
+        <meta name="google-adsense-account" content="ca-pub-2617027124219046">
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2617027124219046" crossorigin="anonymous"></script>
+
         <!-- Google reCAPTCHA Enterprise -->
         <script src="https://www.google.com/recaptcha/enterprise.js?onload=__onRecaptchaLoaded&render=explicit" async defer></script>
 

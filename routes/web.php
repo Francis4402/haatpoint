@@ -358,6 +358,14 @@ Route::get('/pricing', function () {
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
+Route::get('/ads.txt', function () {
+    $path = public_path('ads.txt');
+    if (file_exists($path)) {
+        return response(file_get_contents($path), 200, ['Content-Type' => 'text/plain']);
+    }
+    return response("google.com, pub-2617027124219046, DIRECT, f08c47fec0942fa0\n", 200, ['Content-Type' => 'text/plain']);
+});
+
 Route::get('/wishlist/check/{product}', [WishlistController::class, 'check'])->name('wishlist.check');
 
 Route::get('/stores', [StoreController::class, 'storeroute'])->name('stores.index');
