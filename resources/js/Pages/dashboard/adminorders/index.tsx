@@ -25,7 +25,9 @@ import {
     FaTimes,
     FaCopy,
     FaWhatsapp,
+    FaTrash,
 } from 'react-icons/fa';
+import DeleteConfirmationDialog from '@/Pages/buttons/DeleteConfirmationDialog';
 import { HiOutlineMail } from 'react-icons/hi';
 import { BiPhone } from 'react-icons/bi';
 import { toast } from 'sonner';
@@ -290,6 +292,37 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
     const [paymentFilter, setPaymentFilter] = useState(filters.payment);
     const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
     const [copiedTrxId, setCopiedTrxId] = useState<string | null>(null);
+    const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const openDeleteModal = (orderId: string, e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        setOrderToDelete(orderId);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteOrder = () => {
+        if (!orderToDelete) return;
+        setIsDeleting(true);
+        router.delete(route('orders.destroy', orderToDelete), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Order deleted successfully');
+                setIsDeleteModalOpen(false);
+                if (selectedId === orderToDelete) {
+                    setSelectedId(null);
+                }
+                setOrderToDelete(null);
+            },
+            onError: () => {
+                toast.error('Failed to delete order');
+            },
+            onFinish: () => {
+                setIsDeleting(false);
+            },
+        });
+    };
 
     const rulesFor = (orderId: string) => orderRules?.[orderId];
 
@@ -703,6 +736,16 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                                             <IoReceiptOutline className="h-3.5 w-3.5" />
                                             Confirmation
                                         </Link>
+                                        {isSuperAdminRole && (
+                                            <button
+                                                type="button"
+                                                onClick={e => openDeleteModal(order.id, e)}
+                                                title="Delete Order (Superadmin only)"
+                                                className="inline-flex items-center justify-center p-2 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer shrink-0"
+                                            >
+                                                <FaTrash className="h-3.5 w-3.5" />
+                                            </button>
+                                        )}
                                         <span className="inline-flex items-center gap-1 text-xs font-medium text-text-soft group-hover:text-marigold transition-colors">
                                             View details
                                             <IoChevronDown className="-rotate-90 h-3 w-3" />
@@ -863,14 +906,27 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                                                             {selectedOrder.store_name} · {formatDate(selectedOrder.created_at)}
                                                         </p>
                                                     </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setSelectedId(null)}
-                                                        aria-label="Close order details"
-                                                        className="shrink-0 rounded-xl border border-line p-2 text-text-soft hover:text-ink hover:border-marigold transition-colors"
-                                                    >
-                                                        <IoClose className="h-5 w-5" />
-                                                    </button>
+                                                    <div className="flex items-center gap-2">
+                                                        {isSuperAdminRole && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => openDeleteModal(selectedOrder.id)}
+                                                                aria-label="Delete order"
+                                                                title="Delete Order (Superadmin only)"
+                                                                className="shrink-0 rounded-xl border border-red-200 bg-red-50 p-2 text-red-600 hover:bg-red-100 hover:border-red-300 transition-colors cursor-pointer"
+                                                            >
+                                                                <FaTrash className="h-4 w-4" />
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedId(null)}
+                                                            aria-label="Close order details"
+                                                            className="shrink-0 rounded-xl border border-line p-2 text-text-soft hover:text-ink hover:border-marigold transition-colors cursor-pointer"
+                                                        >
+                                                            <IoClose className="h-5 w-5" />
+                                                        </button>
+                                                    </div>
                                                 </div>
 
                                                 <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
@@ -1114,6 +1170,20 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                                                             <p className="text-sm text-text-soft">{selectedOrder.notes}</p>
                                                         </section>
                                                     )}
+
+                                                    {/* Delete Order Action (Superadmin only) */}
+                                                    {isSuperAdminRole && (
+                                                        <div className="pt-4 border-t border-line">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => openDeleteModal(selectedOrder.id)}
+                                                                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold transition-all shadow-sm cursor-pointer"
+                                                            >
+                                                                <FaTrash className="h-4 w-4" />
+                                                                <span>Delete Order</span>
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </>
                                         )}
@@ -1124,6 +1194,20 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                     </div>
                 </Dialog>
             </Transition>
+
+            {/* Delete Confirmation Dialog (Superadmin only) */}
+            <DeleteConfirmationDialog
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setOrderToDelete(null);
+                }}
+                onConfirm={handleDeleteOrder}
+                isDeleting={isDeleting}
+                title="Delete Order"
+                message="Are you sure you want to delete this order? This action cannot be undone. All order items will also be permanently deleted."
+                variant="danger"
+            />
         </DashboardLayout>
     );
 };

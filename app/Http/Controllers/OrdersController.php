@@ -455,24 +455,24 @@ class OrdersController extends Controller
     public function destroy(Orders $order)
     {
         try {
-            $user = Auth::user();
+            $user = Auth::user() ?? auth('superadmin')->user() ?? auth('admin')->user();
 
-            $canDelete = in_array($user->role, ['superadmin', 'admin']);
+            $canDelete = $user && in_array($user->role, ['superadmin', 'admin'], true);
 
             if (!$canDelete) {
                 return redirect()->back()->with('error', 'You do not have permission to delete this order.');
             }
 
-            if (method_exists($order, 'orderItems')) {
-                $order->orderItems()->delete();
-            }
-
-            $order->delete();
+            \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
+                if (method_exists($order, 'orderItems')) {
+                    $order->orderItems()->delete();
+                }
+                $order->delete();
+            });
 
             return redirect()->back()->with('success', 'Order deleted successfully.');
 
         } catch (\Exception $e) {
-
             return redirect()->back()->with('error', 'Failed to delete order.');
         }
     }
