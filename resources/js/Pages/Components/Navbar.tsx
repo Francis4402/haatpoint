@@ -82,11 +82,29 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
+
+  // Rotating seller announcement ticker for mobile & tablet screens so all key points are 100% visible
+  const [sellerPerkIndex, setSellerPerkIndex] = useState(0)
+  const sellerPerks = [
+    "Keep your 100% sell profit • 0% commission",
+    "Own a shop? Sell on HaatPoint free forever",
+    "Up to 150 products • Pathao delivery handled",
+  ]
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSellerPerkIndex((prev) => (prev + 1) % sellerPerks.length)
+    }, 3600)
+    return () => clearInterval(timer)
+  }, [sellerPerks.length])
 
   const { getTotalItems } = useStore()
   const cartItems = getTotalItems()
 
-  const navigation = [
+  // Primary routes visible directly on desktop navigation row
+  const primaryNavigation = [
     { name: t('nav_home', 'Home'), href: "/", icon: FiHome },
     { name: t('nav_products', 'Products'), href: "/products", icon: FiPackage },
     { name: t('nav_stores', 'Stores'), href: "/stores", icon: FiShoppingBag },
@@ -97,10 +115,53 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
       badge: t('badge_live', 'LIVE'),
       badgeColor: 'bg-emerald-600',
     },
-    { name: t('nav_deals', 'Deals'), href: "/hotdeals", badge: t('badge_hot', 'HOT'), icon: FiTag },
-    { name: t('nav_new_arrivals', 'New'), href: "/new-arrivals", icon: FiZap },
-    { name: t('nav_about_us', 'About Us'), href: "/aboutus", icon: FiInfo },
-    { name: t('nav_contact_us', 'Contact Us'), href: "/contactus", icon: FiMail },
+    {
+      name: t('nav_deals', 'Deals'),
+      href: "/hotdeals",
+      badge: t('badge_hot', 'HOT'),
+      badgeColor: 'bg-[#6E7F5C]',
+      icon: FiTag,
+    },
+  ]
+
+  // Secondary routes grouped under the desktop "More" dropdown to keep navbar uncluttered
+  const moreNavigation = [
+    {
+      name: t('nav_new_arrivals', 'New Arrivals'),
+      href: "/new-arrivals",
+      icon: FiZap,
+      badge: t('badge_new', 'NEW'),
+      badgeColor: 'bg-blue-600',
+      description: 'Explore newly added products',
+    },
+    {
+      name: t('nav_pricing', 'Pricing & Seller Guide'),
+      href: "/sell#pricing",
+      icon: FiDollarSign,
+      description: 'Fee-free selling & store benefits',
+    },
+    {
+      name: t('nav_about_us', 'About Us'),
+      href: "/aboutus",
+      icon: FiInfo,
+      description: 'Our story, values & marketplace',
+    },
+    {
+      name: t('nav_contact_us', 'Contact Us'),
+      href: "/contactus",
+      icon: FiMail,
+      description: '24/7 support & customer helpline',
+    },
+  ]
+
+  const isMoreActive = moreNavigation.some(item =>
+    item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href)
+  )
+
+  // Full flat list used by mobile drawer navigation
+  const mobileNavigation = [
+    ...primaryNavigation,
+    ...moreNavigation,
   ]
 
   useEffect(() => {
@@ -108,11 +169,15 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false)
       }
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setMoreMenuOpen(false)
+      }
     }
 
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         if (userMenuOpen) setUserMenuOpen(false)
+        if (moreMenuOpen) setMoreMenuOpen(false)
         if (isMobileMenuOpen) setIsMobileMenuOpen(false)
       }
     }
@@ -124,7 +189,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
       document.removeEventListener("mousedown", handleClickOutside)
       document.removeEventListener("keydown", handleEscapeKey)
     }
-  }, [userMenuOpen, isMobileMenuOpen])
+  }, [userMenuOpen, moreMenuOpen, isMobileMenuOpen])
 
   const handleSearchButtonClick = () => setSearchOpen((prev) => !prev)
 
@@ -148,16 +213,31 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
       >
         {/* Top Seller Announcement Bar */}
         <div className="bg-ink text-paper text-xs py-2 border-b border-white/10">
-          <div className="container flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 overflow-hidden text-[11px] sm:text-xs">
+          <div className="container flex items-center justify-between gap-2.5 sm:gap-3">
+            <div className="flex items-center gap-2 overflow-hidden text-[11px] sm:text-xs min-w-0 flex-1">
               <span className="inline-flex items-center gap-1 font-mono uppercase tracking-wider text-[10px] font-bold bg-marigold px-2 py-0.5 rounded text-white shrink-0">
                 For Sellers
               </span>
-              <span className="truncate text-[#E3E1DB]">
-                Own a shop? Sell on HaatPoint free forever &bull; Up to 150 products &bull; Pathao delivery handled &bull; Keep 100% profit
+
+              {/* Full sentence on large desktop screens (xl and up) */}
+              <span className="hidden xl:inline truncate text-[#E3E1DB]">
+                Own a shop? Sell on HaatPoint free forever &bull; Up to 150 products &bull; Pathao delivery handled &bull; Keep your 100% sell profit
               </span>
+
+              {/* Responsive rotating highlights on mid and mobile screens (<xl) so all points are fully readable */}
+              <div className="xl:hidden flex items-center gap-2 min-w-0 overflow-hidden">
+                <span
+                  key={sellerPerkIndex}
+                  className="truncate text-[#E3E1DB] font-medium transition-opacity duration-300"
+                >
+                  {sellerPerks[sellerPerkIndex]}
+                </span>
+                <span className="hidden sm:inline-flex items-center text-[9px] font-mono text-white/40 shrink-0">
+                  {sellerPerkIndex + 1}/{sellerPerks.length}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <Link
                 href="/track-order"
                 className="hidden sm:inline-flex items-center gap-1.5 font-bold text-[#E3E1DB] hover:text-white transition-colors text-[11px] sm:text-xs"
@@ -183,7 +263,8 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                 href="/sell"
                 className="shrink-0 font-bold text-marigold hover:text-white transition-colors text-[11px] sm:text-xs inline-flex items-center gap-1"
               >
-                <span>Sell on HaatPoint</span>
+                <span className="hidden sm:inline">Sell on HaatPoint</span>
+                <span className="sm:hidden inline">Sell Free</span>
                 <span aria-hidden="true">&rarr;</span>
               </Link>
 
@@ -242,7 +323,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
               </Link>
 
               <nav className="hidden lg:flex items-center ml-2 xl:ml-4 gap-0.5 xl:gap-1" aria-label="Main navigation">
-                {navigation.map((item) => {
+                {primaryNavigation.map((item) => {
                   const isActive = item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href);
                   return (
                     <Link
@@ -266,6 +347,95 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                     </Link>
                   );
                 })}
+
+                {/* More Dropdown (contains secondary links so top navbar remains relaxed and uncrowded) */}
+                <div
+                  className="relative"
+                  ref={moreMenuRef}
+                  onMouseEnter={() => setMoreMenuOpen(true)}
+                  onMouseLeave={() => setMoreMenuOpen(false)}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+                    className={`flex items-center gap-1 px-2 xl:px-3 py-1.5 text-xs xl:text-sm font-semibold rounded-sm transition-colors duration-150 whitespace-nowrap focus:outline-none ${
+                      isMoreActive || moreMenuOpen
+                        ? 'text-marigold font-bold bg-[#F2F2EE]'
+                        : 'text-[#1B1B1B] hover:bg-[#F2F2EE]'
+                    }`}
+                    aria-expanded={moreMenuOpen}
+                    aria-haspopup="true"
+                    aria-label="More navigation links"
+                  >
+                    <span>{t('nav_more', 'More')}</span>
+                    <FiChevronDown
+                      className={`h-3.5 w-3.5 text-[#767470] transition-transform duration-200 ${
+                        moreMenuOpen ? 'rotate-180 text-marigold' : ''
+                      }`}
+                      aria-hidden="true"
+                    />
+                  </button>
+
+                  <Transition
+                    show={moreMenuOpen}
+                    as={Fragment}
+                    enter="transition ease-out duration-150"
+                    enterFrom="transform opacity-0 scale-95 -translate-y-1"
+                    enterTo="transform opacity-100 scale-100 translate-y-0"
+                    leave="transition ease-in duration-100"
+                    leaveFrom="transform opacity-100 scale-100 translate-y-0"
+                    leaveTo="transform opacity-0 scale-95 -translate-y-1"
+                  >
+                    <div
+                      className="absolute left-0 mt-1.5 w-72 origin-top-left rounded-xl bg-white border border-[#E3E1DB] shadow-lg focus:outline-none z-50 overflow-hidden py-2"
+                      role="menu"
+                      aria-label="More links"
+                    >
+                      <div className="px-3.5 py-1 text-[10px] font-mono uppercase tracking-wider text-[#767470] font-bold">
+                        Explore &amp; Info
+                      </div>
+                      <div className="space-y-0.5">
+                        {moreNavigation.map((subItem) => {
+                          const isSubActive = subItem.href === '/' ? currentPath === '/' : currentPath.startsWith(subItem.href);
+                          return (
+                            <Link
+                              key={subItem.name}
+                              href={subItem.href}
+                              onClick={() => setMoreMenuOpen(false)}
+                              className={`group flex items-start gap-3 px-3.5 py-2 transition-colors ${
+                                isSubActive ? 'bg-marigold/5 text-marigold font-semibold' : 'hover:bg-[#F2F2EE] text-[#1B1B1B]'
+                              }`}
+                              role="menuitem"
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-[#F2F2EE] border border-[#E3E1DB] flex items-center justify-center shrink-0 mt-0.5 group-hover:border-marigold/40 group-hover:bg-white transition-colors">
+                                <subItem.icon className="h-4 w-4 text-[#767470] group-hover:text-marigold transition-colors" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs sm:text-sm font-semibold truncate text-[#1B1B1B]">
+                                    {subItem.name}
+                                  </span>
+                                  {subItem.badge && (
+                                    <span
+                                      className={`px-1.5 py-0.2 rounded-full font-mono text-[9px] uppercase font-bold text-white ${subItem.badgeColor || 'bg-blue-600'}`}
+                                    >
+                                      {subItem.badge}
+                                    </span>
+                                  )}
+                                </div>
+                                {subItem.description && (
+                                  <p className="text-[11px] text-[#767470] truncate mt-0.5">
+                                    {subItem.description}
+                                  </p>
+                                )}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </Transition>
+                </div>
               </nav>
             </div>
 
@@ -693,7 +863,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                                 Sell your products on HaatPoint
                               </h4>
                               <p className="text-[11px] text-[#B9B7B0] mb-3 leading-relaxed">
-                                Zero listing fee &bull; Pathao delivery handled &bull; Keep 100% profit
+                                Zero listing fee &bull; Pathao delivery handled &bull; Keep your 100% sell profit
                               </p>
                               <Link
                                 href="/sell"
@@ -709,7 +879,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
 
                         {/* Navigation */}
                         <nav className="space-y-1 px-4" aria-label="Mobile navigation">
-                          {navigation.map((item) => (
+                          {mobileNavigation.map((item) => (
                             <Link
                               key={item.name}
                               href={item.href}
