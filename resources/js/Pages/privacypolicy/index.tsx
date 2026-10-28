@@ -238,7 +238,7 @@ const PrivacyPolicy = ({ auth, wishlist }: PrivacyPolicyProps) => {
                             This privacy policy applies to all users of our platform. By using our services, you agree to this policy.
                         </p>
                         <div className="flex justify-center gap-6 mt-4 text-sm">
-                            <Link href="/terms" className="text-text-soft hover:text-marigold transition-colors">
+                            <Link href="/terms-and-conditions" className="text-text-soft hover:text-marigold transition-colors">
                                 Terms of Service
                             </Link>
                             <Link href="/" className="text-text-soft hover:text-marigold transition-colors">

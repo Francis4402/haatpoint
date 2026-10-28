@@ -1,5 +1,5 @@
 import { PropsWithChildren, useState, useRef, useEffect, Fragment } from "react"
-import { Link } from "@inertiajs/react"
+import { Link, usePage } from "@inertiajs/react"
 
 import {
   FiSearch,
@@ -20,6 +20,7 @@ import {
   FiInfo,
   FiGlobe,
   FiDollarSign,
+  FiTruck,
 } from "react-icons/fi"
 import { Dialog, Transition } from "@headlessui/react"
 import { useStore } from "../state/cartStore"
@@ -75,6 +76,8 @@ const LazyAvatar = ({
 
 const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any }>) => {
   const { language, setLanguage, t } = useTranslation()
+  const page = usePage()
+  const currentPath = page?.url || ""
   const [searchOpen, setSearchOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -86,9 +89,16 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
   const navigation = [
     { name: t('nav_home', 'Home'), href: "/", icon: FiHome },
     { name: t('nav_products', 'Products'), href: "/products", icon: FiPackage },
+    { name: t('nav_stores', 'Stores'), href: "/stores", icon: FiShoppingBag },
+    {
+      name: t('nav_track_parcel', 'Track Parcel'),
+      href: "/track-order",
+      icon: FiTruck,
+      badge: t('badge_live', 'LIVE'),
+      badgeColor: 'bg-emerald-600',
+    },
     { name: t('nav_deals', 'Deals'), href: "/hotdeals", badge: t('badge_hot', 'HOT'), icon: FiTag },
-    { name: t('nav_new_arrivals', 'New Arrivals'), href: "/new-arrivals", icon: FiZap },
-    { name: t('nav_pricing', 'Pricing'), href: "/sell#pricing", icon: FiDollarSign },
+    { name: t('nav_new_arrivals', 'New'), href: "/new-arrivals", icon: FiZap },
     { name: t('nav_about_us', 'About Us'), href: "/aboutus", icon: FiInfo },
     { name: t('nav_contact_us', 'Contact Us'), href: "/contactus", icon: FiMail },
   ]
@@ -147,12 +157,33 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                 Own a shop? Sell on HaatPoint free forever &bull; Up to 150 products &bull; Pathao delivery handled &bull; Keep 100% profit
               </span>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+              <Link
+                href="/track-order"
+                className="hidden sm:inline-flex items-center gap-1.5 font-bold text-[#E3E1DB] hover:text-white transition-colors text-[11px] sm:text-xs"
+              >
+                <FiTruck className="h-3.5 w-3.5 text-marigold" />
+                <span>Track Parcel</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              </Link>
+
+              <span className="hidden sm:inline text-white/20" aria-hidden="true">|</span>
+
+              <Link
+                href="/stores"
+                className="hidden md:inline-flex items-center gap-1 font-semibold text-[#E3E1DB] hover:text-white transition-colors text-[11px] sm:text-xs"
+              >
+                <FiShoppingBag className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Stores</span>
+              </Link>
+
+              <span className="hidden md:inline text-white/20" aria-hidden="true">|</span>
+
               <Link
                 href="/sell"
                 className="shrink-0 font-bold text-marigold hover:text-white transition-colors text-[11px] sm:text-xs inline-flex items-center gap-1"
               >
-                <span>Learn How to Sell</span>
+                <span>Sell on HaatPoint</span>
                 <span aria-hidden="true">&rarr;</span>
               </Link>
 
@@ -211,26 +242,30 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
               </Link>
 
               <nav className="hidden lg:flex items-center ml-2 xl:ml-4 gap-0.5 xl:gap-1" aria-label="Main navigation">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="flex items-center gap-1.5 px-2 xl:px-3 py-1.5 text-xs xl:text-sm font-semibold rounded-sm transition-colors duration-150 whitespace-nowrap"
-                    style={{ color: '#1B1B1B' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F2F2EE'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  >
-                    <span>{item.name}</span>
-                    {item.badge && (
-                      <span
-                        className="ml-0.5 inline-flex items-center rounded-full bg-[#6E7F5C] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wide text-white"
-                        aria-label={`${item.badge} deals`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                ))}
+                {navigation.map((item) => {
+                  const isActive = item.href === '/' ? currentPath === '/' : currentPath.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`flex items-center gap-1.5 px-2 xl:px-3 py-1.5 text-xs xl:text-sm font-semibold rounded-sm transition-colors duration-150 whitespace-nowrap ${
+                        isActive
+                          ? 'text-marigold font-bold bg-[#F2F2EE]'
+                          : 'text-[#1B1B1B] hover:bg-[#F2F2EE]'
+                      }`}
+                    >
+                      <span>{item.name}</span>
+                      {item.badge && (
+                        <span
+                          className={`ml-0.5 inline-flex items-center rounded-full ${(item as any).badgeColor || 'bg-[#6E7F5C]'} px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wide text-white`}
+                          aria-label={`${item.badge} indicator`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
 
@@ -346,21 +381,28 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                         <div className="py-1.5">
                           {[
                             { href: "/dashboard", icon: FiGrid, label: t('dashboard', 'Dashboard') },
-                            { href: "/dashboard/profile", icon: FiUser, label: t('profile_settings', 'Profile Settings') },
                             { href: "/dashboard/orders", icon: FiPackage, label: t('order_history', 'Order History') },
+                            { href: "/track-order", icon: FiTruck, label: t('track_parcel', 'Track Your Parcel'), highlight: true },
+                            { href: "/dashboard/profile", icon: FiUser, label: t('profile_settings', 'Profile Settings') },
                           ].map((it) => (
                             <Link
                               key={it.href}
                               href={it.href}
                               onClick={() => setUserMenuOpen(false)}
-                              className="group flex items-center gap-3 px-4 py-2.5 text-sm transition-colors"
-                              style={{ color: '#1B1B1B' }}
+                              className={`group flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                                (it as any).highlight ? 'bg-marigold/5 font-semibold text-ink' : 'text-[#1B1B1B]'
+                              }`}
                               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F2F2EE'}
-                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = (it as any).highlight ? 'rgba(214, 67, 14, 0.05)' : 'transparent'}
                               role="menuitem"
                             >
-                              <it.icon className="h-4 w-4 text-[#767470] group-hover:text-[#57654A]" aria-hidden="true" />
-                              {it.label}
+                              <it.icon className={`h-4 w-4 ${(it as any).highlight ? 'text-marigold' : 'text-[#767470] group-hover:text-[#57654A]'}`} aria-hidden="true" />
+                              <span className="flex-1">{it.label}</span>
+                              {(it as any).highlight && (
+                                <span className="text-[10px] font-mono uppercase bg-marigold text-white px-1.5 py-0.2 rounded font-bold">
+                                  Live
+                                </span>
+                              )}
                             </Link>
                           ))}
                           <Link
@@ -609,6 +651,31 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                           </div>
                         )}
 
+                        {/* Mobile Track Your Parcel Spotlight Card */}
+                        <div className="px-4 mb-4">
+                          <Link
+                            href="/track-order"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="group flex items-center justify-between p-3.5 rounded-xl bg-gradient-to-r from-[#FBFBF9] to-marigold/10 border border-marigold/30 shadow-sm hover:border-marigold transition-all"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-marigold text-white flex items-center justify-center shadow-sm shrink-0">
+                                <FiTruck className="h-5 w-5 animate-pulse" />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-display font-extrabold text-sm uppercase text-ink">Track Your Parcel</span>
+                                  <span className="inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-mono font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                    Live
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-text-soft">Check courier &amp; delivery updates anytime</p>
+                              </div>
+                            </div>
+                            <span className="text-marigold font-bold text-sm group-hover:translate-x-1 transition-transform">&rarr;</span>
+                          </Link>
+                        </div>
+
                         {/* Mobile Seller Card / Guide Hook */}
                         <div className="px-4 mb-5">
                           <div className="rounded-xl bg-gradient-to-br from-ink to-[#2b2b2a] text-paper p-4 border border-line shadow-hard-sm relative overflow-hidden">
@@ -658,8 +725,8 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                               </div>
                               {item.badge && (
                                 <span
-                                  className="inline-flex items-center rounded-full bg-[#6E7F5C] px-2.5 py-0.5 font-mono text-[10px] uppercase text-white"
-                                  aria-label={`${item.badge} deals`}
+                                  className={`inline-flex items-center rounded-full ${(item as any).badgeColor || 'bg-[#6E7F5C]'} px-2.5 py-0.5 font-mono text-[10px] uppercase text-white font-bold`}
+                                  aria-label={`${item.badge} indicator`}
                                 >
                                   {item.badge}
                                 </span>
@@ -787,6 +854,81 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
           </div>
         </Dialog>
       </Transition.Root>
+
+      {/* Mobile Bottom Navigation Bar (Fixed bottom for screens < lg) */}
+      <nav
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FBFBF9]/95 backdrop-blur-md border-t border-[#E3E1DB] px-2 py-1.5 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
+        aria-label="Mobile quick navigation"
+      >
+        <div className="grid grid-cols-5 items-center gap-1 max-w-md mx-auto">
+          {/* Home */}
+          <Link
+            href="/"
+            className={`flex flex-col items-center justify-center py-1 rounded-lg text-[10px] transition-colors ${
+              currentPath === '/' ? 'text-marigold font-bold' : 'text-[#767470] hover:text-[#1B1B1B] font-medium'
+            }`}
+          >
+            <FiHome className="h-5 w-5 mb-0.5" />
+            <span>Home</span>
+          </Link>
+
+          {/* Products */}
+          <Link
+            href="/products"
+            className={`flex flex-col items-center justify-center py-1 rounded-lg text-[10px] transition-colors ${
+              currentPath.startsWith('/products') ? 'text-marigold font-bold' : 'text-[#767470] hover:text-[#1B1B1B] font-medium'
+            }`}
+          >
+            <FiGrid className="h-5 w-5 mb-0.5" />
+            <span>Products</span>
+          </Link>
+
+          {/* Track Parcel - Center Highlight */}
+          <Link
+            href="/track-order"
+            className={`relative flex flex-col items-center justify-center py-1 px-1 rounded-xl text-[10px] font-bold transition-all ${
+              currentPath.startsWith('/track-order')
+                ? 'text-white bg-marigold shadow-md'
+                : 'text-marigold bg-marigold/10 hover:bg-marigold/20'
+            }`}
+          >
+            <div className="relative">
+              <FiTruck className="h-5 w-5 mb-0.5" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+            <span>Track</span>
+          </Link>
+
+          {/* Stores */}
+          <Link
+            href="/stores"
+            className={`flex flex-col items-center justify-center py-1 rounded-lg text-[10px] transition-colors ${
+              currentPath.startsWith('/stores') ? 'text-marigold font-bold' : 'text-[#767470] hover:text-[#1B1B1B] font-medium'
+            }`}
+          >
+            <FiShoppingBag className="h-5 w-5 mb-0.5" />
+            <span>Stores</span>
+          </Link>
+
+          {/* Cart */}
+          <Link
+            href={route("cart.index")}
+            className={`relative flex flex-col items-center justify-center py-1 rounded-lg text-[10px] transition-colors ${
+              currentPath.startsWith('/cart') ? 'text-marigold font-bold' : 'text-[#767470] hover:text-[#1B1B1B] font-medium'
+            }`}
+          >
+            <div className="relative">
+              <FiShoppingCart className="h-5 w-5 mb-0.5" />
+              {cartItems > 0 && (
+                <span className="absolute -top-1.5 -right-2 inline-flex items-center justify-center h-4 w-4 rounded-full bg-[#6E7F5C] text-[9px] font-mono font-bold text-white">
+                  {cartItems > 99 ? '99+' : cartItems}
+                </span>
+              )}
+            </div>
+            <span>Cart</span>
+          </Link>
+        </div>
+      </nav>
     </>
   )
 }

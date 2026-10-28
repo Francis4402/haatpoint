@@ -482,6 +482,13 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
             {/* Actions */}
             <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
               <Link
+                href={`/track-order?order_number=${encodeURIComponent(order.order_number)}`}
+                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-marigold hover:bg-marigold-dark text-white rounded-xl transition-all duration-300 hover:shadow-lg text-sm font-bold"
+              >
+                <FaTruck className="h-4 w-4" />
+                Track Parcel
+              </Link>
+              <Link
                 href={route('dashboard.orders')}
                 className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white text-text-soft hover:text-ink border border-line rounded-xl hover:bg-paper-dim transition-all duration-300 text-sm font-medium"
               >

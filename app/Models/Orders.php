@@ -137,6 +137,10 @@ class Orders extends Model
         'discount_amount' => 0,
     ];
 
+    protected $appends = [
+        'pathao_tracking_url',
+    ];
+
     public function orderItems()
     {
         return $this->hasMany(OrderItems::class, 'order_id', 'id');
@@ -396,10 +400,11 @@ class Orders extends Model
 
     public function getPathaoTrackingUrlAttribute(): ?string
     {
-        if (!$this->pathao_consignment_id) {
+        $tracking = $this->tracking_number ?: ($this->attributes['pathao_consignment_id'] ?? null);
+        if (!$tracking) {
             return null;
         }
-        return 'https://pathao.com/track/' . $this->pathao_consignment_id;
+        return 'https://merchant.pathao.com/tracking?consignment_id=' . urlencode((string) $tracking);
     }
 
     public function isPathaoEligible(): bool

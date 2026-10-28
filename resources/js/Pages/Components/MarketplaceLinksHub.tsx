@@ -11,15 +11,16 @@ interface MarketplaceLinksHubProps {
   categories?: categoryType[];
 }
 
+/** Verified top categories in the database with active inventory */
 const DEFAULT_POPULAR_CATEGORIES = [
   'Electronics',
-  'Fashion',
+  "Men's Fashion",
+  "Women's Fashion",
+  "Kids' Fashion",
   'Home & Living',
-  'Beauty',
-  'Food',
-  'Sports',
-  'Books',
-  'Toys',
+  'Beauty & Personal Care',
+  'Sports & Fitness',
+  'Books & Stationery',
 ];
 
 export default function MarketplaceLinksHub({ categories = [] }: MarketplaceLinksHubProps) {
@@ -114,20 +115,20 @@ export default function MarketplaceLinksHub({ categories = [] }: MarketplaceLink
               </Link>
             </li>
             <li>
-              <a
-                href="#topselling"
+              <Link
+                href="/products?product_type=trending"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Monthly Best Sellers Leaderboard
-              </a>
+                Trending Products
+              </Link>
             </li>
             <li>
-              <a
-                href="#offers"
+              <Link
+                href="/products?product_type=featured"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
                 Handpicked Special Offers
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -144,39 +145,39 @@ export default function MarketplaceLinksHub({ categories = [] }: MarketplaceLink
                 href="/sell"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Become a Seller (Free Forever)
+                Become a Seller &amp; Agent
               </Link>
             </li>
             <li>
               <Link
-                href="/sell#pricing"
+                href="/pricing"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Seller Membership Plans
+                Seller Membership &amp; Pro Plans
               </Link>
             </li>
             <li>
               <Link
-                href="/dashboard/store"
+                href="/stores"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Store Management Dashboard
+                Browse All Marketplace Stores
               </Link>
             </li>
             <li>
               <Link
-                href="/register"
+                href="/agent/register"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Register Merchant Account
+                Register Agent Account
               </Link>
             </li>
             <li>
               <Link
-                href="/login"
+                href="/agent/login"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Vendor Login Portal
+                Agent &amp; Seller Login
               </Link>
             </li>
           </ul>
@@ -215,10 +216,10 @@ export default function MarketplaceLinksHub({ categories = [] }: MarketplaceLink
             </li>
             <li>
               <Link
-                href="/terms"
+                href="/terms-and-conditions"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Return &amp; Refund Policy
+                Terms and Conditions
               </Link>
             </li>
             <li>
@@ -238,7 +239,7 @@ export default function MarketplaceLinksHub({ categories = [] }: MarketplaceLink
         <p>
           <strong className="text-ink">HaatPoint</strong> is Bangladesh&apos;s modern multi-vendor marketplace connecting passionate local merchants, shopkeepers, and creators directly with consumers across Dhaka, Chattogram, Sylhet, Khulna, Rajshahi, and nationwide. Explore authentic fashion, smart electronics, home appliances, fresh produce, and lifestyle goods with secure cash on delivery (COD) and prompt home delivery powered by Pathao. Looking to expand your reach?{' '}
           <Link href="/sell" className="text-marigold-dark font-semibold hover:underline">
-            Open your online stall on HaatPoint today with free selling (up to 150 products)
+            Open your online store on HaatPoint today with free selling or upgrade to Pro for 7% commission
           </Link>.
         </p>
       </div>

@@ -398,6 +398,7 @@ Route::post('/auth/social/complete', [SocialiteController::class, 'completeAccou
 Route::controller(PageController::class)->group(function () {
     Route::get('/privacy-policy', 'privacypolicy')->name('privacy.policy');
     Route::get('/terms-and-conditions', 'termsandconditions')->name('terms.and.conditions');
+    Route::get('/terms', fn () => redirect()->route('terms.and.conditions', [], 301));
 });
 
 Route::post('/reviews', [ReviewsController::class, 'store'])->name('reviews.store');

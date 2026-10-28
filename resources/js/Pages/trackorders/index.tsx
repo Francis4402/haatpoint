@@ -1,1111 +1,848 @@
-import { useState, useEffect, useRef } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import { useState, useEffect } from "react";
+import { Link, router } from "@inertiajs/react";
 import {
   FaSearch,
-  FaFilter,
-  FaTimes,
   FaTruck,
   FaBox,
   FaMapMarkerAlt,
   FaClock,
-  FaCheck,
-  FaCreditCard,
-  FaUser,
-  FaPhone,
-  FaEnvelope,
-  FaCopy,
-  FaShareAlt,
-  FaPrint,
-  FaArrowLeft,
+  FaCheckCircle,
   FaStore,
-  FaCalendarAlt,
-  FaUndo
+  FaCopy,
+  FaCheck,
+  FaExternalLinkAlt,
+  FaExclamationTriangle,
+  FaTimesCircle,
+  FaReceipt,
+  FaShoppingBag,
+  FaPhone,
+  FaPrint,
+  FaShieldAlt,
+  FaCreditCard,
+  FaQuestionCircle,
+  FaArrowRight
 } from "react-icons/fa";
-
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { PageProps } from "@/types";
+import { PageProps, Orders, OrderItem } from "@/types";
 import AppLayout from "@/Layouts/AppLayout";
-import { Link } from "@inertiajs/react";
 import SeoHead from "@/Components/SeoHead";
+import Eyebrow from "@/Pages/Components/Eyebrow";
+import FormatPrice from "@/Pages/utils/FormatePrice";
 
-
-gsap.registerPlugin(ScrollTrigger);
-
-interface OrderItem {
-  id: number;
-  name: string;
-  image: string;
-  price: number;
-  quantity: number;
-  total: number;
-  status: string;
-  store: string;
+interface TrackOrderProps extends PageProps {
+  searchedOrder?: (Orders & {
+    order_items?: OrderItem[];
+    store?: any;
+    pathao_tracking_url?: string | null;
+  }) | null;
+  matchedOrders?: (Orders & {
+    order_items?: OrderItem[];
+    store?: any;
+    pathao_tracking_url?: string | null;
+  })[];
+  recentOrders?: (Orders & {
+    order_items?: OrderItem[];
+    store?: any;
+    pathao_tracking_url?: string | null;
+  })[];
+  initialQuery?: string;
+  wishlist: any;
 }
 
-interface TrackingEvent {
-  id: number;
-  status: string;
-  description: string;
-  location: string;
-  timestamp: string;
-  date: string;
-  icon: string;
-  completed: boolean;
-  current: boolean;
-}
+export default function TrackOrderPage({
+  auth,
+  wishlist,
+  searchedOrder,
+  matchedOrders = [],
+  recentOrders = [],
+  initialQuery = "",
+}: TrackOrderProps) {
+  const [searchInput, setSearchInput] = useState(initialQuery);
+  const [isSearching, setIsSearching] = useState(false);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
 
-interface OrderData {
-  id: string;
-  orderNumber: string;
-  date: string;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  statusText: string;
-  estimatedDelivery: string;
-  totalAmount: number;
-  shippingFee: number;
-  tax: number;
-  discount: number;
-  finalAmount: number;
-  paymentMethod: string;
-  paymentStatus: string;
-  shippingMethod: string;
-  trackingNumber: string;
-  customer: {
-    name: string;
-    email?: string;
-    phone?: string;
-    address: string;
-    city: string;
-    zipCode: string;
-    country: string;
-  };
-  store: {
-    name: string;
-    email?: string;
-    phone?: string;
-    address: string;
-  };
-  items: OrderItem[];
-  trackingEvents: TrackingEvent[];
-}
-
-const TrackOrderPage = ({auth, wishlist}: PageProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [orderStatusFilter, setOrderStatusFilter] = useState<string>("all");
-  const [selectedOrder, setSelectedOrder] = useState<string>("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const trackingRef = useRef<HTMLDivElement>(null);
-
-  // Mock orders data
-  const orders: OrderData[] = [
-    {
-      id: "ORD-2024-001234",
-      orderNumber: "ORD-2024-001234",
-      date: "2024-03-15",
-      status: "shipped",
-      statusText: "Shipped",
-      estimatedDelivery: "2024-03-22",
-      totalAmount: 249.99,
-      shippingFee: 9.99,
-      tax: 20.00,
-      discount: 15.00,
-      finalAmount: 264.98,
-      paymentMethod: "Credit Card",
-      paymentStatus: "Paid",
-      shippingMethod: "Express Delivery",
-      trackingNumber: "TRK789456123",
-      customer: {
-        name: "Customer",
-        address: "123 Main Street, Apt 4B",
-        city: "Dhaka",
-        zipCode: "1200",
-        country: "Bangladesh"
-      },
-      store: {
-        name: "TechHub Electronics",
-        address: "123 Technology Street, Block A, Dhaka"
-      },
-      items: [
-        {
-          id: 1,
-          name: "Wireless Bluetooth Headphones",
-          image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
-          price: 89.99,
-          quantity: 1,
-          total: 89.99,
-          status: "Shipped",
-          store: "TechHub Electronics"
-        },
-        {
-          id: 2,
-          name: "Smart Watch Series 8",
-          image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w-400&h=400&fit=crop",
-          price: 159.99,
-          quantity: 1,
-          total: 159.99,
-          status: "Shipped",
-          store: "TechHub Electronics"
-        }
-      ],
-      trackingEvents: [
-        {
-          id: 1,
-          status: "Order Placed",
-          description: "Your order has been confirmed",
-          location: "Dhaka Warehouse",
-          timestamp: "10:30 AM",
-          date: "Mar 15, 2024",
-          icon: "check",
-          completed: true,
-          current: false
-        },
-        {
-          id: 2,
-          status: "Processing",
-          description: "Order is being prepared for shipment",
-          location: "Dhaka Warehouse",
-          timestamp: "2:45 PM",
-          date: "Mar 16, 2024",
-          icon: "package",
-          completed: true,
-          current: false
-        },
-        {
-          id: 3,
-          status: "Shipped",
-          description: "Order has left the warehouse",
-          location: "Dhaka Distribution Center",
-          timestamp: "9:15 AM",
-          date: "Mar 18, 2024",
-          icon: "truck",
-          completed: true,
-          current: true
-        },
-        {
-          id: 4,
-          status: "In Transit",
-          description: "Package is on its way",
-          location: "In Transit",
-          timestamp: "Estimated",
-          date: "Mar 19-20, 2024",
-          icon: "transit",
-          completed: false,
-          current: false
-        },
-        {
-          id: 5,
-          status: "Out for Delivery",
-          description: "Package will be delivered today",
-          location: "Local Delivery Center",
-          timestamp: "Morning",
-          date: "Mar 22, 2024",
-          icon: "delivery",
-          completed: false,
-          current: false
-        },
-        {
-          id: 6,
-          status: "Delivered",
-          description: "Package delivered successfully",
-          location: "Your Address",
-          timestamp: "By 8:00 PM",
-          date: "Mar 22, 2024",
-          icon: "home",
-          completed: false,
-          current: false
-        }
-      ]
-    },
-    {
-      id: "ORD-2024-001235",
-      orderNumber: "ORD-2024-001235",
-      date: "2024-03-14",
-      status: "delivered",
-      statusText: "Delivered",
-      estimatedDelivery: "2024-03-18",
-      totalAmount: 89.50,
-      shippingFee: 4.99,
-      tax: 8.95,
-      discount: 5.00,
-      finalAmount: 98.44,
-      paymentMethod: "PayPal",
-      paymentStatus: "Paid",
-      shippingMethod: "Standard Shipping",
-      trackingNumber: "TRK123456789",
-      customer: {
-        name: "Customer",
-        address: "123 Main Street, Apt 4B",
-        city: "Dhaka",
-        zipCode: "1200",
-        country: "Bangladesh"
-      },
-      store: {
-        name: "Fashion Haven",
-        address: "456 Fashion Avenue, Dhaka"
-      },
-      items: [
-        {
-          id: 1,
-          name: "Casual Summer T-Shirt",
-          image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-          price: 24.99,
-          quantity: 2,
-          total: 49.98,
-          status: "Delivered",
-          store: "Fashion Haven"
-        },
-        {
-          id: 2,
-          name: "Denim Jeans",
-          image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
-          price: 39.52,
-          quantity: 1,
-          total: 39.52,
-          status: "Delivered",
-          store: "Fashion Haven"
-        }
-      ],
-      trackingEvents: [
-        {
-          id: 1,
-          status: "Order Placed",
-          description: "Your order has been confirmed",
-          location: "Dhaka Warehouse",
-          timestamp: "3:15 PM",
-          date: "Mar 14, 2024",
-          icon: "check",
-          completed: true,
-          current: false
-        },
-        {
-          id: 2,
-          status: "Processing",
-          description: "Order is being prepared for shipment",
-          location: "Dhaka Warehouse",
-          timestamp: "10:30 AM",
-          date: "Mar 15, 2024",
-          icon: "package",
-          completed: true,
-          current: false
-        },
-        {
-          id: 3,
-          status: "Shipped",
-          description: "Order has left the warehouse",
-          location: "Dhaka Distribution Center",
-          timestamp: "2:00 PM",
-          date: "Mar 16, 2024",
-          icon: "truck",
-          completed: true,
-          current: false
-        },
-        {
-          id: 4,
-          status: "Delivered",
-          description: "Package delivered successfully",
-          location: "Your Address",
-          timestamp: "11:45 AM",
-          date: "Mar 18, 2024",
-          icon: "home",
-          completed: true,
-          current: true
-        }
-      ]
-    },
-    {
-      id: "ORD-2024-001236",
-      orderNumber: "ORD-2024-001236",
-      date: "2024-03-16",
-      status: "processing",
-      statusText: "Processing",
-      estimatedDelivery: "2024-03-25",
-      totalAmount: 156.75,
-      shippingFee: 0.00,
-      tax: 15.68,
-      discount: 20.00,
-      finalAmount: 152.43,
-      paymentMethod: "Credit Card",
-      paymentStatus: "Paid",
-      shippingMethod: "Free Shipping",
-      trackingNumber: "TRK456789123",
-      customer: {
-        name: "Customer",
-        address: "123 Main Street, Apt 4B",
-        city: "Dhaka",
-        zipCode: "1200",
-        country: "Bangladesh"
-      },
-      store: {
-        name: "Home & Living Store",
-        address: "789 Decor Lane, Chittagong"
-      },
-      items: [
-        {
-          id: 1,
-          name: "Ceramic Dinner Set",
-          image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=400&fit=crop",
-          price: 89.99,
-          quantity: 1,
-          total: 89.99,
-          status: "Processing",
-          store: "Home & Living Store"
-        },
-        {
-          id: 2,
-          name: "Decorative Wall Clock",
-          image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=400&fit=crop",
-          price: 34.99,
-          quantity: 1,
-          total: 34.99,
-          status: "Processing",
-          store: "Home & Living Store"
-        },
-        {
-          id: 3,
-          name: "Kitchen Utensil Set",
-          image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop",
-          price: 31.77,
-          quantity: 1,
-          total: 31.77,
-          status: "Processing",
-          store: "Home & Living Store"
-        }
-      ],
-      trackingEvents: [
-        {
-          id: 1,
-          status: "Order Placed",
-          description: "Your order has been confirmed",
-          location: "Chittagong Warehouse",
-          timestamp: "9:45 AM",
-          date: "Mar 16, 2024",
-          icon: "check",
-          completed: true,
-          current: true
-        },
-        {
-          id: 2,
-          status: "Processing",
-          description: "Order is being prepared for shipment",
-          location: "Chittagong Warehouse",
-          timestamp: "Pending",
-          date: "Mar 17-18, 2024",
-          icon: "package",
-          completed: false,
-          current: false
-        },
-        {
-          id: 3,
-          status: "Shipped",
-          description: "Order will leave the warehouse",
-          location: "Chittagong Distribution",
-          timestamp: "Estimated",
-          date: "Mar 19, 2024",
-          icon: "truck",
-          completed: false,
-          current: false
-        }
-      ]
-    },
-    {
-      id: "ORD-2024-001237",
-      orderNumber: "ORD-2024-001237",
-      date: "2024-03-12",
-      status: "pending",
-      statusText: "Pending",
-      estimatedDelivery: "2024-03-20",
-      totalAmount: 45.99,
-      shippingFee: 3.99,
-      tax: 4.60,
-      discount: 0.00,
-      finalAmount: 54.58,
-      paymentMethod: "Cash on Delivery",
-      paymentStatus: "Pending",
-      shippingMethod: "Standard Shipping",
-      trackingNumber: "TRK321654987",
-      customer: {
-        name: "Customer",
-        address: "123 Main Street, Apt 4B",
-        city: "Dhaka",
-        zipCode: "1200",
-        country: "Bangladesh"
-      },
-      store: {
-        name: "Fresh Groceries",
-        address: "321 Market Road, Sylhet"
-      },
-      items: [
-        {
-          id: 1,
-          name: "Organic Fruits Basket",
-          image: "https://images.unsplash.com/photo-1579113800032-c38bd7635818?w=400&h=400&fit=crop",
-          price: 29.99,
-          quantity: 1,
-          total: 29.99,
-          status: "Pending",
-          store: "Fresh Groceries"
-        },
-        {
-          id: 2,
-          name: "Fresh Vegetables Pack",
-          image: "https://images.unsplash.com/photo-1590779033100-9f60a05a013d?w=400&h=400&fit=crop",
-          price: 15.99,
-          quantity: 1,
-          total: 15.99,
-          status: "Pending",
-          store: "Fresh Groceries"
-        }
-      ],
-      trackingEvents: [
-        {
-          id: 1,
-          status: "Order Placed",
-          description: "Your order has been confirmed",
-          location: "Sylhet Warehouse",
-          timestamp: "4:20 PM",
-          date: "Mar 12, 2024",
-          icon: "check",
-          completed: true,
-          current: true
-        },
-        {
-          id: 2,
-          status: "Processing",
-          description: "Order will be processed soon",
-          location: "Sylhet Warehouse",
-          timestamp: "Pending",
-          date: "Mar 13-14, 2024",
-          icon: "package",
-          completed: false,
-          current: false
-        }
-      ]
-    }
-  ];
-
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch =
-      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.trackingNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.store.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = orderStatusFilter === "all" || order.status === orderStatusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const selectedOrderData = orders.find(order => order.id === selectedOrder) || orders[0];
-
+  // Sync initial query if prop changes
   useEffect(() => {
-    if (!selectedOrder && orders.length > 0) {
-      setSelectedOrder(orders[0].id);
+    if (initialQuery !== undefined) {
+      setSearchInput(initialQuery);
     }
-  }, [orders, selectedOrder]);
+  }, [initialQuery]);
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      if (headerRef.current) {
-        gsap.from(headerRef.current.children, {
-          y: -30,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: "power3.out"
-        });
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const query = searchInput.trim();
+    if (!query) return;
+
+    setIsSearching(true);
+    router.get(
+      route("trackorder.index"),
+      { query },
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onFinish: () => setIsSearching(false),
       }
-
-      if (trackingRef.current) {
-        const timeline = gsap.timeline({
-          scrollTrigger: {
-            trigger: trackingRef.current,
-            start: "top bottom-=100",
-            toggleActions: "play none none reverse"
-          }
-        });
-
-        timeline.from(".tracking-step", {
-          x: -50,
-          opacity: 0,
-          duration: 0.6,
-          stagger: 0.2,
-          ease: "power2.out"
-        });
-      }
-    });
-
-    return () => ctx.revert();
-  }, [selectedOrderData]);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "delivered":
-        return "bg-green-100 text-green-800";
-      case "shipped":
-        return "bg-blue-100 text-blue-800";
-      case "processing":
-        return "bg-yellow-100 text-yellow-800";
-      case "pending":
-        return "bg-gray-100 text-gray-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "delivered":
-        return <FaCheck className="h-5 w-5" />;
-      case "shipped":
-        return <FaTruck className="h-5 w-5" />;
-      case "processing":
-        return <FaClock className="h-5 w-5" />;
-      case "pending":
-        return <FaClock className="h-5 w-5" />;
-      default:
-        return <FaBox className="h-5 w-5" />;
-    }
-  };
-
-  const handleCopyTracking = () => {
-    navigator.clipboard.writeText(selectedOrderData.trackingNumber);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleRefresh = () => {
-    setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 1000);
-  };
-
-  const OrderCard = ({ order }: { order: OrderData }) => {
-    const cardRef = useRef<HTMLDivElement>(null);
-
-    const handleMouseEnter = () => {
-      if (cardRef.current) {
-        gsap.to(cardRef.current, {
-          y: -4,
-          duration: 0.3,
-          ease: "power2.out"
-        });
-      }
-    };
-
-    const handleMouseLeave = () => {
-      if (cardRef.current) {
-        gsap.to(cardRef.current, {
-          y: 0,
-          duration: 0.3,
-          ease: "power2.out"
-        });
-      }
-    };
-
-    return (
-      <div
-        ref={cardRef}
-        className={`bg-white rounded-xl border cursor-pointer transition-all duration-300 ${
-          selectedOrder === order.id ? "border-amber-500 shadow-lg" : "border-gray-200 hover:border-amber-300"
-        }`}
-        onClick={() => setSelectedOrder(order.id)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <div className="p-5">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="font-bold text-lg text-gray-900">{order.orderNumber}</h3>
-              <p className="text-sm text-gray-600">{order.store.name}</p>
-            </div>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-              {order.statusText}
-            </span>
-          </div>
-
-          <div className="space-y-3 mb-4">
-            <div className="flex items-center gap-2 text-sm">
-              <FaCalendarAlt className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600">Order Date:</span>
-              <span className="font-medium">{new Date(order.date).toLocaleDateString()}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <FaClock className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600">Est. Delivery:</span>
-              <span className="font-medium">{new Date(order.estimatedDelivery).toLocaleDateString()}</span>
-            </div>
-          </div>
-
-          <div className="border-t pt-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600">Total Amount:</span>
-              <span className="font-bold text-lg text-gray-900">${order.finalAmount.toFixed(2)}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <FaBox className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-600">{order.items.length} item{order.items.length > 1 ? 's' : ''}</span>
-            </div>
-          </div>
-        </div>
-      </div>
     );
   };
 
-  const TrackingStep = ({ event, isLast }: { event: TrackingEvent; isLast: boolean }) => {
-    return (
-      <div className="relative tracking-step">
-        <div className="flex gap-4">
-          {/* Icon & Line */}
-          <div className="relative flex flex-col items-center">
-            <div className={`h-12 w-12 rounded-full flex items-center justify-center z-10 ${
-              event.completed ? 'bg-green-500' : event.current ? 'bg-amber-500' : 'bg-gray-300'
-            }`}>
-              {event.completed ? (
-                <FaCheck className="h-6 w-6 text-white" />
-              ) : event.current ? (
-                getStatusIcon(selectedOrderData.status)
-              ) : (
-                <div className="h-4 w-4 rounded-full bg-gray-400"></div>
+  const selectOrder = (orderNumber: string) => {
+    setSearchInput(orderNumber);
+    setIsSearching(true);
+    router.get(
+      route("trackorder.index"),
+      { order_number: orderNumber },
+      {
+        preserveState: true,
+        preserveScroll: true,
+        onFinish: () => setIsSearching(false),
+      }
+    );
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(label);
+    setTimeout(() => setCopiedText(null), 2000);
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "—";
+    return new Date(dateString).toLocaleDateString("en-BD", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatShortDate = (dateString?: string) => {
+    if (!dateString) return "—";
+    return new Date(dateString).toLocaleDateString("en-BD", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Status styling helper
+  const getStatusBadge = (status?: string) => {
+    const s = (status || "pending").toLowerCase();
+    switch (s) {
+      case "delivered":
+        return {
+          label: "Delivered",
+          badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
+          dotClass: "bg-emerald-500",
+        };
+      case "shipped":
+        return {
+          label: "In Transit / Shipped",
+          badgeClass: "bg-indigo-100 text-indigo-800 border-indigo-200",
+          dotClass: "bg-indigo-500",
+        };
+      case "processing":
+      case "confirmed":
+        return {
+          label: s === "confirmed" ? "Confirmed" : "Processing",
+          badgeClass: "bg-blue-100 text-blue-800 border-blue-200",
+          dotClass: "bg-blue-500",
+        };
+      case "cancelled":
+        return {
+          label: "Cancelled",
+          badgeClass: "bg-rose-100 text-rose-800 border-rose-200",
+          dotClass: "bg-rose-500",
+        };
+      case "returned":
+        return {
+          label: "Returned",
+          badgeClass: "bg-purple-100 text-purple-800 border-purple-200",
+          dotClass: "bg-purple-500",
+        };
+      case "pending":
+      default:
+        return {
+          label: "Pending Confirmation",
+          badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
+          dotClass: "bg-amber-500",
+        };
+    }
+  };
+
+  // Lifecycle steps for order tracking stepper
+  const order = searchedOrder;
+  const currentStatus = (order?.order_status || "pending").toLowerCase();
+  const isCancelled = currentStatus === "cancelled";
+  const isReturned = currentStatus === "returned";
+
+  // Step indices: 0: Placed, 1: Confirmed/Processing, 2: Shipped, 3: Delivered
+  const getStepState = (stepIndex: number) => {
+    if (isCancelled || isReturned) return "inactive";
+
+    const statusMap: Record<string, number> = {
+      pending: 0,
+      confirmed: 1,
+      processing: 1,
+      shipped: 2,
+      delivered: 3,
+    };
+
+    const currentLevel = statusMap[currentStatus] ?? 0;
+    if (currentLevel > stepIndex) return "completed";
+    if (currentLevel === stepIndex) return "current";
+    return "pending";
+  };
+
+  const steps = [
+    {
+      title: "Order Placed",
+      desc: "Order received by Haatpoint",
+      date: order?.created_at ? formatShortDate(order.created_at) : undefined,
+    },
+    {
+      title: "Confirmed & Packing",
+      desc: "Store verified & preparing package",
+      date: undefined,
+    },
+    {
+      title: "Handed to Courier",
+      desc: order?.shipping_method === "pathao" ? "Dispatched via Pathao Courier" : "Dispatched for delivery",
+      date: undefined,
+    },
+    {
+      title: "Out for Delivery & Delivered",
+      desc: "Package delivered to recipient",
+      date: currentStatus === "delivered" && order?.updated_at ? formatShortDate(order.updated_at) : undefined,
+    },
+  ];
+
+  return (
+    <AppLayout user={auth?.user} wishlist={wishlist}>
+      <SeoHead
+        title={order ? `Tracking ${order.order_number} - Haatpoint` : "Track Your Parcel - Haatpoint"}
+        description="Track the real-time shipping status, courier updates, and delivery timeline for your Haatpoint orders."
+      />
+
+      <div className="min-h-screen bg-paper-dim py-8 sm:py-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+
+          {/* Hero & Search Header */}
+          <div className="text-center mb-8 sm:mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-marigold/10 border border-marigold/20 mb-3">
+              <FaTruck className="h-3.5 w-3.5 text-marigold" />
+              <span className="font-mono text-xs uppercase tracking-wider text-marigold font-bold">
+                Live Parcel Tracker
+              </span>
+            </div>
+            <h1 className="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight text-ink mb-3">
+              Track Your Parcel
+            </h1>
+            <p className="text-text-soft text-sm sm:text-base max-w-xl mx-auto">
+              Enter your Haatpoint <strong className="text-ink">Order Number</strong> (e.g. ORD-XXXX-XXXX) or <strong className="text-ink">Phone Number</strong> to get live delivery updates.
+            </p>
+
+            {/* Search Input Box */}
+            <div className="mt-6 max-w-2xl mx-auto">
+              <form onSubmit={handleSearch} className="relative flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FaSearch className="h-4 w-4 text-text-soft" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    placeholder="Enter Order # (e.g. ORD-TBJ5-3450) or Phone #"
+                    className="w-full pl-11 pr-10 py-3.5 bg-white border border-line rounded-xl text-ink placeholder-text-soft text-sm focus:outline-none focus:ring-2 focus:ring-marigold focus:border-transparent transition-all shadow-sm font-mono"
+                  />
+                  {searchInput && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchInput("")}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-soft hover:text-ink"
+                    >
+                      <FaTimesCircle className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSearching || !searchInput.trim()}
+                  className="px-6 py-3.5 bg-marigold hover:bg-marigold-dark text-white rounded-xl font-bold uppercase tracking-wide text-xs sm:text-sm transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSearching ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Tracking...
+                    </>
+                  ) : (
+                    <>
+                      <FaTruck className="h-4 w-4" />
+                      Track Parcel
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* Sample order hint if nothing is searched yet */}
+              {!order && !initialQuery && (
+                <div className="mt-3 flex items-center justify-center gap-2 text-xs text-text-soft">
+                  <span>Tip: Look for your Order ID in the confirmation SMS or email invoice.</span>
+                </div>
               )}
             </div>
-            {!isLast && (
-              <div className={`absolute top-12 h-full w-0.5 ${
-                event.completed ? 'bg-green-500' : 'bg-gray-300'
-              }`}></div>
+
+            {/* Recent Orders Pills for Logged-in Shopper */}
+            {recentOrders.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-line/60">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <FaReceipt className="h-3.5 w-3.5 text-text-soft" />
+                  <span className="font-mono text-xs uppercase tracking-wider text-text-soft font-semibold">
+                    Your Recent Orders
+                  </span>
+                </div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {recentOrders.map((ro) => {
+                    const isSelected = order?.id === ro.id;
+                    const badge = getStatusBadge(ro.order_status);
+                    return (
+                      <button
+                        key={ro.id}
+                        type="button"
+                        onClick={() => selectOrder(ro.order_number)}
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all ${
+                          isSelected
+                            ? "bg-marigold text-white border-marigold font-bold shadow-sm"
+                            : "bg-white text-ink border-line hover:border-marigold hover:bg-marigold/5"
+                        }`}
+                      >
+                        <span>{ro.order_number}</span>
+                        <span className={`w-2 h-2 rounded-full ${isSelected ? "bg-white" : badge.dotClass}`} />
+                        <span className={isSelected ? "text-white/90" : "text-text-soft"}>
+                          <FormatPrice price={ro.total} />
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Multiple Matches Selector (e.g. when searching by phone) */}
+            {matchedOrders.length > 1 && (
+              <div className="mt-6 max-w-2xl mx-auto bg-white p-4 rounded-xl border border-line shadow-sm text-left">
+                <p className="text-xs font-semibold uppercase tracking-wider text-text-soft mb-2.5">
+                  Found {matchedOrders.length} orders matching your search. Select one:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {matchedOrders.map((mo) => {
+                    const isSelected = order?.id === mo.id;
+                    const badge = getStatusBadge(mo.order_status);
+                    return (
+                      <button
+                        key={mo.id}
+                        type="button"
+                        onClick={() => selectOrder(mo.order_number)}
+                        className={`p-2.5 text-left rounded-lg border text-xs transition-all flex flex-col justify-between ${
+                          isSelected
+                            ? "border-marigold bg-marigold/5 ring-1 ring-marigold"
+                            : "border-line bg-paper-dim/40 hover:bg-paper-dim"
+                        }`}
+                      >
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-mono font-bold text-ink">{mo.order_number}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badge.badgeClass}`}>
+                            {badge.label}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center text-text-soft text-[11px]">
+                          <span>{formatShortDate(mo.created_at)}</span>
+                          <span className="font-medium text-ink"><FormatPrice price={mo.total} /></span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Content */}
-          <div className="flex-1 pb-8">
-            <div className="mb-2">
-              <h4 className="font-bold text-gray-900">{event.status}</h4>
-              <p className="text-gray-600 text-sm">{event.description}</p>
-            </div>
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center gap-1">
-                <FaMapMarkerAlt className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-700">{event.location}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <FaCalendarAlt className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-700">{event.date}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <FaClock className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-700">{event.timestamp}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+          {/* Order Details View (When order is active) */}
+          {order ? (
+            <div className="space-y-6">
 
-  return (
-    <AppLayout user={auth.user} wishlist={wishlist}>
-      <SeoHead />
-      <div className="min-h-screen bg-gray-50">
-        <div className="container py-8">
-          {/* Header */}
-          <div ref={headerRef} className="mb-8">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-              <Link href="/" className="hover:text-amber-600 transition-colors">Home</Link>
-              <FaArrowLeft className="h-4 w-4" />
-              <span className="text-gray-900 font-medium">Track Order</span>
-            </div>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Track Your Order</h1>
-                <p className="text-gray-600">Monitor your order status and shipping updates in real-time</p>
-              </div>
-              <button
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                <FaUndo className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                {isLoading ? 'Refreshing...' : 'Refresh Status'}
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Sidebar - Order List */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold">My Orders</h2>
-                    <button
-                      onClick={() => setShowFilters(true)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      <FaFilter className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  {/* Search */}
-                  <div className="relative mb-6">
-                    <FaSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="search"
-                      placeholder="Search by order number or tracking..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  {/* Order List */}
-                  <div className="space-y-4">
-                    {filteredOrders.map((order) => (
-                      <OrderCard key={order.id} order={order} />
-                    ))}
-                  </div>
-
-                  {/* No Results */}
-                  {filteredOrders.length === 0 && (
-                    <div className="text-center py-8">
-                      <FaBox className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No orders found</h3>
-                      <p className="text-gray-600">Try adjusting your search or filters</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content - Order Details & Tracking */}
-            <div className="lg:col-span-2">
-              {/* Order Header */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              {/* Status Header Banner */}
+              <div className="bg-white rounded-2xl border border-line shadow-sm p-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-line">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedOrderData.orderNumber}</h2>
-                    <div className="flex items-center gap-4">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedOrderData.status)} flex items-center gap-2`}>
-                        {getStatusIcon(selectedOrderData.status)}
-                        {selectedOrderData.statusText}
-                      </span>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <FaStore className="h-4 w-4" />
-                        <span>{selectedOrderData.store.name}</span>
-                      </div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h2 className="font-mono text-xl sm:text-2xl font-extrabold text-ink tracking-tight">
+                        {order.order_number}
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(order.order_number, "order")}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-mono text-text-soft hover:text-ink bg-paper-dim border border-line rounded-md transition-colors"
+                        title="Copy Order Number"
+                      >
+                        {copiedText === "order" ? (
+                          <>
+                            <FaCheck className="h-3 w-3 text-emerald-600" />
+                            <span className="text-emerald-600 font-semibold">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <FaCopy className="h-3 w-3" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+
+                      {/* Status badge */}
+                      {(() => {
+                        const badge = getStatusBadge(order.order_status);
+                        return (
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${badge.badgeClass}`}>
+                            <span className={`w-2 h-2 rounded-full ${badge.dotClass} animate-pulse`} />
+                            {badge.label}
+                          </span>
+                        );
+                      })()}
                     </div>
+                    <p className="mt-1 text-xs text-text-soft">
+                      Placed on <span className="text-ink font-medium">{formatDate(order.created_at)}</span>
+                      {order.store_name && (
+                        <span> · Sold by <strong className="text-ink">{order.store_name}</strong></span>
+                      )}
+                    </p>
                   </div>
-                  <div className="flex gap-2">
+
+                  {/* Actions & Pathao Courier button */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {order.tracking_number && (
+                      <div className="flex items-center gap-2 bg-paper-dim px-3 py-1.5 rounded-lg border border-line text-xs font-mono">
+                        <span className="text-text-soft">Tracking:</span>
+                        <strong className="text-ink">{order.tracking_number}</strong>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(order.tracking_number!, "tracking")}
+                          className="text-text-soft hover:text-ink"
+                          title="Copy Tracking Number"
+                        >
+                          {copiedText === "tracking" ? <FaCheck className="h-3 w-3 text-emerald-600" /> : <FaCopy className="h-3 w-3" />}
+                        </button>
+                      </div>
+                    )}
+
+                    {order.pathao_tracking_url && (
+                      <a
+                        href={order.pathao_tracking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold uppercase tracking-wide transition-all shadow-sm"
+                      >
+                        <span>Track on Pathao</span>
+                        <FaExternalLinkAlt className="h-3 w-3" />
+                      </a>
+                    )}
+
                     <button
-                      onClick={handleCopyTracking}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      type="button"
+                      onClick={() => window.print()}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-paper-dim hover:bg-line text-ink border border-line rounded-xl text-xs font-medium transition-colors"
+                      title="Print Tracking Sheet"
                     >
-                      <FaCopy className="h-4 w-4" />
-                      {copied ? 'Copied!' : 'Copy Tracking'}
-                    </button>
-                    <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
-                      <FaShareAlt className="h-4 w-4" />
-                      Share
-                    </button>
-                    <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
-                      <FaPrint className="h-4 w-4" />
-                      Print
+                      <FaPrint className="h-3.5 w-3.5 text-text-soft" />
+                      <span>Print</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Tracking Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <FaTruck className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Tracking Number</p>
-                        <p className="font-bold text-gray-900">{selectedOrderData.trackingNumber}</p>
-                      </div>
+                {/* Cancelled Alert Banner */}
+                {isCancelled && (
+                  <div className="mt-6 p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-3">
+                    <FaTimesCircle className="h-5 w-5 text-rose-600 mt-0.5 shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-bold text-rose-900">This order has been cancelled</h4>
+                      <p className="text-xs text-rose-700 mt-0.5">
+                        This order is no longer in transit. If you made an online payment, any applicable refund will be processed according to our policy. For questions, please contact Haatpoint Support.
+                      </p>
                     </div>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <FaCalendarAlt className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Estimated Delivery</p>
-                        <p className="font-bold text-gray-900">
-                          {new Date(selectedOrderData.estimatedDelivery).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <FaCreditCard className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Payment</p>
-                        <p className="font-bold text-gray-900">{selectedOrderData.paymentMethod}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <FaBox className="h-5 w-5 text-amber-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Shipping Method</p>
-                        <p className="font-bold text-gray-900">{selectedOrderData.shippingMethod}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                )}
 
-                {/* Order Items */}
-                <div className="mb-6">
-                  <h3 className="font-bold text-lg mb-4">Order Items</h3>
-                  <div className="space-y-3">
-                    {selectedOrderData.items.map((item) => (
-                      <div key={item.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="h-16 w-16 object-cover rounded"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{item.name}</h4>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span>Qty: {item.quantity}</span>
-                            <span>Status: {item.status}</span>
-                            <span>Store: {item.store}</span>
+                {/* Returned Alert Banner */}
+                {isReturned && (
+                  <div className="mt-6 p-4 rounded-xl bg-purple-50 border border-purple-200 flex items-start gap-3">
+                    <FaExclamationTriangle className="h-5 w-5 text-purple-600 mt-0.5 shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-bold text-purple-900">Parcel returned to merchant</h4>
+                      <p className="text-xs text-purple-700 mt-0.5">
+                        This shipment could not be delivered and has been returned to the seller.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Progress Stepper (Only active if not cancelled) */}
+                {!isCancelled && !isReturned && (
+                  <div className="mt-8 pt-2">
+                    <div className="relative">
+                      {/* Stepper Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 relative">
+                        {steps.map((st, idx) => {
+                          const state = getStepState(idx);
+                          const isDone = state === "completed";
+                          const isCurr = state === "current";
+
+                          return (
+                            <div key={idx} className="relative flex flex-col items-center text-center">
+                              {/* Step circle */}
+                              <div
+                                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all mb-3 z-10 ${
+                                  isDone
+                                    ? "bg-emerald-600 text-white shadow-md ring-4 ring-emerald-100"
+                                    : isCurr
+                                    ? "bg-marigold text-white shadow-md ring-4 ring-marigold/20 animate-pulse"
+                                    : "bg-paper-dim border border-line text-text-soft"
+                                }`}
+                              >
+                                {isDone ? (
+                                  <FaCheck className="h-4 w-4" />
+                                ) : isCurr ? (
+                                  <FaTruck className="h-4 w-4" />
+                                ) : (
+                                  <span>{idx + 1}</span>
+                                )}
+                              </div>
+
+                              {/* Step text */}
+                              <h4
+                                className={`font-display font-extrabold uppercase text-xs tracking-tight ${
+                                  isDone || isCurr ? "text-ink" : "text-text-soft"
+                                }`}
+                              >
+                                {st.title}
+                              </h4>
+                              <p className="text-[11px] text-text-soft mt-0.5 max-w-[140px]">
+                                {st.desc}
+                              </p>
+                              {st.date && (
+                                <span className="font-mono text-[10px] text-text-soft mt-1">
+                                  {st.date}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Main Content Grid: Items (Left 2 cols) & Details (Right 1 col) */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* Left: Ordered Items & Bill Summary */}
+                <div className="lg:col-span-2 space-y-6">
+
+                  {/* Order Items List */}
+                  <div className="bg-white rounded-2xl border border-line shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 bg-paper-dim/60 border-b border-line flex items-center justify-between">
+                      <h3 className="font-display font-extrabold uppercase text-sm tracking-wide text-ink flex items-center gap-2">
+                        <FaBox className="h-4 w-4 text-marigold" />
+                        <span>Ordered Items ({order.order_items?.length || order.item_quantity || 1})</span>
+                      </h3>
+                      {order.shipping_method && (
+                        <span className="font-mono text-[11px] uppercase tracking-wider text-text-soft">
+                          Delivery: <strong className="text-ink">{order.shipping_method === "pathao" ? "Pathao Courier" : "Standard Home Delivery"}</strong>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="divide-y divide-line">
+                      {order.order_items && order.order_items.length > 0 ? (
+                        order.order_items.map((item, idx) => (
+                          <div key={item.id || idx} className="p-4 sm:p-5 flex items-center gap-4 hover:bg-paper-dim/20 transition-colors">
+                            {/* Product Thumbnail */}
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-line bg-paper-dim overflow-hidden shrink-0">
+                              {item.product_image ? (
+                                <img
+                                  src={item.product_image}
+                                  alt={item.product_name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-text-soft">
+                                  <FaBox className="h-6 w-6 opacity-40" />
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Details */}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-sm text-ink truncate mb-1">
+                                {item.product_name}
+                              </h4>
+                              <div className="flex flex-wrap items-center gap-2 text-xs text-text-soft">
+                                <span>Qty: <strong className="text-ink">{item.quantity}</strong></span>
+                                {item.size && (
+                                  <span className="px-2 py-0.5 rounded bg-paper-dim border border-line text-[11px]">
+                                    Size: {item.size}
+                                  </span>
+                                )}
+                                {item.color && (
+                                  <span className="px-2 py-0.5 rounded bg-paper-dim border border-line text-[11px]">
+                                    Color: {item.color}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Price */}
+                            <div className="text-right shrink-0">
+                              <div className="font-mono text-sm font-bold text-ink">
+                                <FormatPrice price={item.total} />
+                              </div>
+                              {item.quantity > 1 && (
+                                <div className="text-[11px] text-text-soft">
+                                  <FormatPrice price={item.price} /> each
+                                </div>
+                              )}
+                            </div>
                           </div>
+                        ))
+                      ) : (
+                        <div className="p-6 text-center text-text-soft text-sm">
+                          <p>{order.item_description || "Standard shipment items"}</p>
+                          <p className="text-xs mt-1">Quantity: {order.item_quantity || 1}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-gray-900">${item.total.toFixed(2)}</p>
-                          <p className="text-sm text-gray-600">${item.price.toFixed(2)} each</p>
-                        </div>
-                      </div>
-                    ))}
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Order Summary */}
-                <div className="border-t pt-6">
-                  <h3 className="font-bold text-lg mb-4">Order Summary</h3>
-                  <div className="max-w-md ml-auto">
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Subtotal</span>
-                        <span className="font-medium">${selectedOrderData.totalAmount.toFixed(2)}</span>
+                  {/* Payment Breakdown Card */}
+                  <div className="bg-white rounded-2xl border border-line shadow-sm p-6">
+                    <h3 className="font-display font-extrabold uppercase text-sm tracking-wide text-ink mb-4 flex items-center gap-2">
+                      <FaCreditCard className="h-4 w-4 text-marigold" />
+                      <span>Payment & Cost Breakdown</span>
+                    </h3>
+
+                    <div className="space-y-2.5 text-sm">
+                      <div className="flex justify-between text-text-soft">
+                        <span>Items Subtotal</span>
+                        <span className="text-ink font-mono"><FormatPrice price={order.subtotal} /></span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Shipping</span>
-                        <span className="font-medium">${selectedOrderData.shippingFee.toFixed(2)}</span>
+                      <div className="flex justify-between text-text-soft">
+                        <span>Delivery Charge</span>
+                        <span className="text-ink font-mono"><FormatPrice price={order.delivery_charge} /></span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Discount</span>
-                        <span className="font-medium text-green-600">-${selectedOrderData.discount.toFixed(2)}</span>
-                      </div>
-                      <div className="border-t pt-2 mt-2">
-                        <div className="flex justify-between">
-                          <span className="font-bold text-gray-900">Total</span>
-                          <span className="font-bold text-xl text-gray-900">${selectedOrderData.finalAmount.toFixed(2)}</span>
+                      {Number(order.discount_amount) > 0 && (
+                        <div className="flex justify-between text-emerald-700">
+                          <span>Discount {order.coupon_code && `(${order.coupon_code})`}</span>
+                          <span className="font-mono font-medium">-<FormatPrice price={order.discount_amount} /></span>
                         </div>
+                      )}
+                      <div className="pt-3 border-t border-line flex justify-between items-center text-base">
+                        <span className="font-bold text-ink">Total Amount</span>
+                        <span className="font-mono font-extrabold text-lg text-marigold-dark">
+                          <FormatPrice price={order.total} />
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Payment details pill */}
+                    <div className="mt-4 pt-4 border-t border-line flex flex-wrap items-center justify-between gap-3 text-xs">
+                      <div>
+                        <span className="text-text-soft">Payment Method: </span>
+                        <strong className="text-ink uppercase font-mono">
+                          {order.payment_method === "bikash" ? "bKash" : order.payment_method === "cash_on_delivery" ? "Cash on Delivery" : order.payment_method}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-text-soft">Payment Status: </span>
+                        <span
+                          className={`inline-block px-2.5 py-0.5 rounded-full font-bold uppercase text-[10px] border ${
+                            order.payment_status === "paid"
+                              ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                              : "bg-amber-100 text-amber-800 border-amber-200"
+                          }`}
+                        >
+                          {order.payment_status || "Pending"}
+                        </span>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Right: Delivery & Store Info */}
+                <div className="space-y-6">
+
+                  {/* Recipient & Delivery Address */}
+                  <div className="bg-white rounded-2xl border border-line shadow-sm p-6">
+                    <h3 className="font-display font-extrabold uppercase text-sm tracking-wide text-ink mb-4 flex items-center gap-2">
+                      <FaMapMarkerAlt className="h-4 w-4 text-emerald-600" />
+                      <span>Delivery Details</span>
+                    </h3>
+
+                    <div className="space-y-3 text-xs sm:text-sm">
+                      <div>
+                        <span className="text-text-soft text-xs block">Recipient Name</span>
+                        <span className="text-ink font-semibold">{order.recipient_name}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-soft text-xs block">Contact Phone</span>
+                        <span className="text-ink font-mono">{order.recipient_phone}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-soft text-xs block">Delivery Address</span>
+                        <span className="text-ink leading-relaxed">{order.recipient_address}</span>
+                      </div>
+                      {order.special_instruction && (
+                        <div className="pt-2 border-t border-line">
+                          <span className="text-text-soft text-xs block">Special Instructions</span>
+                          <span className="text-ink italic bg-paper-dim p-2 rounded-lg block mt-1">
+                            "{order.special_instruction}"
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Store / Merchant Information */}
+                  <div className="bg-white rounded-2xl border border-line shadow-sm p-6">
+                    <h3 className="font-display font-extrabold uppercase text-sm tracking-wide text-ink mb-4 flex items-center gap-2">
+                      <FaStore className="h-4 w-4 text-marigold" />
+                      <span>Seller Information</span>
+                    </h3>
+
+                    <div className="space-y-3 text-xs sm:text-sm">
+                      <div>
+                        <span className="text-text-soft text-xs block">Store Name</span>
+                        <span className="text-ink font-semibold">{order.store_name || order.store?.name || "Haatpoint Merchant"}</span>
+                      </div>
+                      {order.sender_phone && (
+                        <div>
+                          <span className="text-text-soft text-xs block">Merchant Phone</span>
+                          <span className="text-ink font-mono">{order.sender_phone}</span>
+                        </div>
+                      )}
+                      {order.store?.address && (
+                        <div>
+                          <span className="text-text-soft text-xs block">Store Location</span>
+                          <span className="text-ink">{order.store.address}</span>
+                        </div>
+                      )}
+
+                      {order.store_id && (
+                        <div className="pt-2">
+                          <Link
+                            href={route("stores.show", order.store_id)}
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-marigold hover:text-marigold-dark transition-colors"
+                          >
+                            <span>Visit Store Profile</span>
+                            <FaArrowRight className="h-3 w-3" />
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Need Help Box */}
+                  <div className="bg-paper-dim rounded-2xl border border-line p-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FaQuestionCircle className="h-4 w-4 text-marigold" />
+                      <h4 className="font-display font-extrabold uppercase text-xs tracking-wider text-ink">
+                        Need Help With Your Order?
+                      </h4>
+                    </div>
+                    <p className="text-xs text-text-soft leading-relaxed mb-3">
+                      Have questions regarding shipping times, delivery rescheduling, or item returns? Our support team is here to help.
+                    </p>
+                    <Link
+                      href={route("contact.index")}
+                      className="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-white hover:bg-line text-ink border border-line rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
+                    >
+                      <FaPhone className="h-3 w-3 text-text-soft" />
+                      Contact Haatpoint Support
+                    </Link>
+                  </div>
+
                 </div>
               </div>
 
-              {/* Tracking Timeline */}
-              <div ref={trackingRef} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-bold text-lg mb-6">Shipping Updates</h3>
-                <div className="relative">
-                  {selectedOrderData.trackingEvents.map((event, index) => (
-                    <TrackingStep
-                      key={event.id}
-                      event={event}
-                      isLast={index === selectedOrderData.trackingEvents.length - 1}
-                    />
-                  ))}
-                </div>
+            </div>
+          ) : initialQuery ? (
+            /* Search yielded no results */
+            <div className="bg-white rounded-2xl border border-line shadow-sm p-8 sm:p-12 text-center max-w-xl mx-auto">
+              <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto mb-4 text-amber-600">
+                <FaExclamationTriangle className="h-8 w-8" />
               </div>
-
-              {/* Contact Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                {/* Shipping Address */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <FaUser className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <h3 className="font-bold text-lg">Shipping Address</h3>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="font-medium text-gray-900">{selectedOrderData.customer.name}</p>
-                    <p className="text-gray-600">{selectedOrderData.customer.address}</p>
-                    <p className="text-gray-600">{selectedOrderData.customer.city}, {selectedOrderData.customer.zipCode}</p>
-                    <p className="text-gray-600">{selectedOrderData.customer.country}</p>
-                    {(selectedOrderData.customer.phone || selectedOrderData.customer.email) && (
-                      <div className="pt-2 border-t space-y-1">
-                        {selectedOrderData.customer.phone && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <FaPhone className="h-4 w-4 text-gray-400" />
-                            <span>{selectedOrderData.customer.phone}</span>
-                          </div>
-                        )}
-                        {selectedOrderData.customer.email && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <FaEnvelope className="h-4 w-4 text-gray-400" />
-                            <span>{selectedOrderData.customer.email}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Store Information */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="h-10 w-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                      <FaStore className="h-5 w-5 text-amber-600" />
-                    </div>
-                    <h3 className="font-bold text-lg">Store Information</h3>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="font-medium text-gray-900">{selectedOrderData.store.name}</p>
-                    <p className="text-gray-600">{selectedOrderData.store.address}</p>
-                    {(selectedOrderData.store.phone || selectedOrderData.store.email) && (
-                      <div className="pt-2 border-t space-y-1">
-                        {selectedOrderData.store.phone && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <FaPhone className="h-4 w-4 text-gray-400" />
-                            <span>{selectedOrderData.store.phone}</span>
-                          </div>
-                        )}
-                        {selectedOrderData.store.email && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <FaEnvelope className="h-4 w-4 text-gray-400" />
-                            <span>{selectedOrderData.store.email}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <button className="mt-4 px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-600 font-medium rounded-lg transition-colors w-full">
-                      Contact Store
-                    </button>
-                  </div>
-                </div>
+              <h3 className="font-display font-extrabold uppercase text-xl text-ink mb-2">
+                No Order Found
+              </h3>
+              <p className="text-text-soft text-sm leading-relaxed mb-6">
+                We couldn't find any orders matching <strong className="text-ink">"{initialQuery}"</strong>. Please verify the order number (e.g. <span className="font-mono font-medium">ORD-XXXX-XXXX</span>) or phone number you used during checkout.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  type="button"
+                  onClick={() => setSearchInput("")}
+                  className="px-5 py-2.5 bg-paper-dim hover:bg-line text-ink border border-line rounded-xl text-xs font-bold uppercase tracking-wide transition-colors"
+                >
+                  Clear Search
+                </button>
+                <Link
+                  href={route("contact.index")}
+                  className="px-5 py-2.5 bg-marigold hover:bg-marigold-dark text-white rounded-xl text-xs font-bold uppercase tracking-wide transition-all shadow-sm"
+                >
+                  Contact Support
+                </Link>
               </div>
             </div>
-          </div>
+          ) : (
+            /* Default informational view when page first opens without query */
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-4">
+              <div className="bg-white rounded-2xl border border-line p-6 shadow-sm text-center">
+                <div className="w-12 h-12 rounded-xl bg-marigold/10 border border-marigold/20 flex items-center justify-center mx-auto mb-3 text-marigold">
+                  <FaReceipt className="h-5 w-5" />
+                </div>
+                <h4 className="font-display font-extrabold uppercase text-sm text-ink mb-1">
+                  1. Locate Order ID
+                </h4>
+                <p className="text-xs text-text-soft leading-relaxed">
+                  Your Order Number starts with <strong className="text-ink">ORD-</strong> and is included in your confirmation SMS and email receipt.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-line p-6 shadow-sm text-center">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center mx-auto mb-3 text-blue-600">
+                  <FaTruck className="h-5 w-5" />
+                </div>
+                <h4 className="font-display font-extrabold uppercase text-sm text-ink mb-1">
+                  2. Fast Nationwide Delivery
+                </h4>
+                <p className="text-xs text-text-soft leading-relaxed">
+                  Deliveries inside Dhaka take 24-48 hours. Shipments to all other districts across Bangladesh take 2-4 business days.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-line p-6 shadow-sm text-center">
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-3 text-emerald-600">
+                  <FaShieldAlt className="h-5 w-5" />
+                </div>
+                <h4 className="font-display font-extrabold uppercase text-sm text-ink mb-1">
+                  3. Verified Delivery
+                </h4>
+                <p className="text-xs text-text-soft leading-relaxed">
+                  Every parcel is tracked end-to-end with Pathao Courier and our merchant dispatch network for safe arrival.
+                </p>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
-
-      {/* Filters Modal */}
-      <Transition appear show={showFilters} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={setShowFilters}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <div className="flex items-center justify-between mb-6">
-                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
-                      Filter Orders
-                    </Dialog.Title>
-                    <button
-                      onClick={() => setShowFilters(false)}
-                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                      <FaTimes className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="font-semibold mb-3">Order Status</h4>
-                      <div className="space-y-2">
-                        {["all", "pending", "processing", "shipped", "delivered"].map((status) => (
-                          <div
-                            key={status}
-                            className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                              orderStatusFilter === status ? "bg-amber-50 text-amber-600 font-medium" : "hover:bg-gray-50"
-                            }`}
-                            onClick={() => setOrderStatusFilter(status)}
-                          >
-                            {status === "all" ? "All Orders" : status.charAt(0).toUpperCase() + status.slice(1)}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="border-t pt-6">
-                      <h4 className="font-semibold mb-3">Date Range</h4>
-                      <div className="space-y-3">
-                        <input
-                          type="date"
-                          className="w-full p-3 border border-gray-300 rounded-lg"
-                          placeholder="From Date"
-                        />
-                        <input
-                          type="date"
-                          className="w-full p-3 border border-gray-300 rounded-lg"
-                          placeholder="To Date"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex gap-3">
-                    <button
-                      onClick={() => {
-                        setOrderStatusFilter("all");
-                        setShowFilters(false);
-                      }}
-                      className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Reset Filters
-                    </button>
-                    <button
-                      onClick={() => setShowFilters(false)}
-                      className="flex-1 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors"
-                    >
-                      Apply Filters
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
     </AppLayout>
   );
-};
-
-export default TrackOrderPage;
+}

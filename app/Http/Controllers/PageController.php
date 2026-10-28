@@ -6,6 +6,7 @@ use App\Models\Orders;
 use App\Models\OrderItems;
 use App\Models\Store;
 use App\Models\Wishlist;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -333,11 +334,63 @@ class PageController extends Controller
             ->get();
     }
 
-    public function trackorder()
+    public function trackorder(Request $request)
     {
+        $user = Auth::user();
         $wishlist = Wishlist::where('user_id', Auth::id())->paginate(12);
+
+        $rawQuery = (string) ($request->input('order_number') ?? $request->input('query') ?? '');
+        $query = trim($rawQuery);
+
+        $searchedOrder = null;
+        $matchedOrders = collect();
+
+        // 1. Fetch authenticated user's recent orders (up to 10) so they can track with one click
+        $recentOrders = collect();
+        if ($user) {
+            $recentOrders = Orders::with(['orderItems', 'store'])
+                ->where('user_id', $user->id)
+                ->latest()
+                ->take(10)
+                ->get();
+        }
+
+        // 2. If a search query was provided, find matching order(s)
+        if ($query !== '') {
+            $cleanPhone = preg_replace('/[^0-9]/', '', $query);
+
+            $matchedOrders = Orders::with(['orderItems', 'store'])
+                ->where(function ($q) use ($query, $cleanPhone) {
+                    $q->where('order_number', $query)
+                      ->orWhere('order_number', 'like', "%{$query}%")
+                      ->orWhere('tracking_number', $query);
+
+                    if (!empty($cleanPhone) && strlen($cleanPhone) >= 7) {
+                        $phoneSuffix = substr($cleanPhone, -10);
+                        $q->orWhere('recipient_phone', 'like', "%{$phoneSuffix}%");
+                    }
+                })
+                ->latest()
+                ->take(10)
+                ->get();
+
+            $exactMatch = $matchedOrders->first(function ($order) use ($query) {
+                return strcasecmp($order->order_number, $query) === 0
+                    || ($order->tracking_number && strcasecmp($order->tracking_number, $query) === 0);
+            });
+
+            $searchedOrder = $exactMatch ?? $matchedOrders->first();
+        } elseif ($user && $recentOrders->isNotEmpty()) {
+            // Logged in user with no search query defaults to showing their latest order
+            $searchedOrder = $recentOrders->first();
+        }
+
         return Inertia::render('trackorders/index', [
-            'wishlist' => $wishlist
+            'wishlist' => $wishlist,
+            'searchedOrder' => $searchedOrder,
+            'matchedOrders' => $matchedOrders,
+            'recentOrders' => $recentOrders,
+            'initialQuery' => $query,
         ]);
     }
 }

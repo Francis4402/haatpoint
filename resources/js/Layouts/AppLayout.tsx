@@ -9,7 +9,7 @@ export default function AppLayout({ user, children, wishlist }: PropsWithChildre
   return (
     <div>
       <Navbar user={user} wishlist={wishlist} />
-      <main className="flex-1">
+      <main className="flex-1 pb-16 lg:pb-0">
         {children}
       </main>
     </div>
