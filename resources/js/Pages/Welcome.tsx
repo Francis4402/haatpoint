@@ -13,6 +13,8 @@ import AllProducts from './Components/AllProducts';
 import SeoHead from '@/Components/SeoHead';
 import WhatsAppChatButton from '@/Components/WhatsAppChatButton';
 import MarketplaceLinksHub from './Components/MarketplaceLinksHub';
+import AdSenseDisplay from '@/Components/AdSenseDisplay';
+import AdSenseMultiplex from '@/Components/AdSenseMultiplex';
 
 interface PaginatedProducts {
     data: Product[];
@@ -161,6 +163,9 @@ export default function Welcome({
                     />
                 )}
 
+                {/* Strategic Mid-Feed Display Ad */}
+                <AdSenseDisplay className="max-w-4xl mx-auto my-8" />
+
                 {dailyDiscover.length > 0 && (
                     <DailyDiscover discoverProduct={dailyDiscover} user={auth.user} />
                 )}
@@ -185,6 +190,9 @@ export default function Welcome({
                         total={products.total}
                     />
                 )}
+
+                {/* Multiplex Grid Recommendations below Products Catalog */}
+                <AdSenseMultiplex className="my-10" title="Recommended Sponsored Products" />
 
                 {/* Internal Links & Marketplace Directory */}
                 <MarketplaceLinksHub categories={categories} />

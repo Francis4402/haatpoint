@@ -1294,10 +1294,6 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                           {errors.regular_price}
                         </p>
                       )}
-                      <p className="mt-2 flex items-start gap-2 rounded-lg border border-marigold/30 bg-marigold/5 px-3 py-2 text-xs text-ink">
-                        <FaInfoCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-marigold" />
-                        <span>10% price will be increased when you add the product. Customers see the increased amount.</span>
-                      </p>
                     </div>
 
                     {/* Sale Price */}

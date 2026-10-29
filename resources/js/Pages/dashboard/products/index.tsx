@@ -14,7 +14,6 @@ import {
   FaChartLine,
   FaTag,
   FaImage,
-  FaInfoCircle,
   FaTimes,
   FaStore,
   FaCrown,
@@ -423,15 +422,6 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                             </button>
                         </div>
                     )}
-
-                    {/* Pricing notice */}
-                    <div className="mb-8 flex items-start gap-3 rounded-2xl border border-marigold/30 bg-marigold/5 p-4">
-                        <FaInfoCircle className="mt-0.5 h-5 w-5 shrink-0 text-marigold" />
-                        <p className="text-sm text-ink">
-                            <span className="font-semibold">Note:</span> 10% price will be increased when you add the product.
-                            The price you enter for your customers is shown with this increase already included.
-                        </p>
-                    </div>
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">

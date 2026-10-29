@@ -32,6 +32,8 @@ import Eyebrow from '../Components/Eyebrow';
 import SeoHead from '@/Components/SeoHead';
 import ProductCard from '@/Components/ProductCard';
 import WishlistButton from '../buttons/WishListButton';
+import AdSenseDisplay from '@/Components/AdSenseDisplay';
+import AdSenseMultiplex from '@/Components/AdSenseMultiplex';
 
 
 interface ProductsPageProps {
@@ -945,6 +947,9 @@ const Products = ({ products, auth, wishlist, productRatings = {}, filters }: Pr
                                     </div>
                                 </div>
                             )}
+
+                            {/* Multiplex Recommendations Unit */}
+                            <AdSenseMultiplex title="Recommended for You" className="mt-12" />
                         </div>
                     </div>
                 </div>

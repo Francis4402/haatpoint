@@ -34,6 +34,8 @@ import { parseVariantList } from "../utils/parseVariants";
 import axios from "axios";
 import SeoHead from "@/Components/SeoHead";
 import WishlistButton from "../buttons/WishListButton";
+import AdSenseDisplay from "@/Components/AdSenseDisplay";
+import AdSenseMultiplex from "@/Components/AdSenseMultiplex";
 
 interface ProductDetailsPageProps {
   product: Product;
@@ -1253,6 +1255,11 @@ const ProductDetailsPage = ({
             </div>
           </div>
 
+          {/* Display Ad between Product Card and Store Info */}
+          <div className="mb-8">
+            <AdSenseDisplay />
+          </div>
+
           {/* Store Info Section */}
           <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-8">
             <h2 className="text-2xl font-bold text-ink mb-6">About the Store</h2>
@@ -1307,6 +1314,11 @@ const ProductDetailsPage = ({
                 </Link>
               </div>
             </div>
+          </div>
+
+          {/* Multiplex Recommendation Ads */}
+          <div className="mt-8">
+            <AdSenseMultiplex />
           </div>
         </div>
       </div>

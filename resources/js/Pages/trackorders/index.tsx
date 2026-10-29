@@ -27,6 +27,7 @@ import AppLayout from "@/Layouts/AppLayout";
 import SeoHead from "@/Components/SeoHead";
 import Eyebrow from "@/Pages/Components/Eyebrow";
 import FormatPrice from "@/Pages/utils/FormatePrice";
+import AdSenseDisplay from "@/Components/AdSenseDisplay";
 
 interface TrackOrderProps extends PageProps {
   searchedOrder?: (Orders & {
@@ -841,6 +842,10 @@ export default function TrackOrderPage({
             </div>
           )}
 
+          {/* Display Ad below Tracking Information */}
+          <div className="max-w-4xl mx-auto mt-10">
+            <AdSenseDisplay />
+          </div>
         </div>
       </div>
     </AppLayout>
