@@ -237,7 +237,7 @@ export default function MarketplaceLinksHub({ categories = [] }: MarketplaceLink
       {/* SEO Contextual Paragraph */}
       <div className="border-t border-line/60 pt-6 text-xs text-text-soft/80 leading-relaxed">
         <p>
-          <strong className="text-ink">HaatPoint</strong> is Bangladesh&apos;s modern multi-vendor marketplace connecting passionate local merchants, shopkeepers, and creators directly with consumers across Dhaka, Chattogram, Sylhet, Khulna, Rajshahi, and nationwide. Explore authentic fashion, smart electronics, home appliances, fresh produce, and lifestyle goods with secure cash on delivery (COD) and prompt home delivery powered by Pathao. Looking to expand your reach?{' '}
+          <strong className="text-ink">HaatPoint</strong> is Bangladesh&apos;s modern multi-vendor marketplace connecting passionate local merchants, shopkeepers, and creators directly with consumers across Dhaka, Chattogram, Sylhet, Khulna, Rajshahi, and nationwide. Explore authentic fashion, smart electronics, home appliances, and lifestyle goods with secure cash on delivery (COD) and prompt home delivery powered by Pathao. Looking to expand your reach?{' '}
           <Link href="/sell" className="text-marigold-dark font-semibold hover:underline">
             Open your online store on HaatPoint today with free selling or upgrade to Pro for 7% commission
           </Link>.

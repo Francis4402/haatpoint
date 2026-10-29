@@ -38,7 +38,6 @@ const STORE_TYPES = [
   'E-commerce',
   'Wholesale',
   'Service Provider',
-  'Food & Beverage',
   'Fashion & Apparel',
   'Electronics',
   'Home & Garden',

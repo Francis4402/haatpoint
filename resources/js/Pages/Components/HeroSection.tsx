@@ -5,7 +5,7 @@ import {
   FaTruck,
   FaShieldAlt,
   FaStar,
-  FaLeaf,
+  FaSpa,
   FaLaptop,
   FaCouch,
   FaTshirt,
@@ -22,22 +22,22 @@ interface HeroProps {
 }
 
 const FALLBACK_TICKER = [
-  "Fresh Produce",
   "Electronics",
   "Fashion",
   "Home & Living",
-  "Beauty",
+  "Beauty & Wellness",
   "Toys & Games",
-  "Grocery",
-  "Sports",
+  "Watches & Jewelry",
+  "Sports & Fitness",
+  "Books & Stationery",
 ];
 
 const CATEGORY_TILES = [
   {
-    label: "Fresh Produce",
-    caption: "Farm to door",
-    icon: FaLeaf,
-    img: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80&auto=format&fit=crop",
+    label: "Beauty & Wellness",
+    caption: "Personal care",
+    icon: FaSpa,
+    img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80&auto=format&fit=crop",
   },
   {
     label: "Electronics",
@@ -121,7 +121,7 @@ export default function Hero({ user, categories }: HeroProps) {
           </h1>
 
           <p className="text-text-soft text-[15px] sm:text-[17px] max-w-[460px] my-5 sm:my-6 leading-relaxed">
-            Discover fresh produce, fashion, electronics and more from trusted
+            Discover fashion, electronics, home essentials and more from trusted
             sellers near you. Honest prices, no middlemen, and every order
             delivered straight to your door.
           </p>

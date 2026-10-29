@@ -182,7 +182,6 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
       'Sports': 'bg-orange-100 text-orange-800 border-orange-200',
       'Beauty': 'bg-pink-100 text-pink-800 border-pink-200',
       'Books': 'bg-indigo-100 text-indigo-800 border-indigo-200',
-      'Food & Beverage': 'bg-amber-100 text-amber-800 border-amber-200',
       'Toys': 'bg-teal-100 text-teal-800 border-teal-200'
     };
     return colors[storetype] || 'bg-gray-100 text-gray-800 border-gray-200';
@@ -196,7 +195,6 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
       'Sports': 'from-orange-500 to-red-500',
       'Beauty': 'from-pink-500 to-rose-500',
       'Books': 'from-indigo-500 to-violet-500',
-      'Food & Beverage': 'from-amber-500 to-yellow-500',
       'Toys': 'from-teal-500 to-cyan-500'
     };
     return gradients[storetype] || 'from-gray-500 to-slate-500';
