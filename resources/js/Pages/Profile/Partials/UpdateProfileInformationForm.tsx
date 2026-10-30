@@ -199,22 +199,22 @@ export default function UpdateProfileInformation({ status, user }: Props) {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 rounded-lg bg-blue-100">
-          <FaUserEdit className="h-6 w-6 text-blue-600" />
+        <div className="p-3 rounded-xl bg-marigold/10">
+          <FaUserEdit className="h-6 w-6 text-marigold-dark" />
         </div>
         <div>
-          <h3 className="text-2xl font-bold text-gray-900">Profile Information</h3>
-          <p className="text-gray-600 mt-1">Update your personal details and email address</p>
+          <h3 className="text-2xl font-display font-bold text-ink">Profile Information</h3>
+          <p className="text-text-soft text-sm mt-1">Update your personal details and email address</p>
         </div>
       </div>
 
       <form onSubmit={submit} className="space-y-6">
         {/* Profile Image Upload */}
-        <div className="bg-gray-50 rounded-xl p-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-4">Profile Picture</h4>
+        <div className="bg-paper-dim border border-line rounded-2xl p-6">
+          <h4 className="text-sm font-semibold text-ink mb-4">Profile Picture</h4>
           <div className="flex items-center gap-6">
             <div className="relative">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 ring-4 ring-white shadow-lg">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-white ring-4 ring-marigold/20 border-2 border-line shadow-hard-sm">
                 <img
                   src={getProfileImageUrl()}
                   alt={user.name}
@@ -232,7 +232,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={processing}
-                className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-lg"
+                className="absolute bottom-0 right-0 w-7 h-7 bg-ink rounded-full flex items-center justify-center text-white hover:bg-ink/90 transition-colors disabled:opacity-50 shadow-md"
               >
                 <FaCamera className="w-3.5 h-3.5" />
               </button>
@@ -245,11 +245,11 @@ export default function UpdateProfileInformation({ status, user }: Props) {
               />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700">Upload new picture (Optional)</p>
-              <p className="text-xs text-gray-500 mt-1">JPG, PNG, GIF, WEBP up to 2MB</p>
+              <p className="text-sm font-medium text-ink">Upload new picture (Optional)</p>
+              <p className="text-xs text-text-soft mt-1">JPG, PNG, GIF, WEBP up to 2MB</p>
               {data.image && (
-                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                  <FaCheckCircle className="w-3 h-3" />
+                <p className="text-xs text-emerald-700 mt-1 flex items-center gap-1 font-medium">
+                  <FaCheckCircle className="w-3 h-3 text-emerald-600" />
                   {data.image.name}
                 </p>
               )}
@@ -259,7 +259,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
 
         {/* Name Field */}
         <div className="group">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-ink mb-1.5">
             Full Name
           </label>
           <div className="relative">
@@ -267,19 +267,19 @@ export default function UpdateProfileInformation({ status, user }: Props) {
               type="text"
               value={data.name}
               onChange={(e) => setData('name', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 group-hover:border-gray-400"
+              className="w-full px-4 py-2.5 border border-line rounded-xl bg-paper text-ink focus:ring-2 focus:ring-marigold focus:border-transparent outline-none transition-all duration-200 group-hover:border-ink/30 text-sm font-body"
               placeholder="Enter your full name"
               required
             />
             {errors.name && (
               <div className="absolute right-3 top-3">
-                <FaExclamationTriangle className="h-5 w-5 text-red-500" />
+                <FaExclamationTriangle className="h-4 w-4 text-red-500" />
               </div>
             )}
           </div>
           {errors.name && (
-            <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-              <FaExclamationTriangle className="h-4 w-4" />
+            <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+              <FaExclamationTriangle className="h-3.5 w-3.5" />
               {errors.name}
             </p>
           )}
@@ -287,7 +287,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
 
         {/* Email Field */}
         <div className="group">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-ink mb-1.5">
             Email Address
           </label>
           <div className="relative">
@@ -295,19 +295,19 @@ export default function UpdateProfileInformation({ status, user }: Props) {
               type="email"
               value={data.email}
               onChange={(e) => setData('email', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 group-hover:border-gray-400"
+              className="w-full px-4 py-2.5 border border-line rounded-xl bg-paper text-ink focus:ring-2 focus:ring-marigold focus:border-transparent outline-none transition-all duration-200 group-hover:border-ink/30 text-sm font-body"
               placeholder="Enter your email address"
               required
             />
             {errors.email && (
               <div className="absolute right-3 top-3">
-                <FaExclamationTriangle className="h-5 w-5 text-red-500" />
+                <FaExclamationTriangle className="h-4 w-4 text-red-500" />
               </div>
             )}
           </div>
           {errors.email && (
-            <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-              <FaExclamationTriangle className="h-4 w-4" />
+            <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+              <FaExclamationTriangle className="h-3.5 w-3.5" />
               {errors.email}
             </p>
           )}
@@ -315,37 +315,37 @@ export default function UpdateProfileInformation({ status, user }: Props) {
 
         {/* Seller details — agents only, written to the `agents` table */}
         {isAgent && (
-          <div className="bg-gray-50 rounded-xl p-6 space-y-5">
+          <div className="bg-paper-dim border border-line rounded-2xl p-6 space-y-5">
             <div>
-              <h4 className="text-sm font-medium text-gray-700">Seller details</h4>
-              <p className="text-xs text-gray-500 mt-1">
-                Required before a store can be opened. Saved here exactly as the verification check reads them.
+              <h4 className="text-sm font-display font-bold text-ink">Seller KYC Details</h4>
+              <p className="text-xs text-text-soft mt-0.5">
+                Required for store operations and merchant payout verification.
               </p>
             </div>
 
             <div className="group">
-              <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
-                Mobile number
+              <label htmlFor="mobile" className="block text-sm font-semibold text-ink mb-1.5">
+                Mobile Number (bKash / Nagad)
               </label>
               <input
                 id="mobile"
                 type="tel"
                 value={data.mobile}
                 onChange={(e) => setData('mobile', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 group-hover:border-gray-400"
+                className="w-full px-4 py-2.5 border border-line rounded-xl bg-paper text-ink focus:ring-2 focus:ring-marigold focus:border-transparent outline-none transition-all duration-200 group-hover:border-ink/30 text-sm font-body"
                 placeholder="01XXXXXXXXX"
               />
               {errors.mobile && (
-                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                  <FaExclamationTriangle className="h-4 w-4" />
+                <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                  <FaExclamationTriangle className="h-3.5 w-3.5" />
                   {errors.mobile}
                 </p>
               )}
             </div>
 
             <div className="group">
-              <label htmlFor="national_id" className="block text-sm font-medium text-gray-700 mb-2">
-                National ID
+              <label htmlFor="national_id" className="block text-sm font-semibold text-ink mb-1.5">
+                National ID (NID)
               </label>
               <input
                 id="national_id"
@@ -353,32 +353,32 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                 inputMode="numeric"
                 value={data.national_id}
                 onChange={(e) => setData('national_id', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 group-hover:border-gray-400"
-                placeholder="10 or 17 digit number"
+                className="w-full px-4 py-2.5 border border-line rounded-xl bg-paper text-ink focus:ring-2 focus:ring-marigold focus:border-transparent outline-none transition-all duration-200 group-hover:border-ink/30 text-sm font-body"
+                placeholder="10, 13, or 17 digit NID number"
               />
               {errors.national_id && (
-                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                  <FaExclamationTriangle className="h-4 w-4" />
+                <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                  <FaExclamationTriangle className="h-3.5 w-3.5" />
                   {errors.national_id}
                 </p>
               )}
             </div>
 
             <div className="group">
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                Address
+              <label htmlFor="address" className="block text-sm font-semibold text-ink mb-1.5">
+                Shop / Pickup Address
               </label>
               <textarea
                 id="address"
                 rows={3}
                 value={data.address}
                 onChange={(e) => setData('address', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 group-hover:border-gray-400 resize-y"
-                placeholder="House, road, city"
+                className="w-full px-4 py-2.5 border border-line rounded-xl bg-paper text-ink focus:ring-2 focus:ring-marigold focus:border-transparent outline-none transition-all duration-200 group-hover:border-ink/30 resize-y text-sm font-body"
+                placeholder="Shop number, market, road, area, city"
               />
               {errors.address && (
-                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                  <FaExclamationTriangle className="h-4 w-4" />
+                <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                  <FaExclamationTriangle className="h-3.5 w-3.5" />
                   {errors.address}
                 </p>
               )}
@@ -388,19 +388,21 @@ export default function UpdateProfileInformation({ status, user }: Props) {
 
         {/* Customer delivery address & shipping location — customers only */}
         {!isAgent && (
-          <div className="bg-emerald-50/50 rounded-xl p-6 border border-emerald-200/80 space-y-5">
-            <div className="flex items-center gap-2 pb-2 border-b border-emerald-200/70">
-              <FaTruck className="h-5 w-5 text-emerald-600" />
+          <div className="bg-paper-dim border border-line rounded-2xl p-6 space-y-5">
+            <div className="flex items-center gap-2 pb-2 border-b border-line">
+              <div className="p-2 rounded-lg bg-marigold/10 text-marigold-dark">
+                <FaTruck className="h-4 w-4" />
+              </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-800">Delivery Address & Pathao Shipping</h4>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <h4 className="text-sm font-display font-bold text-ink">Delivery Address & Pathao Shipping</h4>
+                <p className="text-xs text-text-soft mt-0.5">
                   Used by Pathao to calculate delivery charges from the merchant's store directly to your home.
                 </p>
               </div>
             </div>
 
             <div className="group">
-              <label htmlFor="user_mobile" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="user_mobile" className="block text-sm font-semibold text-ink mb-1.5">
                 Mobile Number
               </label>
               <input
@@ -408,12 +410,12 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                 type="tel"
                 value={data.mobile}
                 onChange={(e) => setData('mobile', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200"
+                className="w-full px-4 py-2.5 border border-line rounded-xl bg-paper text-ink focus:ring-2 focus:ring-marigold focus:border-transparent outline-none transition-all duration-200 text-sm font-body"
                 placeholder="01XXXXXXXXX"
               />
               {errors.mobile && (
-                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                  <FaExclamationTriangle className="h-4 w-4" />
+                <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                  <FaExclamationTriangle className="h-3.5 w-3.5" />
                   {errors.mobile}
                 </p>
               )}
@@ -421,14 +423,14 @@ export default function UpdateProfileInformation({ status, user }: Props) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="user_city_id" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="user_city_id" className="block text-sm font-semibold text-ink mb-1.5">
                   Delivery City
                 </label>
                 <select
                   id="user_city_id"
                   value={data.city_id}
                   onChange={handleCityChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 bg-white text-sm"
+                  className="w-full px-4 py-2.5 border border-line rounded-xl bg-paper text-ink focus:ring-2 focus:ring-marigold focus:border-transparent outline-none transition-all duration-200 text-sm font-body"
                 >
                   <option value="">Select City</option>
                   {cities.map((c) => (
@@ -436,12 +438,12 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                   ))}
                 </select>
                 {errors.city_id && (
-                  <p className="mt-2 text-sm text-red-600">{errors.city_id}</p>
+                  <p className="mt-1.5 text-xs text-red-600">{errors.city_id}</p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="user_zone_id" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="user_zone_id" className="block text-sm font-semibold text-ink mb-1.5">
                   Delivery Zone / Thana
                 </label>
                 <select
@@ -449,7 +451,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                   value={data.zone_id}
                   onChange={handleZoneChange}
                   disabled={!data.city_id}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 bg-white text-sm disabled:bg-gray-100"
+                  className="w-full px-4 py-2.5 border border-line rounded-xl bg-paper text-ink focus:ring-2 focus:ring-marigold focus:border-transparent outline-none transition-all duration-200 text-sm font-body disabled:opacity-50"
                 >
                   <option value="">Select Zone</option>
                   {zones.map((z) => (
@@ -457,21 +459,21 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                   ))}
                 </select>
                 {errors.zone_id && (
-                  <p className="mt-2 text-sm text-red-600">{errors.zone_id}</p>
+                  <p className="mt-1.5 text-xs text-red-600">{errors.zone_id}</p>
                 )}
               </div>
             </div>
 
             {areas.length > 0 && (
               <div>
-                <label htmlFor="user_area_id" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="user_area_id" className="block text-sm font-semibold text-ink mb-1.5">
                   Specific Area (Optional)
                 </label>
                 <select
                   id="user_area_id"
                   value={data.area_id}
                   onChange={handleAreaChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 bg-white text-sm"
+                  className="w-full px-4 py-2.5 border border-line rounded-xl bg-paper text-ink focus:ring-2 focus:ring-marigold focus:border-transparent outline-none transition-all duration-200 text-sm font-body"
                 >
                   <option value="">Select Area (Optional)</option>
                   {areas.map((a) => (
@@ -482,7 +484,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
             )}
 
             <div className="group">
-              <label htmlFor="user_street_address" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="user_street_address" className="block text-sm font-semibold text-ink mb-1.5">
                 Detailed Delivery Address
               </label>
               <textarea
@@ -490,12 +492,12 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                 rows={3}
                 value={data.address}
                 onChange={(e) => setData('address', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 resize-y text-sm"
+                className="w-full px-4 py-2.5 border border-line rounded-xl bg-paper text-ink focus:ring-2 focus:ring-marigold focus:border-transparent outline-none transition-all duration-200 resize-y text-sm font-body"
                 placeholder="House #, Road #, Sector/Area, Landmark"
               />
               {errors.address && (
-                <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                  <FaExclamationTriangle className="h-4 w-4" />
+                <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                  <FaExclamationTriangle className="h-3.5 w-3.5" />
                   {errors.address}
                 </p>
               )}
@@ -504,28 +506,28 @@ export default function UpdateProfileInformation({ status, user }: Props) {
         )}
 
         {/* Submit Button */}
-        <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+        <div className="flex items-center justify-between pt-6 border-t border-line">
           <button
             type="submit"
             disabled={processing}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-3 bg-ink hover:bg-ink/90 text-white font-body font-bold uppercase tracking-wider rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-marigold focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
           >
             {processing ? (
               <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 Saving...
               </>
             ) : (
               <>
-                <FaCheckCircle className="h-5 w-5" />
+                <FaCheckCircle className="h-4 w-4 text-marigold" />
                 Save Changes
               </>
             )}
           </button>
 
           {recentlySuccessful && (
-            <span className="text-green-600 font-medium flex items-center gap-2">
-              <FaCheckCircle className="h-5 w-5" />
+            <span className="text-emerald-700 font-semibold flex items-center gap-2 text-xs bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+              <FaCheckCircle className="h-3.5 w-3.5 text-emerald-600" />
               Profile updated successfully
             </span>
           )}
@@ -544,7 +546,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -558,14 +560,14 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-center shadow-xl transition-all">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                    <FaCheckCircle className="h-6 w-6 text-green-600" />
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-center shadow-hard-lg border border-line transition-all">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-marigold/10 text-marigold-dark">
+                    <FaCheckCircle className="h-6 w-6 text-marigold" />
                   </div>
-                  <Dialog.Title className="mt-4 text-lg font-medium text-gray-900">
+                  <Dialog.Title className="mt-4 text-lg font-display font-bold text-ink">
                     Profile Updated
                   </Dialog.Title>
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-xs text-text-soft">
                     Your profile information has been successfully updated.
                   </p>
                 </Dialog.Panel>
