@@ -26,6 +26,7 @@ import { withMarkup } from '../utils/price';
 import AddtoCartButton from '../buttons/AddtoCartButton';
 import SeoHead from '@/Components/SeoHead';
 import ProductCard from '@/Components/ProductCard';
+import ProductListCard from '@/Components/ProductListCard';
 
 interface HotDealsPageProps {
     products: {
@@ -685,7 +686,7 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
                                 <div className={`
                                     ${viewMode === 'grid'
                                         ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5'
-                                        : 'space-y-4'
+                                        : 'space-y-2.5 sm:space-y-3'
                                     }
                                 `}>
                                     {filteredProducts.map((product: Product) => {
@@ -701,104 +702,13 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
                                                 />
                                             );
                                         } else {
-                                            // List View
-                                            const discountPercentage = calculateDiscount(product.regular_price, product.sale_price);
-                                            const displayPrice = withMarkup(product.sale_price || product.regular_price);
-                                            const imageSrc = product.images ? (() => {
-                                                try {
-                                                    const parsed = JSON.parse(product.images);
-                                                    return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : '/otherplaceholder.jpg';
-                                                } catch {
-                                                    return '/otherplaceholder.jpg';
-                                                }
-                                            })() : '/otherplaceholder.jpg';
-
                                             return (
-                                                <div key={product.id} className="group bg-white rounded-xl shadow-hard-sm border border-line overflow-hidden hover:shadow-xl transition-all duration-300">
-                                                    <div className="flex flex-col sm:flex-row">
-                                                        {/* Image */}
-                                                        <div className="sm:w-1/3 lg:w-1/4 relative">
-                                                            <div className="aspect-square sm:h-full overflow-hidden bg-paper-dim">
-                                                                <img
-                                                                    src={`/storage/${imageSrc}`}
-                                                                    alt={product.name}
-                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                                    onError={(e) => {
-                                                                        e.currentTarget.src = '/otherplaceholder.jpg';
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <div className="absolute top-3 left-3 bg-gradient-to-r from-marigold to-marigold-dark text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-sm font-bold shadow-lg">
-                                                                -{discountPercentage}%
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Product Details */}
-                                                        <div className="sm:w-2/3 lg:w-3/4 p-4 sm:p-6">
-                                                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                                                                <div className="flex-1">
-                                                                    {/* Category */}
-                                                                    <div className="mb-1 sm:mb-2">
-                                                                        <span className="text-[9px] sm:text-[10px] font-mono text-text-soft uppercase tracking-wider">
-                                                                            {product.category || 'Uncategorized'}
-                                                                        </span>
-                                                                    </div>
-
-                                                                    {/* Product Name */}
-                                                                    <h3 className="text-base sm:text-lg font-semibold text-ink mb-1 sm:mb-2 group-hover:text-marigold transition-colors">
-                                                                        {product.name}
-                                                                    </h3>
-
-                                                                    {/* Description */}
-                                                                    <p className="text-text-soft text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
-                                                                        {product.description}
-                                                                    </p>
-
-                                                                    {/* Stock */}
-                                                                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                                                                        <div className={`inline-flex items-center gap-1 text-[10px] sm:text-sm ${
-                                                                            product.inStock ? 'text-green-600' : 'text-red-600'
-                                                                        }`}>
-                                                                            <div className={`w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full ${
-                                                                                product.inStock ? 'bg-green-500' : 'bg-red-500'
-                                                                            }`}></div>
-                                                                            {product.inStock ? 'In Stock' : 'Out of Stock'}
-                                                                        </div>
-                                                                        {product.quantity > 0 && product.quantity < 10 && (
-                                                                            <span className="text-[10px] sm:text-xs text-orange-600 font-medium">
-                                                                                🔥 Only {product.quantity} left!
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-
-                                                                    {/* Savings Info */}
-                                                                    <div className="bg-green-50 border border-green-200 rounded-lg p-2 sm:p-3">
-                                                                        <p className="text-green-700 text-[10px] sm:text-sm">
-                                                                            <span className="font-bold">You Save:</span> <FormatPrice price={withMarkup(product.regular_price) - displayPrice} /> ({discountPercentage}% off)
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="sm:w-48">
-                                                                    {/* Price */}
-                                                                    <div className="mb-3 sm:mb-4">
-                                                                        <div className="text-xl sm:text-2xl font-bold text-marigold">
-                                                                            <FormatPrice price={displayPrice} />
-                                                                        </div>
-                                                                        <div className="text-xs sm:text-sm text-text-soft line-through">
-                                                                            <FormatPrice price={withMarkup(product.regular_price)} />
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Add to Cart */}
-                                                                    <div className="mt-2">
-                                                                        <AddtoCartButton product={product} />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <ProductListCard
+                                                    key={product.id}
+                                                    product={product}
+                                                    user={auth?.user || null}
+                                                    initialAverageRating={Number(product.rating) || 0}
+                                                />
                                             );
                                         }
                                     })}

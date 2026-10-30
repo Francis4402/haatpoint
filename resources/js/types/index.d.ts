@@ -82,6 +82,7 @@ export type CartItem = {
     blocked_reason?: string | null;
     rating: number;
     item_weight: number;
+    is_pro_seller?: boolean;
     store?: storeType;
     review?: number;
     cartQty?: number;
@@ -159,6 +160,7 @@ export interface Product {
     blocked_reason?: string | null;
     rating: number;
     item_weight: number;
+    is_pro_seller?: boolean;
     store?: storeType;
     created_at: string;
     updated_at: string;

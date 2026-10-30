@@ -31,6 +31,7 @@ import { withMarkup } from '../utils/price';
 import Eyebrow from '../Components/Eyebrow';
 import SeoHead from '@/Components/SeoHead';
 import ProductCard from '@/Components/ProductCard';
+import ProductListCard from '@/Components/ProductListCard';
 import WishlistButton from '../buttons/WishListButton';
 import AdSenseDisplay from '@/Components/AdSenseDisplay';
 import AdSenseMultiplex from '@/Components/AdSenseMultiplex';
@@ -758,16 +759,10 @@ const Products = ({ products, auth, wishlist, productRatings = {}, filters }: Pr
                                 <div className={`
                                     ${viewMode === 'grid'
                                         ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5'
-                                        : 'space-y-4'
+                                        : 'space-y-2.5 sm:space-y-3'
                                     }
                                 `}>
                                     {products.data.map((product: Product) => {
-                                        const imageSrc = getImageSrc(product.images);
-                                        const hasDiscount = product.sale_price && product.sale_price < product.regular_price;
-                                        const discountPercentage = hasDiscount
-                                            ? calculateDiscount(product.regular_price, product.sale_price)
-                                            : 0;
-                                        const displayPrice = withMarkup(product.sale_price || product.regular_price);
                                         const { average: avgRating, count: reviewCount } = getProductRating(product);
 
                                         if (viewMode === 'grid') {
@@ -782,116 +777,14 @@ const Products = ({ products, auth, wishlist, productRatings = {}, filters }: Pr
                                                 />
                                             );
                                         } else {
-                                            // List View
                                             return (
-                                                <div key={product.id} className="group bg-white rounded-xl shadow-hard-sm border border-[#E3E1DB] overflow-hidden hover:shadow-xl transition-all duration-300">
-                                                    <div className="flex flex-col md:flex-row">
-                                                        {/* Image */}
-                                                        <div className="md:w-1/4 relative">
-                                                            <div className="aspect-square md:h-full overflow-hidden bg-[#F2F2EE]">
-                                                                <img
-                                                                    src={`/storage/${imageSrc}`}
-                                                                    alt={product.name}
-                                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                                    onError={(e) => {
-                                                                        e.currentTarget.src = '/otherplaceholder.jpg';
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            {hasDiscount && (
-                                                                <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-lg">
-                                                                    -{discountPercentage}%
-                                                                </span>
-                                                            )}
-
-                                                            {/* Brand Badge */}
-                                                            {product.brand && (
-                                                                <span className="absolute bottom-3 left-3 bg-[#6E7F5C] text-white text-xs font-bold px-2 py-1 rounded-lg shadow-lg">
-                                                                    {product.brand}
-                                                                </span>
-                                                            )}
-
-                                                            {/* Wishlist Button in list view */}
-                                                            <div className="absolute top-3 right-3">
-                                                                <WishlistButton
-                                                                    productId={product.id}
-                                                                    className="bg-white/90 hover:bg-white shadow-lg"
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Product Details */}
-                                                        <div className="md:w-3/4 p-6">
-                                                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                                                                <div className="flex-1">
-                                                                    {/* Category & Brand */}
-                                                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                                                        <span className="text-[10px] font-mono text-[#767470] uppercase tracking-wider">
-                                                                            {product.category || 'Uncategorized'}
-                                                                        </span>
-                                                                        {product.brand && (
-                                                                            <>
-                                                                                <span className="text-[#E3E1DB]">/</span>
-                                                                                <span className="text-[10px] font-mono text-[#6E7F5C] uppercase tracking-wider font-semibold">
-                                                                                    {product.brand}
-                                                                                </span>
-                                                                            </>
-                                                                        )}
-                                                                    </div>
-
-                                                                    {/* Product Name */}
-                                                                    <h3 className="text-lg font-semibold text-[#1B1B1B] mb-2 group-hover:text-[#6E7F5C] transition-colors">
-                                                                        {product.name}
-                                                                    </h3>
-
-                                                                    {/* Description */}
-                                                                    <p className="text-[#767470] text-sm mb-4 line-clamp-2">
-                                                                        {stripHtml(product.description)}
-                                                                    </p>
-
-                                                                    {/* Rating & Stock */}
-                                                                    <div className="flex items-center gap-4 mb-4">
-                                                                        <div className="flex items-center">
-                                                                            {renderStars(avgRating)}
-                                                                            {reviewCount > 0 && (
-                                                                                <span className="text-xs text-[#767470] ml-1">
-                                                                                    ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                        <div className={`inline-flex items-center gap-1 text-sm ${
-                                                                            product.inStock ? 'text-green-600' : 'text-red-600'
-                                                                        }`}>
-                                                                            <div className={`w-2 h-2 rounded-full ${
-                                                                                product.inStock ? 'bg-green-500' : 'bg-red-500'
-                                                                            }`}></div>
-                                                                            {product.inStock ? 'In Stock' : 'Out of Stock'}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="md:w-48">
-                                                                    {/* Price */}
-                                                                    <div className="mb-4">
-                                                                        <div className="text-2xl font-bold text-[#1B1B1B]">
-                                                                            <FormatPrice price={displayPrice} />
-                                                                        </div>
-                                                                        {hasDiscount && (
-                                                                            <div className="text-sm text-[#767470] line-through">
-                                                                                <FormatPrice price={withMarkup(product.regular_price)} />
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-
-                                                                    {/* Actions */}
-                                                                    <div className="flex items-center gap-2">
-                                                                        <AddtoCartButton product={product} />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <ProductListCard
+                                                    key={product.id}
+                                                    product={product}
+                                                    user={user}
+                                                    initialAverageRating={avgRating}
+                                                    reviewCount={reviewCount}
+                                                />
                                             );
                                         }
                                     })}
