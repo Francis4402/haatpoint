@@ -15,6 +15,11 @@ import {
   FaCamera,
   FaTimes,
   FaCheck,
+  FaCheckCircle,
+  FaShieldAlt,
+  FaStore,
+  FaMoneyBillWave,
+  FaBoxOpen,
 } from 'react-icons/fa';
 import { toast } from 'sonner';
 import SocialButtons from '@/Components/SocialButtons';
@@ -113,6 +118,31 @@ export default function StaffRegister({
     fileInputRef.current?.click();
   };
 
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/[^\d+]/g, '');
+    if (val.startsWith('+880')) {
+      val = '0' + val.slice(4);
+    } else if (val.startsWith('+88')) {
+      val = '0' + val.slice(3);
+    } else if (val.startsWith('880')) {
+      val = '0' + val.slice(3);
+    }
+    if (val.startsWith('0') && val.length > 11) {
+      val = val.slice(0, 11);
+    }
+    setData('mobile', val);
+    if (errors.mobile) clearErrors('mobile');
+  };
+
+  const handleNationalIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 17);
+    setData('national_id', val);
+    if (errors.national_id) clearErrors('national_id');
+  };
+
+  const isMobileValid = data.mobile.length === 11 && /^01[3-9]\d{8}$/.test(data.mobile);
+  const isNidValid = [10, 13, 17].includes(data.national_id.length);
+
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
     if (!data.recaptcha_token) {
@@ -153,7 +183,7 @@ export default function StaffRegister({
     <div className="min-h-screen bg-paper flex items-center justify-center p-4">
       <Head title={`${LABELS[type]} Register`} />
 
-      <div className="w-full max-w-md">
+      <div className={`w-full ${type === 'agent' ? 'max-w-xl' : 'max-w-md'}`}>
         {/* Logo & Brand */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center justify-center gap-2.5 group">
@@ -175,17 +205,48 @@ export default function StaffRegister({
         <div className="bg-white rounded-2xl shadow-lg border border-ink/10 p-8">
           <FlashBanner />
 
-          {/* Customer Switcher Banner */}
+          {/* Agent Seller Highlights & Customer Switcher */}
           {type === 'agent' && (
-            <div className="mb-6 p-3 bg-marigold/10 border border-marigold/20 rounded-xl flex items-center justify-between text-xs text-ink">
-              <span className="font-medium">Just looking to buy products?</span>
-              <Link
-                href={route('register')}
-                className="font-bold text-marigold-dark hover:underline flex items-center gap-1 shrink-0 ml-2"
-              >
-                <span>Register as Customer</span>
-                <FaArrowRight className="h-2.5 w-2.5" />
-              </Link>
+            <div className="space-y-4 mb-6">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50/50 to-amber-100/40 border border-marigold/30 shadow-sm text-ink">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-marigold text-white uppercase tracking-wider shadow-sm">
+                    <FaStore className="h-3 w-3" />
+                    Agent / Seller Portal
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-800 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    Free Plan Available
+                  </span>
+                </div>
+                <h2 className="text-lg font-display font-extrabold text-ink leading-tight">
+                  Open your shop on HaatPoint in 2 minutes
+                </h2>
+                <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-marigold/20 text-center">
+                  <div className="p-1">
+                    <span className="block font-bold text-xs text-ink">0% Listing Fee</span>
+                    <span className="text-[11px] text-ink/70">Up to 150 items free</span>
+                  </div>
+                  <div className="p-1 border-x border-marigold/20">
+                    <span className="block font-bold text-xs text-ink">Instant Payouts</span>
+                    <span className="text-[11px] text-ink/70">bKash & Nagad</span>
+                  </div>
+                  <div className="p-1">
+                    <span className="block font-bold text-xs text-ink">Fast Delivery</span>
+                    <span className="text-[11px] text-ink/70">Doorstep pickup</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-paper-dim border border-line rounded-xl flex items-center justify-between text-xs text-ink">
+                <span className="font-medium text-ink/70">Just looking to buy products?</span>
+                <Link
+                  href={route('register')}
+                  className="font-bold text-marigold-dark hover:underline flex items-center gap-1 shrink-0 ml-2"
+                >
+                  <span>Register as Customer</span>
+                  <FaArrowRight className="h-2.5 w-2.5" />
+                </Link>
+              </div>
             </div>
           )}
 
@@ -272,80 +333,162 @@ export default function StaffRegister({
             </div>
           )}
 
-          <form onSubmit={submit} className="space-y-4">
-            {/* Name */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-body font-semibold text-ink mb-1.5">
-                Full Name
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaUser className="h-4 w-4 text-ink/40" />
+          <form onSubmit={submit} className="space-y-6">
+            {/* Section 1: Account Information */}
+            <div className="space-y-4">
+              {type === 'agent' && (
+                <div className="flex items-center gap-2 pb-2 border-b border-line">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-marigold/10 text-marigold-dark font-mono font-bold text-xs">
+                    1
+                  </span>
+                  <h3 className="text-sm font-display font-bold uppercase tracking-wider text-ink">
+                    Owner Information
+                  </h3>
                 </div>
-                <input
-                  id="name"
-                  name="name"
-                  value={data.name}
-                  autoComplete="name"
-                  autoFocus
-                  onChange={(e) => setData('name', e.target.value)}
-                  className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
-                    errors.name
-                      ? 'border-red-500 focus:ring-red-200'
-                      : 'border-ink/20 focus:ring-marigold focus:border-transparent'
-                  }`}
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
-              {errors.name && (
-                <p className="mt-1.5 text-sm text-red-600 flex items-center">
-                  <FaExclamationCircle className="h-3.5 w-3.5 mr-1" />
-                  {errors.name}
-                </p>
               )}
+
+              {/* Name */}
+              <div>
+                <label htmlFor="name" className="block text-sm font-body font-semibold text-ink mb-1.5">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaUser className="h-4 w-4 text-ink/40" />
+                  </div>
+                  <input
+                    id="name"
+                    name="name"
+                    value={data.name}
+                    autoComplete="name"
+                    autoFocus
+                    onChange={(e) => setData('name', e.target.value)}
+                    className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
+                      errors.name
+                        ? 'border-red-500 focus:ring-red-200'
+                        : 'border-ink/20 focus:ring-marigold focus:border-transparent'
+                    }`}
+                    placeholder="e.g. Rahim Ahmed"
+                    required
+                  />
+                </div>
+                {errors.name && (
+                  <p className="mt-1.5 text-sm text-red-600 flex items-center">
+                    <FaExclamationCircle className="h-3.5 w-3.5 mr-1 shrink-0" />
+                    {errors.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-body font-semibold text-ink mb-1.5">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaEnvelope className="h-4 w-4 text-ink/40" />
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    value={data.email}
+                    autoComplete="username"
+                    onChange={(e) => setData('email', e.target.value)}
+                    className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
+                      errors.email
+                        ? 'border-red-500 focus:ring-red-200'
+                        : 'border-ink/20 focus:ring-marigold focus:border-transparent'
+                    }`}
+                    placeholder="e.g. rahim@gmail.com"
+                    required
+                  />
+                </div>
+                {errors.email && (
+                  <p className="mt-1.5 text-sm text-red-600 flex items-center">
+                    <FaExclamationCircle className="h-3.5 w-3.5 mr-1 shrink-0" />
+                    {errors.email}
+                  </p>
+                )}
+              </div>
             </div>
 
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-body font-semibold text-ink mb-1.5">
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaEnvelope className="h-4 w-4 text-ink/40" />
-                </div>
-                <input
-                  id="email"
-                  type="email"
-                  name="email"
-                  value={data.email}
-                  autoComplete="username"
-                  onChange={(e) => setData('email', e.target.value)}
-                  className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
-                    errors.email
-                      ? 'border-red-500 focus:ring-red-200'
-                      : 'border-ink/20 focus:ring-marigold focus:border-transparent'
-                  }`}
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
-              {errors.email && (
-                <p className="mt-1.5 text-sm text-red-600 flex items-center">
-                  <FaExclamationCircle className="h-3.5 w-3.5 mr-1" />
-                  {errors.email}
-                </p>
-              )}
-            </div>
-
-            {/* Agent KYC fields */}
+            {/* Section 2: Agent KYC & Verification fields */}
             {type === 'agent' && (
-              <>
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center gap-2 pb-2 border-b border-line">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-marigold/10 text-marigold-dark font-mono font-bold text-xs">
+                    2
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-display font-bold uppercase tracking-wider text-ink">
+                      Verification & Payout Details
+                    </h3>
+                    <p className="text-[11px] text-ink/60">
+                      Used for sending your sales earnings and courier package pickup
+                    </p>
+                  </div>
+                </div>
+
+                {/* Mobile / mobile banking number */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label htmlFor="mobile" className="block text-sm font-body font-semibold text-ink">
+                      Mobile Number (bKash / Nagad)
+                    </label>
+                    {data.mobile && (
+                      <span className="text-xs">
+                        {isMobileValid ? (
+                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                            <FaCheckCircle className="h-3 w-3 text-emerald-600" />
+                            Valid Number
+                          </span>
+                        ) : (
+                          <span className="text-amber-700 text-[11px]">
+                            {data.mobile.length}/11 digits
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaMobileAlt className="h-4 w-4 text-ink/40" />
+                    </div>
+                    <input
+                      id="mobile"
+                      name="mobile"
+                      type="tel"
+                      value={data.mobile}
+                      autoComplete="tel"
+                      onChange={handleMobileChange}
+                      className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
+                        errors.mobile
+                          ? 'border-red-500 focus:ring-red-200'
+                          : isMobileValid
+                          ? 'border-emerald-500 focus:ring-emerald-200'
+                          : 'border-ink/20 focus:ring-marigold focus:border-transparent'
+                      }`}
+                      placeholder="01XXXXXXXXX"
+                      required
+                    />
+                  </div>
+                  <p className="mt-1 text-[11px] text-ink/50">
+                    Auto-cleans "+88" or spaces. Used to receive customer payment payouts.
+                  </p>
+                  {errors.mobile && (
+                    <p className="mt-1.5 text-sm text-red-600 flex items-center">
+                      <FaExclamationCircle className="h-3.5 w-3.5 mr-1 shrink-0" />
+                      {errors.mobile}
+                    </p>
+                  )}
+                </div>
+
                 {/* Address */}
                 <div>
                   <label htmlFor="address" className="block text-sm font-body font-semibold text-ink mb-1.5">
-                    Address
+                    Shop / Pickup Address
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -362,56 +505,52 @@ export default function StaffRegister({
                           ? 'border-red-500 focus:ring-red-200'
                           : 'border-ink/20 focus:ring-marigold focus:border-transparent'
                       }`}
-                      placeholder="Shop / office address"
+                      placeholder="e.g. Shop 12, Floor 2, Market Name, Area, City"
                       required
                     />
                   </div>
+                  <p className="mt-1 text-[11px] text-ink/50">
+                    Where couriers will collect products when orders arrive.
+                  </p>
                   {errors.address && (
                     <p className="mt-1.5 text-sm text-red-600 flex items-center">
-                      <FaExclamationCircle className="h-3.5 w-3.5 mr-1" />
+                      <FaExclamationCircle className="h-3.5 w-3.5 mr-1 shrink-0" />
                       {errors.address}
-                    </p>
-                  )}
-                </div>
-
-                {/* Mobile / mobile banking number */}
-                <div>
-                  <label htmlFor="mobile" className="block text-sm font-body font-semibold text-ink mb-1.5">
-                    Mobile Number (bKash / Nagad)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaMobileAlt className="h-4 w-4 text-ink/40" />
-                    </div>
-                    <input
-                      id="mobile"
-                      name="mobile"
-                      type="tel"
-                      value={data.mobile}
-                      autoComplete="tel"
-                      onChange={(e) => setData('mobile', e.target.value)}
-                      className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
-                        errors.mobile
-                          ? 'border-red-500 focus:ring-red-200'
-                          : 'border-ink/20 focus:ring-marigold focus:border-transparent'
-                      }`}
-                      placeholder="01XXXXXXXXX"
-                      required
-                    />
-                  </div>
-                  {errors.mobile && (
-                    <p className="mt-1.5 text-sm text-red-600 flex items-center">
-                      <FaExclamationCircle className="h-3.5 w-3.5 mr-1" />
-                      {errors.mobile}
                     </p>
                   )}
                 </div>
 
                 {/* National ID */}
                 <div>
-                  <label htmlFor="national_id" className="block text-sm font-body font-semibold text-ink mb-1.5">
-                    National ID
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label htmlFor="national_id" className="block text-sm font-body font-semibold text-ink">
+                      National ID (NID)
+                    </label>
+                    {data.national_id && (
+                      <span className="text-xs">
+                        {data.national_id.length === 10 ? (
+                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                            <FaCheckCircle className="h-3 w-3 text-emerald-600" />
+                            Smart Card (10 digits)
+                          </span>
+                        ) : data.national_id.length === 13 ? (
+                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                            <FaCheckCircle className="h-3 w-3 text-emerald-600" />
+                            Old NID (13 digits)
+                          </span>
+                        ) : data.national_id.length === 17 ? (
+                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                            <FaCheckCircle className="h-3 w-3 text-emerald-600" />
+                            NID with Birth Year (17 digits)
+                          </span>
+                        ) : (
+                          <span className="text-amber-700 text-[11px]">
+                            {data.national_id.length} digits entered
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <FaIdCard className="h-4 w-4 text-ink/40" />
@@ -420,29 +559,51 @@ export default function StaffRegister({
                       id="national_id"
                       name="national_id"
                       value={data.national_id}
-                      onChange={(e) => setData('national_id', e.target.value)}
+                      onChange={handleNationalIdChange}
                       className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg bg-paper text-ink placeholder-ink/40 focus:outline-none focus:ring-2 transition-all font-body ${
                         errors.national_id
                           ? 'border-red-500 focus:ring-red-200'
+                          : isNidValid
+                          ? 'border-emerald-500 focus:ring-emerald-200'
                           : 'border-ink/20 focus:ring-marigold focus:border-transparent'
                       }`}
-                      placeholder="10 or 17 digit National ID"
+                      placeholder="10, 13, or 17 digit NID number"
                       required
                     />
                   </div>
                   {errors.national_id && (
                     <p className="mt-1.5 text-sm text-red-600 flex items-center">
-                      <FaExclamationCircle className="h-3.5 w-3.5 mr-1" />
+                      <FaExclamationCircle className="h-3.5 w-3.5 mr-1 shrink-0" />
                       {errors.national_id}
                     </p>
                   )}
-                  <p className="mt-1.5 text-xs text-amber-600 flex items-center">
-                    <FaExclamationCircle className="h-3 w-3 mr-1" />
-                    The National ID must be valid or your store will be closed.
-                  </p>
+
+                  {/* Trust & Security Badge */}
+                  <div className="mt-2.5 p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-xl flex items-start gap-2.5 text-xs text-emerald-900">
+                    <FaShieldAlt className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-emerald-900">Seller Verification Guarantee</p>
+                      <p className="text-emerald-800/80 mt-0.5">
+                        Accepts Smart NID (10 digits) or Old NID (13/17 digits). Your info is securely encrypted and used only for verifying seller identity & payouts.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </>
+              </div>
             )}
+
+            {/* Section 3: Password & Security */}
+            <div className="space-y-4 pt-2">
+              {type === 'agent' && (
+                <div className="flex items-center gap-2 pb-2 border-b border-line">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-marigold/10 text-marigold-dark font-mono font-bold text-xs">
+                    3
+                  </span>
+                  <h3 className="text-sm font-display font-bold uppercase tracking-wider text-ink">
+                    Account Security
+                  </h3>
+                </div>
+              )}
 
             {/* Password */}
             <div>
@@ -559,6 +720,7 @@ export default function StaffRegister({
                 </p>
               )}
             </div>
+            </div>
 
             {/* Terms */}
             <div className="flex items-start">
@@ -595,13 +757,13 @@ export default function StaffRegister({
             <button
               type="submit"
               disabled={processing}
-              className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-body font-bold uppercase tracking-wide text-white bg-ink hover:bg-ink/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ink disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex items-center justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-body font-bold uppercase tracking-wider text-white bg-ink hover:bg-ink/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ink disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {processing ? (
                 <FaSpinner className="animate-spin h-4 w-4" />
               ) : (
                 <>
-                  Create Account
+                  {type === 'agent' ? 'Complete Agent Registration' : 'Create Account'}
                   <FaArrowRight className="ml-2 h-3.5 w-3.5" />
                 </>
               )}

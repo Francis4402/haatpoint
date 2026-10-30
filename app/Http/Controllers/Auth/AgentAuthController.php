@@ -58,7 +58,7 @@ class AgentAuthController extends StaffAuthController
             'name' => ['required', 'string', 'max:255', 'unique:agents,name'],
             'address' => 'required|string|max:255',
             'mobile' => ['required', 'string', 'regex:/^01[3-9]\d{8}$/', 'unique:agents,mobile'],
-            'national_id' => ['required', 'string', 'regex:/^\d{10}$|^\d{17}$/', 'unique:agents,national_id'],
+            'national_id' => ['required', 'string', 'regex:/^\d{10}$|^\d{13}$|^\d{17}$/', 'unique:agents,national_id'],
             'plan' => 'nullable|in:free,pro',
         ];
     }
@@ -76,7 +76,7 @@ class AgentAuthController extends StaffAuthController
             'mobile.regex' => 'Mobile number must be a valid 11-digit Bangladeshi number starting with 01.',
             'mobile.unique' => 'This mobile number is already registered with another agent account.',
             'national_id.required' => 'Please enter your National ID number.',
-            'national_id.regex' => 'National ID must be either 10 or 17 digits.',
+            'national_id.regex' => 'National ID must be 10, 13, or 17 digits.',
             'national_id.unique' => 'This National ID is already registered with another agent account.',
             'password.required' => 'Please enter a password.',
             'password.confirmed' => 'Passwords do not match.',
