@@ -188,12 +188,6 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
                 </tr>
               )}
               <tr><td>TOTAL</td><td className="right"><FormatPrice price={order.total} /></td></tr>
-              {order.payment_method === 'cash_on_delivery' && (
-                <tr>
-                  <td>Amount to Collect (COD)</td>
-                  <td className="right" style={{ fontWeight: 'bold' }}><FormatPrice price={order.amount_to_collect} /></td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
@@ -225,7 +219,7 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
               <p className="text-text-soft max-w-2xl mx-auto mt-2">
                 Your order has been placed successfully.{' '}
                 {order.payment_method === 'cash_on_delivery' ? (
-                  <>Pay <FormatPrice price={order.amount_to_collect} /> on delivery.</>
+                  <>Pay on delivery.</>
                 ) : order.order_status === 'confirmed' ? (
                   <span className="text-green-600 font-semibold">bKash payment verified &amp; order confirmed by superadmin.</span>
                 ) : (
@@ -310,16 +304,6 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
                         <span className="text-ink">Total</span>
                         <span className="text-marigold"><FormatPrice price={order.total} /></span>
                       </div>
-                      {order.payment_method === 'cash_on_delivery' && (
-                        <div className="mt-3 p-3 bg-marigold/5 rounded-xl border border-marigold/20">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-text-soft">Amount to collect on delivery</span>
-                            <span className="text-lg font-bold text-marigold">
-                              <FormatPrice price={order.amount_to_collect} />
-                            </span>
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     {/* Payment Method */}
