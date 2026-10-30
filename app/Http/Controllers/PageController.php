@@ -348,7 +348,7 @@ class PageController extends Controller
         // 1. Fetch authenticated user's recent orders (up to 10) so they can track with one click
         $recentOrders = collect();
         if ($user) {
-            $recentOrders = Orders::with(['orderItems', 'store'])
+            $recentOrders = Orders::with(['orderItems.product', 'store'])
                 ->where('user_id', $user->id)
                 ->latest()
                 ->take(10)
@@ -359,7 +359,7 @@ class PageController extends Controller
         if ($query !== '') {
             $cleanPhone = preg_replace('/[^0-9]/', '', $query);
 
-            $matchedOrders = Orders::with(['orderItems', 'store'])
+            $matchedOrders = Orders::with(['orderItems.product', 'store'])
                 ->where(function ($q) use ($query, $cleanPhone) {
                     $q->where('order_number', $query)
                       ->orWhere('order_number', 'like', "%{$query}%")

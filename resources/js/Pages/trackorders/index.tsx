@@ -175,6 +175,99 @@ export default function TrackOrderPage({
   const isCancelled = currentStatus === "cancelled";
   const isReturned = currentStatus === "returned";
 
+  const resolveProductImage = (item: any): string => {
+    if (!item) return '/placeholder.png';
+
+    let raw: any =
+      item.product_image ||
+      item.image ||
+      (item.product && item.product.images) ||
+      item.images;
+
+    if (!raw) return '/placeholder.png';
+
+    if (Array.isArray(raw)) {
+      raw = raw[0];
+    }
+
+    if (typeof raw === 'string') {
+      let trimmed = raw.trim();
+      while (trimmed.startsWith('"') && trimmed.endsWith('"') && trimmed.length > 2) {
+        trimmed = trimmed.slice(1, -1).trim();
+      }
+      if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            raw = parsed[0];
+          } else if (typeof parsed === 'string') {
+            raw = parsed;
+          }
+        } catch {
+          const match = trimmed.match(/https?:\/\/[^\s"']+|product_images\/[^\s"']+/);
+          if (match) {
+            raw = match[0];
+          }
+        }
+      } else {
+        raw = trimmed;
+      }
+    }
+
+    if (typeof raw !== 'string' || !raw.trim()) {
+      return '/placeholder.png';
+    }
+
+    raw = raw.trim();
+
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      return raw;
+    }
+
+    raw = raw.replace(/\/+/g, '/');
+
+    if (raw.startsWith('/storage/')) return raw;
+    if (raw.startsWith('storage/')) return `/${raw}`;
+    if (raw.startsWith('/product_images/')) return `/storage${raw}`;
+    if (raw.startsWith('product_images/')) return `/storage/${raw}`;
+    if (raw.startsWith('/')) return raw;
+
+    if (!raw.includes('/')) {
+      return `/storage/product_images/${raw}`;
+    }
+
+    return `/storage/${raw}`;
+  };
+
+  const getOrderItems = (ord: any): any[] => {
+    if (!ord) return [];
+    if (ord.order_items && ord.order_items.length > 0) {
+      return ord.order_items;
+    }
+    if (ord.items) {
+      try {
+        const parsed = typeof ord.items === 'string' ? JSON.parse(ord.items) : ord.items;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((it: any, i: number) => ({
+            id: it.id || it.product_id || `item-${i}`,
+            product_name: it.name || it.product_name || 'Product',
+            product_image: it.image || it.product_image || (Array.isArray(it.images) ? it.images[0] : it.images),
+            quantity: it.quantity || it.cartQty || 1,
+            price: it.price || it.sale_price || it.regular_price || 0,
+            total: (it.price || it.sale_price || it.regular_price || 0) * (it.quantity || it.cartQty || 1),
+            size: it.size || it.selectedSize || null,
+            color: it.color || it.selectedColor || null,
+          }));
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return [];
+  };
+
+  const displayItems = getOrderItems(order);
+
   // Step indices: 0: Placed, 1: Confirmed/Processing, 2: Shipped, 3: Delivered
   const getStepState = (stepIndex: number) => {
     if (isCancelled || isReturned) return "inactive";
@@ -552,7 +645,7 @@ export default function TrackOrderPage({
                     <div className="px-6 py-4 bg-paper-dim/60 border-b border-line flex items-center justify-between">
                       <h3 className="font-display font-extrabold uppercase text-sm tracking-wide text-ink flex items-center gap-2">
                         <FaBox className="h-4 w-4 text-marigold" />
-                        <span>Ordered Items ({order.order_items?.length || order.item_quantity || 1})</span>
+                        <span>Ordered Items ({displayItems.length || order.item_quantity || 1})</span>
                       </h3>
                       {order.shipping_method && (
                         <span className="font-mono text-[11px] uppercase tracking-wider text-text-soft">
@@ -562,22 +655,22 @@ export default function TrackOrderPage({
                     </div>
 
                     <div className="divide-y divide-line">
-                      {order.order_items && order.order_items.length > 0 ? (
-                        order.order_items.map((item, idx) => (
+                      {displayItems && displayItems.length > 0 ? (
+                        displayItems.map((item: any, idx: number) => (
                           <div key={item.id || idx} className="p-4 sm:p-5 flex items-center gap-4 hover:bg-paper-dim/20 transition-colors">
                             {/* Product Thumbnail */}
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-line bg-paper-dim overflow-hidden shrink-0">
-                              {item.product_image ? (
-                                <img
-                                  src={item.product_image}
-                                  alt={item.product_name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-text-soft">
-                                  <FaBox className="h-6 w-6 opacity-40" />
-                                </div>
-                              )}
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-line bg-paper-dim overflow-hidden shrink-0 relative flex items-center justify-center">
+                              <img
+                                src={resolveProductImage(item)}
+                                alt={item.product_name || "Product image"}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  if (!target.src.endsWith('/placeholder.png')) {
+                                    target.src = '/placeholder.png';
+                                  }
+                                }}
+                              />
                             </div>
 
                             {/* Details */}
