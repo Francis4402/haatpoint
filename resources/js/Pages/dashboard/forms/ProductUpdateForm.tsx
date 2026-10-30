@@ -1376,14 +1376,14 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                     modules={quillModules}
                     formats={quillFormats}
                     placeholder="Describe your product features, specifications, and benefits..."
-                    className="h-64 mb-12"
+                    className="quill-product-editor"
                   />
-                  <div className="flex justify-between items-center mt-2">
-                    <p className="text-xs text-text-soft">
-                      <span className="font-medium text-ink">{data.description.replace(/<[^>]*>/g, '').length}</span> characters (plain text)
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 text-xs text-text-soft pt-1">
+                    <p>
+                      <span className="font-semibold text-ink">{data.description.replace(/<[^>]*>/g, '').length}</span> characters (plain text)
                     </p>
-                    <p className="text-xs text-text-soft">
-                      Use the toolbar to format your text with rich styling
+                    <p>
+                      Use the toolbar to format bold text, bullet points, headers, and more
                     </p>
                   </div>
                 </div>

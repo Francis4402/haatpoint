@@ -26,3 +26,236 @@ h1, h2, h3 {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* ==========================================================================
+   Quill Rich Text Editor (Dashboard Product Forms)
+   ========================================================================== */
+.quill-product-editor {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+}
+
+.quill-product-editor .ql-toolbar.ql-snow {
+  border-top-left-radius: 0.75rem !important;
+  border-top-right-radius: 0.75rem !important;
+  border-color: #E3E1DB !important;
+  background-color: #F8F8F6 !important;
+  padding: 0.75rem !important;
+  font-family: inherit !important;
+}
+
+.quill-product-editor .ql-container.ql-snow {
+  border-bottom-left-radius: 0.75rem !important;
+  border-bottom-right-radius: 0.75rem !important;
+  border-color: #E3E1DB !important;
+  background-color: #FFFFFF !important;
+  min-height: 240px !important;
+  font-family: inherit !important;
+  font-size: 0.95rem !important;
+}
+
+.quill-product-editor .ql-editor {
+  min-height: 240px !important;
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 0.95rem !important;
+  line-height: 1.65 !important;
+  color: #1B1B1B !important;
+  padding: 1rem 1.25rem !important;
+}
+
+.quill-product-editor .ql-editor.ql-blank::before {
+  color: #767470 !important;
+  font-style: normal !important;
+  font-size: 0.95rem !important;
+  left: 1.25rem !important;
+  right: 1.25rem !important;
+}
+
+.quill-product-editor:focus-within .ql-toolbar.ql-snow,
+.quill-product-editor:focus-within .ql-container.ql-snow {
+  border-color: #6E7F5C !important;
+}
+
+/* ==========================================================================
+   Product Rich Description View (Customer Facing Product Details)
+   ========================================================================== */
+.product-rich-description {
+  color: #1B1B1B;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.975rem;
+  line-height: 1.75;
+}
+
+.product-rich-description p {
+  margin-bottom: 1rem;
+  color: #4A4844;
+  line-height: 1.75;
+}
+
+.product-rich-description p:last-child {
+  margin-bottom: 0;
+}
+
+.product-rich-description strong,
+.product-rich-description b {
+  font-weight: 700;
+  color: #1B1B1B;
+}
+
+.product-rich-description em,
+.product-rich-description i {
+  font-style: italic;
+}
+
+.product-rich-description u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.product-rich-description s,
+.product-rich-description strike,
+.product-rich-description del {
+  text-decoration: line-through;
+  color: #767470;
+}
+
+.product-rich-description h1,
+.product-rich-description h2,
+.product-rich-description h3,
+.product-rich-description h4,
+.product-rich-description h5,
+.product-rich-description h6 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: #1B1B1B;
+  line-height: 1.3;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.product-rich-description h1 { font-size: 1.625rem; }
+.product-rich-description h2 { font-size: 1.375rem; }
+.product-rich-description h3 { font-size: 1.2rem; }
+.product-rich-description h4 { font-size: 1.05rem; }
+
+/* Lists: Bullet and Ordered lists */
+.product-rich-description ul {
+  list-style-type: disc !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 1rem !important;
+  padding-left: 1.75rem !important;
+}
+
+.product-rich-description ol {
+  list-style-type: decimal !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 1rem !important;
+  padding-left: 1.75rem !important;
+}
+
+.product-rich-description li {
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+  padding-left: 0.35rem;
+  color: #4A4844;
+  line-height: 1.65;
+}
+
+.product-rich-description li::marker {
+  color: #6E7F5C;
+  font-weight: 700;
+}
+
+.product-rich-description li > p {
+  margin-bottom: 0.25rem;
+  display: inline;
+}
+
+/* Blockquotes */
+.product-rich-description blockquote {
+  border-left: 4px solid #6E7F5C;
+  background-color: rgba(110, 127, 92, 0.06);
+  padding: 0.875rem 1.25rem;
+  margin: 1.25rem 0;
+  border-radius: 0 0.75rem 0.75rem 0;
+  font-style: italic;
+  color: #1B1B1B;
+}
+
+/* Links */
+.product-rich-description a {
+  color: #6E7F5C;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+.product-rich-description a:hover {
+  color: #57654A;
+}
+
+/* Code and Pre */
+.product-rich-description code {
+  background-color: #F2F2EE;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: 'Space Grotesk', monospace;
+  font-size: 0.875em;
+  color: #1B1B1B;
+  border: 1px solid #E3E1DB;
+}
+
+.product-rich-description pre {
+  background-color: #1B1B1B;
+  color: #FBFBF9;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-family: 'Space Grotesk', monospace;
+  font-size: 0.875rem;
+}
+
+/* Images */
+.product-rich-description img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+  border: 1px solid #E3E1DB;
+}
+
+/* Tables */
+.product-rich-description table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  border: 1px solid #E3E1DB;
+}
+
+.product-rich-description th,
+.product-rich-description td {
+  border: 1px solid #E3E1DB;
+  padding: 0.625rem 0.875rem;
+  text-align: left;
+}
+
+.product-rich-description th {
+  background-color: #F2F2EE;
+  font-weight: 700;
+  color: #1B1B1B;
+}
+
+/* Quill alignment and font classes */
+.product-rich-description .ql-align-center { text-align: center; }
+.product-rich-description .ql-align-right { text-align: right; }
+.product-rich-description .ql-align-justify { text-align: justify; }
+.product-rich-description .ql-indent-1 { padding-left: 2rem; }
+.product-rich-description .ql-indent-2 { padding-left: 4rem; }
+.product-rich-description .ql-indent-3 { padding-left: 6rem; }
+.product-rich-description .ql-indent-4 { padding-left: 8rem; }
+.product-rich-description .ql-size-small { font-size: 0.825em; }
+.product-rich-description .ql-size-large { font-size: 1.25em; }
+.product-rich-description .ql-size-huge { font-size: 1.5em; font-weight: 700; }
+

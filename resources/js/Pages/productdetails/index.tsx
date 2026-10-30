@@ -36,6 +36,7 @@ import SeoHead from "@/Components/SeoHead";
 import WishlistButton from "../buttons/WishListButton";
 import AdSenseDisplay from "@/Components/AdSenseDisplay";
 import AdSenseMultiplex from "@/Components/AdSenseMultiplex";
+import { formatProductDescription } from "../utils/formatHtml";
 
 interface ProductDetailsPageProps {
   product: Product;
@@ -1071,10 +1072,19 @@ const ProductDetailsPage = ({
                 {/* Description Tab */}
                 {activeTab === 'description' && (
                   <div>
-                    <h3 className="text-2xl font-bold text-ink mb-4">Product Description</h3>
-                    <div className="text-text-soft whitespace-pre-line leading-relaxed">
-                      {stripHtml(product.description || 'No description available.')}
-                    </div>
+                    <h3 className="text-2xl font-bold text-ink mb-6 pb-3 border-b border-line">
+                      Product Description
+                    </h3>
+                    {product.description ? (
+                      <div
+                        className="product-rich-description"
+                        dangerouslySetInnerHTML={{
+                          __html: formatProductDescription(product.description),
+                        }}
+                      />
+                    ) : (
+                      <p className="text-text-soft italic">No description available for this product.</p>
+                    )}
                   </div>
                 )}
 
