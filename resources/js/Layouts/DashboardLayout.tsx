@@ -1,5 +1,5 @@
 // DashboardLayout.tsx
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import {
   FiHome,
@@ -48,6 +48,43 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const notificationsDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileOpen &&
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setProfileOpen(false);
+      }
+      if (
+        notificationsOpen &&
+        notificationsDropdownRef.current &&
+        !notificationsDropdownRef.current.contains(event.target as Node)
+      ) {
+        setNotificationsOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setProfileOpen(false);
+        setNotificationsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [profileOpen, notificationsOpen]);
   const { url, props } = usePage();
   const notifications = (props as unknown as {
     notifications?: {
@@ -535,7 +572,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
               </div>
 
               {/* Notification bell dropdown */}
-              <div className="relative">
+              <div ref={notificationsDropdownRef} className="relative">
                 <button
                   type="button"
                   onClick={() => {
@@ -552,13 +589,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                     </span>
                   )}
                 </button>
-
-                {notificationsOpen && (
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setNotificationsOpen(false)}
-                  />
-                )}
 
                 <Transition
                   show={notificationsOpen}
@@ -672,7 +702,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
               <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-line" aria-hidden="true" />
 
               {/* Profile dropdown */}
-              <div className="relative">
+              <div ref={profileDropdownRef} className="relative">
                 <button
                   type="button"
                   className="flex items-center focus:outline-none focus:ring-2 focus:ring-marigold focus:ring-offset-2 rounded-full transition-all duration-200 hover:ring-2 hover:ring-marigold/50"
@@ -694,13 +724,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                   />
                 </button>
 
-                {profileOpen && (
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setProfileOpen(false)}
-                  />
-                )}
-
                 <Transition
                   show={profileOpen}
                   as={Fragment}
@@ -711,10 +734,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-1.5rem)] origin-top-right bg-white rounded-xl shadow-hard-sm border border-line divide-y divide-line focus:outline-none z-50">
+                  <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] origin-top-right bg-white rounded-xl shadow-hard-sm border border-line divide-y divide-line focus:outline-none z-50">
                     {/* User Info */}
                     <div className="px-4 py-3">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         <img
                           src={
                             user.images
@@ -724,14 +747,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                               : '/placeholder.png'
                           }
                           alt={user.name}
-                          className="size-10 rounded-full ring-2 ring-line"
+                          className="size-10 rounded-full ring-2 ring-line shrink-0 object-cover"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = '/placeholder.png';
                           }}
                         />
-                        <div>
-                          <p className="text-sm font-semibold text-ink">{user.name}</p>
-                          <p className="text-xs text-text-soft truncate">{user.email}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-ink truncate" title={user.name}>{user.name}</p>
+                          <p className="text-xs text-text-soft truncate" title={user.email}>{user.email}</p>
                         </div>
                       </div>
                     </div>
