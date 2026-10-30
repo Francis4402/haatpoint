@@ -36,7 +36,11 @@ export default function Edit({ auth, status }: PageProps) {
   }, [auth.user.created_at]);
 
   const getProfileImageUrl = () => {
-    if (useStorage && auth.user.images) return `/storage/${auth.user.images}`;
+    if (useStorage && auth.user.images) {
+      return auth.user.images.startsWith('http')
+        ? auth.user.images
+        : `/storage/${auth.user.images}`;
+    }
     return '/placeholder.png';
   };
 
@@ -96,7 +100,9 @@ export default function Edit({ auth, status }: PageProps) {
                           src={getProfileImageUrl()}
                           alt={auth.user.name}
                           className="w-16 h-16 rounded-full ring-4 ring-marigold/20 border-2 border-line object-cover"
-                          onError={() => setUseStorage(false)}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/placeholder.png';
+                          }}
                         />
                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
                           <span className="w-1.5 h-1.5 rounded-full bg-white"></span>

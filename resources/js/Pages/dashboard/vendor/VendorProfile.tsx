@@ -239,17 +239,14 @@ export default function VendorProfile({ vendor, missingFields, isComplete }: Ven
                         </div>
 
                         <div className='flex items-center gap-5'>
-                            {preview ? (
-                                <img
-                                    src={preview}
-                                    alt='Vendor'
-                                    className='h-20 w-20 rounded-full object-cover border border-line'
-                                />
-                            ) : (
-                                <div className='h-20 w-20 rounded-full bg-paper-dim border border-line flex items-center justify-center'>
-                                    <FaUser className='h-8 w-8 text-text-soft' />
-                                </div>
-                            )}
+                            <img
+                                src={preview || '/placeholder.png'}
+                                alt='Vendor'
+                                className='h-20 w-20 rounded-full object-cover border border-line bg-paper-dim'
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/placeholder.png';
+                                }}
+                            />
 
                             <div>
                                 <input

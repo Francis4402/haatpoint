@@ -151,7 +151,9 @@ export default function UpdateProfileInformation({ status, user }: Props) {
 
         // Priority 2: Try storage path first
         if (useStorage && user.images) {
-            return `/storage/${user.images}`;
+            return user.images.startsWith('http')
+              ? user.images
+              : `/storage/${user.images}`;
         }
 
         // Priority 3: If storage failed but user.images exists (maybe it's a URL)
