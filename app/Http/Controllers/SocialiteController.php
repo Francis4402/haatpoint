@@ -309,6 +309,11 @@ class SocialiteController extends Controller
                     ->with('warning', 'Please complete your vendor information before accessing the dashboard.');
             }
 
+            if ($identity instanceof User && (empty($identity->phone) || empty($identity->city_id))) {
+                return redirect()->route('profile.edit')
+                    ->with('info', 'Welcome to Haatpoint! Please complete your mobile number and delivery address.');
+            }
+
             return redirect()->intended(route('dashboard', absolute: false));
         } catch (\Throwable $e) {
             Log::warning("Social login failed ({$provider} -> {$destination}): " . $e->getMessage());

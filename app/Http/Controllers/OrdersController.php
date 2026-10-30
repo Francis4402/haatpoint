@@ -9,6 +9,7 @@ use App\Models\Agent;
 use App\Models\OrderItems;
 use App\Models\Products;
 use App\Models\Store;
+use App\Models\User;
 use App\Models\Wishlist;
 use App\Services\WhatsAppNotificationService;
 use Enan\PathaoCourier\Requests\PathaoOrderRequest;
@@ -305,6 +306,29 @@ class OrdersController extends Controller
                 'notes' => $validated['notes'] ?? null,
                 'items' => json_encode($validated['items']),
             ]);
+
+            // If logged-in customer has incomplete delivery profile, auto-save their delivery details for future orders
+            if (! $isAgent && $user instanceof User) {
+                $profileUpdates = [];
+                if (empty($user->phone) && ! empty($validated['recipient_phone'])) {
+                    $profileUpdates['phone'] = $validated['recipient_phone'];
+                }
+                if (empty($user->address) && ! empty($validated['recipient_address'])) {
+                    $profileUpdates['address'] = $validated['recipient_address'];
+                }
+                if (empty($user->city_id) && ! empty($validated['recipient_city'])) {
+                    $profileUpdates['city_id'] = $validated['recipient_city'];
+                }
+                if (empty($user->zone_id) && ! empty($validated['recipient_zone'])) {
+                    $profileUpdates['zone_id'] = $validated['recipient_zone'];
+                }
+                if (empty($user->area_id) && ! empty($validated['recipient_area'])) {
+                    $profileUpdates['area_id'] = $validated['recipient_area'];
+                }
+                if (! empty($profileUpdates)) {
+                    $user->update($profileUpdates);
+                }
+            }
 
 
             foreach ($validated['items'] as $item) {

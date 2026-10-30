@@ -86,6 +86,23 @@ export default function Edit({ auth, status }: PageProps) {
             </p>
           </div>
 
+          {/* Incomplete Delivery Information Banner (e.g. for Google Auth signups) */}
+          {(!auth.user.phone || !auth.user.city_id) && (
+            <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm flex items-start gap-3.5">
+              <div className="w-8 h-8 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0 mt-0.5 text-amber-800 font-bold text-sm">
+                !
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-bold text-amber-900 font-display uppercase tracking-wide">
+                  Complete Your Delivery Information
+                </h4>
+                <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                  Please add your mobile number, delivery city, zone/thana, and street address below so you can receive courier deliveries and track parcels seamlessly.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Main Content */}
           <div className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden">
             <Tab.Group onChange={setActiveTab}>
