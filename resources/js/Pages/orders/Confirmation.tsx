@@ -448,11 +448,11 @@ const Confirmation = ({ auth, order, wishlist }: OrderProps) => {
                     <span className="text-text-soft">Confirmed {formatDate(order.created_at)}</span>
                   </div>
                   <div className="flex items-center">
-                    <div className={`w-2 h-2 rounded-full ${order.order_status === 'processing' ? 'bg-blue-500' : 'bg-gray-300'} mr-1`}></div>
+                    <div className={`w-2 h-2 rounded-full ${order.order_status === 'processing' || order.order_status === 'shipped' || order.order_status === 'delivered' ? 'bg-blue-500' : 'bg-gray-300'} mr-1`}></div>
                     <span className="text-text-soft">Processing</span>
                   </div>
                   <div className="flex items-center">
-                    <div className={`w-2 h-2 rounded-full ${order.order_status === 'shipped' ? 'bg-indigo-500' : 'bg-gray-300'} mr-1`}></div>
+                    <div className={`w-2 h-2 rounded-full ${order.order_status === 'shipped' || order.order_status === 'delivered' ? 'bg-indigo-500' : 'bg-gray-300'} mr-1`}></div>
                     <span className="text-text-soft">Shipped</span>
                   </div>
                   <div className="flex items-center">

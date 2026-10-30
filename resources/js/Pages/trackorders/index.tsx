@@ -10,13 +10,11 @@ import {
   FaStore,
   FaCopy,
   FaCheck,
-  FaExternalLinkAlt,
   FaExclamationTriangle,
   FaTimesCircle,
   FaReceipt,
   FaShoppingBag,
   FaPhone,
-  FaPrint,
   FaShieldAlt,
   FaCreditCard,
   FaQuestionCircle,
@@ -171,7 +169,7 @@ export default function TrackOrderPage({
 
   // Lifecycle steps for order tracking stepper
   const order = searchedOrder;
-  const currentStatus = (order?.order_status || "pending").toLowerCase();
+  const currentStatus = (order?.order_status || "pending").toLowerCase().trim();
   const isCancelled = currentStatus === "cancelled";
   const isReturned = currentStatus === "returned";
 
@@ -272,12 +270,16 @@ export default function TrackOrderPage({
   const getStepState = (stepIndex: number) => {
     if (isCancelled || isReturned) return "inactive";
 
+    // When the order is delivered (or completed), every step including "Out for Delivery & Delivered" is completed & checked
+    if (currentStatus === "delivered" || currentStatus === "completed") {
+      return "completed";
+    }
+
     const statusMap: Record<string, number> = {
       pending: 0,
       confirmed: 1,
       processing: 1,
       shipped: 2,
-      delivered: 3,
     };
 
     const currentLevel = statusMap[currentStatus] ?? 0;
@@ -510,9 +512,9 @@ export default function TrackOrderPage({
                     </p>
                   </div>
 
-                  {/* Actions & Pathao Courier button */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    {order.tracking_number && (
+                  {/* Tracking Number */}
+                  {order.tracking_number && (
+                    <div className="flex flex-wrap items-center gap-2">
                       <div className="flex items-center gap-2 bg-paper-dim px-3 py-1.5 rounded-lg border border-line text-xs font-mono">
                         <span className="text-text-soft">Tracking:</span>
                         <strong className="text-ink">{order.tracking_number}</strong>
@@ -525,30 +527,8 @@ export default function TrackOrderPage({
                           {copiedText === "tracking" ? <FaCheck className="h-3 w-3 text-emerald-600" /> : <FaCopy className="h-3 w-3" />}
                         </button>
                       </div>
-                    )}
-
-                    {order.pathao_tracking_url && (
-                      <a
-                        href={order.pathao_tracking_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold uppercase tracking-wide transition-all shadow-sm"
-                      >
-                        <span>Track on Pathao</span>
-                        <FaExternalLinkAlt className="h-3 w-3" />
-                      </a>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => window.print()}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-paper-dim hover:bg-line text-ink border border-line rounded-xl text-xs font-medium transition-colors"
-                      title="Print Tracking Sheet"
-                    >
-                      <FaPrint className="h-3.5 w-3.5 text-text-soft" />
-                      <span>Print</span>
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Cancelled Alert Banner */}
@@ -581,6 +561,21 @@ export default function TrackOrderPage({
                 {!isCancelled && !isReturned && (
                   <div className="mt-8 pt-2">
                     <div className="relative">
+                      {/* Connecting Progress Track (Desktop) */}
+                      <div className="hidden sm:block absolute top-5 left-[12.5%] right-[12.5%] h-1 bg-line -translate-y-1/2 rounded-full z-0 overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-500 rounded-full ${
+                            currentStatus === "delivered" || currentStatus === "completed"
+                              ? "bg-emerald-500 w-full"
+                              : currentStatus === "shipped"
+                              ? "bg-marigold w-2/3"
+                              : currentStatus === "processing" || currentStatus === "confirmed"
+                              ? "bg-marigold w-1/3"
+                              : "bg-marigold w-0"
+                          }`}
+                        />
+                      </div>
+
                       {/* Stepper Grid */}
                       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 relative">
                         {steps.map((st, idx) => {
