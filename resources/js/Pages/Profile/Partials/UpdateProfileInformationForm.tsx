@@ -160,7 +160,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
         }
 
         // No image available
-        return 'https://github.com/shadcn.png';
+        return '/placeholder.png';
     };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -215,16 +215,18 @@ export default function UpdateProfileInformation({ status, user }: Props) {
           <div className="flex items-center gap-6">
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 ring-4 ring-white shadow-lg">
-                {user.images && useStorage ? (
-                    <img
-                        src={getProfileImageUrl()}
-                        alt={user.name}
-                        className="w-full h-full object-cover"
-                        onError={() => setUseStorage(false)}
-                    />
-                ) : (
-                    <FaUser className="w-full h-full text-gray-400 items-center justify-center p-4" />
-                )}
+                <img
+                  src={getProfileImageUrl()}
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    if (useStorage && user.images) {
+                      setUseStorage(false);
+                    } else {
+                      (e.target as HTMLImageElement).src = '/placeholder.png';
+                    }
+                  }}
+                />
               </div>
               <button
                 type="button"
@@ -243,7 +245,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
               />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700">Upload new picture</p>
+              <p className="text-sm font-medium text-gray-700">Upload new picture (Optional)</p>
               <p className="text-xs text-gray-500 mt-1">JPG, PNG, GIF, WEBP up to 2MB</p>
               {data.image && (
                 <p className="text-xs text-green-600 mt-1 flex items-center gap-1">

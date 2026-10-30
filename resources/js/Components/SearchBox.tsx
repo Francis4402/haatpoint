@@ -651,19 +651,15 @@ const SearchBox = ({
                       )}`}
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-paper-dim">
-                        {store.logo ? (
-                          <img
-                            src={`/storage/${store.logo}`}
-                            alt=""
-                            loading="lazy"
-                            className="h-full w-full object-cover"
-                            onError={(event) => {
-                              event.currentTarget.style.visibility = 'hidden';
-                            }}
-                          />
-                        ) : (
-                          <FiShoppingBag className="h-4 w-4 text-text-soft" aria-hidden="true" />
-                        )}
+                        <img
+                          src={store.logo ? (store.logo.startsWith('http') || store.logo.startsWith('/') ? store.logo : `/storage/${store.logo}`) : '/fallback-logo.png'}
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                          onError={(event) => {
+                            event.currentTarget.src = '/fallback-logo.png';
+                          }}
+                        />
                       </div>
                       <span className="flex-1">
                         <span className="block font-medium text-ink">{store.name}</span>

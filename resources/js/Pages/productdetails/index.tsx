@@ -596,8 +596,15 @@ const ProductDetailsPage = ({
                   {/* Store Info */}
                   <div className="flex items-center flex-wrap gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <div className="flex items-center space-x-2.5 sm:space-x-3">
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-marigold/10 flex items-center justify-center shrink-0">
-                        <FaStore className="w-4 h-4 sm:w-5 sm:h-5 text-marigold" />
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-marigold/10 flex items-center justify-center shrink-0 border border-line">
+                        <img
+                          src={store.logo ? (store.logo.startsWith('http') || store.logo.startsWith('/') ? store.logo : `/storage/${store.logo}`) : '/fallback-logo.png'}
+                          alt={store.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/fallback-logo.png';
+                          }}
+                        />
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
@@ -1276,8 +1283,15 @@ const ProductDetailsPage = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-4">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-full bg-marigold/10 flex items-center justify-center">
-                    <FaStore className="w-8 h-8 text-marigold" />
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-marigold/10 flex items-center justify-center border border-line shrink-0">
+                    <img
+                      src={store.logo ? (store.logo.startsWith('http') || store.logo.startsWith('/') ? store.logo : `/storage/${store.logo}`) : '/fallback-logo.png'}
+                      alt={store.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/fallback-logo.png';
+                      }}
+                    />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-ink">{store.name}</h3>

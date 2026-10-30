@@ -580,11 +580,11 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                             <div className="flex-shrink-0">
                               <div className={`w-16 h-16 rounded-xl overflow-hidden border-2 ${!isActive ? 'border-gray-300' : 'border-line'} shadow-hard-sm`}>
                                 <img
-                                  src={store.logo ? `/storage/${store.logo}` : 'https://placehold.co/400x400/e2e8f0/64748b?text=Store'}
+                                  src={store.logo ? `/storage/${store.logo}` : '/fallback-logo.png'}
                                   alt={store.name}
                                   className="w-full h-full object-cover"
                                   onError={(e) => {
-                                    (e.target as HTMLImageElement).src = 'https://placehold.co/400x400/e2e8f0/64748b?text=Store';
+                                    (e.target as HTMLImageElement).src = '/fallback-logo.png';
                                   }}
                                 />
                               </div>
@@ -781,11 +781,11 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                   <div className="text-center mb-6">
                     <div className="w-24 h-24 rounded-xl overflow-hidden border-4 border-line shadow-hard-sm mx-auto mb-4 bg-white">
                       <img
-                        src={selectedStore.logo ? `/storage/${selectedStore.logo}` : 'https://placehold.co/400x400/e2e8f0/64748b?text=Store'}
+                        src={selectedStore.logo ? `/storage/${selectedStore.logo}` : '/fallback-logo.png'}
                         alt={selectedStore.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://placehold.co/400x400/e2e8f0/64748b?text=Store';
+                          (e.target as HTMLImageElement).src = '/fallback-logo.png';
                         }}
                       />
                     </div>
@@ -1100,11 +1100,11 @@ const Store = ({ auth, stores: initialStores, products, orders }: storeDashboard
                           <div className="flex items-center gap-4">
                             <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-line shadow-hard-sm shrink-0 bg-white">
                               <img
-                                src={selectedStore.logo ? `/storage/${selectedStore.logo}` : 'https://placehold.co/400x400/e2e8f0/64748b?text=Store'}
+                                src={selectedStore.logo ? `/storage/${selectedStore.logo}` : '/fallback-logo.png'}
                                 alt={selectedStore.name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                  (e.target as HTMLImageElement).src = 'https://placehold.co/400x400/e2e8f0/64748b?text=Store';
+                                  (e.target as HTMLImageElement).src = '/fallback-logo.png';
                                 }}
                               />
                             </div>

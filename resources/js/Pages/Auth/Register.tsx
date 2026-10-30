@@ -305,7 +305,11 @@ export default function Register() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <FaUser className="h-10 w-10 text-ink/30" />
+                    <img
+                      src="/placeholder.png"
+                      alt="Profile Placeholder"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 )}
               </div>

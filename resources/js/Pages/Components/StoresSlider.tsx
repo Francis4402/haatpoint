@@ -112,21 +112,15 @@ const StoresSlider = ({ stores }: StoresSliderProps) => {
                   <div className="p-6 h-full flex flex-col">
                     <div className="flex items-start gap-4 mb-4">
                       <div className="flex-shrink-0">
-                        <div className="h-16 w-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500">
-                          {store.logo ? (
-                            <img
-                              src={`/storage/${store.logo}`}
-                              alt={name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
-                              }}
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white text-xl font-bold">
-                              {name.charAt(0)}
-                            </div>
-                          )}
+                        <div className="h-16 w-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+                          <img
+                            src={store.logo ? (store.logo.startsWith('http') || store.logo.startsWith('/') ? store.logo : `/storage/${store.logo}`) : '/fallback-logo.png'}
+                            alt={name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/fallback-logo.png';
+                            }}
+                          />
                         </div>
                       </div>
 

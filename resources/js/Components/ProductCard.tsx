@@ -69,7 +69,7 @@ function calculateDiscount(regularPrice: number, salePrice: number): number {
 }
 
 function getStoreLogoSrc(logo?: string | null): string {
-  if (!logo) return "";
+  if (!logo) return "/fallback-logo.png";
   if (logo.startsWith("http") || logo.startsWith("/")) return logo;
   return `/storage/${logo}`;
 }
@@ -310,7 +310,7 @@ const ProductCard = ({
                     alt={`${vendor} store logo`}
                     loading="lazy"
                     className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border border-[#E3E1DB] bg-white shadow-sm"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/fallback-logo.png"; }}
                   />
                 ) : (
                   <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#E7F4EF] text-[#4F6B63] flex items-center justify-center text-[10px] sm:text-[11px] font-bold">

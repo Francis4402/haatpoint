@@ -171,24 +171,22 @@ export default function StoreShow({
           <div className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden mb-8">
             {/* Store Banner */}
             <div className="h-48 bg-gradient-to-r from-marigold to-marigold-dark relative">
-              {store.logo && (
-                <div className="absolute -bottom-12 left-8">
-                  <div className="w-24 h-24 rounded-2xl border-4 border-white shadow-hard-sm overflow-hidden bg-white">
-                    <img
-                      src={`/storage/${store.logo}`}
-                      alt={store.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  </div>
+              <div className="absolute -bottom-12 left-8">
+                <div className="w-24 h-24 rounded-2xl border-4 border-white shadow-hard-sm overflow-hidden bg-white">
+                  <img
+                    src={store.logo ? (store.logo.startsWith('http') || store.logo.startsWith('/') ? store.logo : `/storage/${store.logo}`) : '/fallback-logo.png'}
+                    alt={store.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/fallback-logo.png';
+                    }}
+                  />
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Store Info */}
-            <div className={`p-6 ${store.logo ? 'pt-16' : 'pt-6'}`}>
+            <div className="p-6 pt-16">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl md:text-3xl font-display font-extrabold uppercase tracking-[-0.01em] text-ink mb-2">

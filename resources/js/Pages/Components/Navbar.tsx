@@ -69,7 +69,7 @@ const LazyAvatar = ({
     visibleByDefault={false}
     onError={(e) => {
       const target = e.currentTarget as HTMLImageElement;
-      target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(alt)}`;
+      target.src = '/placeholder.png';
     }}
   />
 );
@@ -195,13 +195,13 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
 
   // Helper function to get user avatar URL
   const getUserAvatarUrl = (user: any) => {
-    if (!user) return null;
+    if (!user) return '/placeholder.png';
     if (user.images) {
       return user.images.startsWith("http")
         ? user.images
         : `/storage/${user.images}`;
     }
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=D6430E&color=fff&size=128`;
+    return '/placeholder.png';
   }
 
   return (

@@ -684,12 +684,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                         ? user.images.startsWith('http')
                             ? user.images
                             : `/storage/${user.images}`
-                        : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name)
+                        : '/placeholder.png'
                     }
                     alt={user.name}
                     className="inline-block size-8 rounded-full ring-2 ring-line outline -outline-offset-1 outline-white transition-transform hover:scale-105"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name);
+                      (e.target as HTMLImageElement).src = '/placeholder.png';
                     }}
                   />
                 </button>
@@ -721,12 +721,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                               ? user.images.startsWith('http')
                                   ? user.images
                                   : `/storage/${user.images}`
-                              : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name)
+                              : '/placeholder.png'
                           }
                           alt={user.name}
                           className="size-10 rounded-full ring-2 ring-line"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name);
+                            (e.target as HTMLImageElement).src = '/placeholder.png';
                           }}
                         />
                         <div>

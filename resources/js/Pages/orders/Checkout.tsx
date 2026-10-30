@@ -327,11 +327,11 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                     <div className="bg-paper-dim p-4 rounded-xl border border-line">
                       <div className="flex items-center gap-3 mb-3">
                         <img
-                          src={`/storage/${store.logo}`}
+                          src={store.logo ? (store.logo.startsWith('http') || store.logo.startsWith('/') ? store.logo : `/storage/${store.logo}`) : '/fallback-logo.png'}
                           alt={store.name}
                           className="w-16 h-16 rounded-full object-cover border-2 border-marigold/30"
                           onError={(e) => {
-                            e.currentTarget.src = '/default-store-logo.png';
+                            e.currentTarget.src = '/fallback-logo.png';
                           }}
                         />
                         <div>

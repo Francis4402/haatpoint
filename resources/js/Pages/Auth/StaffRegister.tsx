@@ -204,7 +204,11 @@ export default function StaffRegister({
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <FaUser className="h-12 w-12 text-ink/30" />
+                    <img
+                      src="/placeholder.png"
+                      alt="Profile Placeholder"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 )}
               </div>
@@ -241,7 +245,7 @@ export default function StaffRegister({
               onClick={triggerFileInput}
               className="mt-2 text-sm font-body font-semibold text-marigold hover:text-marigold-dark transition-colors"
             >
-              {imagePreview ? 'Change Photo' : 'Upload Profile Picture'}
+              {imagePreview ? 'Change Photo' : 'Upload Profile Picture (Optional)'}
             </button>
             <p className="text-xs font-body text-ink/40 mt-1">JPEG, PNG or GIF • Max 2MB</p>
 

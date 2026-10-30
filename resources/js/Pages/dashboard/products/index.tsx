@@ -391,11 +391,11 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-marigold/40 shrink-0 bg-white shadow-sm">
                                     <img
-                                        src={filterStore.logo ? `/storage/${filterStore.logo}` : 'https://placehold.co/400x400/e2e8f0/64748b?text=Store'}
+                                        src={filterStore.logo ? `/storage/${filterStore.logo}` : '/fallback-logo.png'}
                                         alt={filterStore.name}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                            (e.target as HTMLImageElement).src = 'https://placehold.co/400x400/e2e8f0/64748b?text=Store';
+                                            (e.target as HTMLImageElement).src = '/fallback-logo.png';
                                         }}
                                     />
                                 </div>

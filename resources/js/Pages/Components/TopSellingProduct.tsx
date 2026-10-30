@@ -60,7 +60,7 @@ function calculateDiscount(regularPrice: number, salePrice: number): number {
 }
 
 function getStoreLogoSrc(logo?: string | null): string {
-  if (!logo) return "";
+  if (!logo) return "/fallback-logo.png";
   if (logo.startsWith("http") || logo.startsWith("/")) return logo;
   return `/storage/${logo}`;
 }
@@ -238,6 +238,9 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                           src={storeLogo}
                           alt={storeName}
                           className="w-4 h-4 rounded-full object-cover border border-line shrink-0"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = '/fallback-logo.png';
+                          }}
                         />
                       ) : (
                         <FaStore className="w-3.5 h-3.5 text-marigold shrink-0" />

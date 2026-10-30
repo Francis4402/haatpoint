@@ -531,13 +531,17 @@ export default function StoreUpdateForm({ auth, store }: EditStoreFormProps) {
                   >
                     {!logoPreview ? (
                       <div className="space-y-4">
-                        <div className="mx-auto w-20 h-20 rounded-full bg-marigold/10 flex items-center justify-center">
-                          <FaUpload className="h-10 w-10 text-marigold" />
+                        <div className="mx-auto w-20 h-20 rounded-full border border-line bg-paper-dim flex items-center justify-center overflow-hidden">
+                          <img
+                            src="/fallback-logo.png"
+                            alt="Default Store Logo"
+                            className="w-full h-full object-contain p-2"
+                          />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-ink">Upload New Logo</p>
+                          <p className="text-sm font-medium text-ink">Upload Store Logo (Optional)</p>
                           <p className="text-xs text-text-soft mt-1">Click to upload or drag and drop</p>
-                          <p className="text-xs text-text-soft mt-1">PNG, JPG, WEBP up to 10MB</p>
+                          <p className="text-xs text-text-soft mt-1">Default placeholder will be used if omitted</p>
                         </div>
                       </div>
                     ) : (
@@ -547,6 +551,9 @@ export default function StoreUpdateForm({ auth, store }: EditStoreFormProps) {
                             src={logoPreview}
                             alt="Logo preview"
                             className="w-40 h-40 object-contain mx-auto rounded-lg"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/fallback-logo.png';
+                            }}
                           />
                           <button
                             type="button"
