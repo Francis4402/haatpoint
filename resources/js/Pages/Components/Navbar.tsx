@@ -78,6 +78,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
   const { language, setLanguage, t } = useTranslation()
   const page = usePage()
   const currentPath = page?.url || ""
+  const isAgent = user?.role === 'agent' || user?.role === 'admin' || user?.role === 'superadmin'
   const [searchOpen, setSearchOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -846,36 +847,38 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                           </Link>
                         </div>
 
-                        {/* Mobile Seller Card / Guide Hook */}
-                        <div className="px-4 mb-5">
-                          <div className="rounded-xl bg-gradient-to-br from-ink to-[#2b2b2a] text-paper p-4 border border-line shadow-hard-sm relative overflow-hidden">
-                            <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-marigold opacity-20 rounded-full blur-xl" />
-                            <div className="relative z-10">
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-wider font-bold bg-marigold text-white px-2 py-0.5 rounded-full">
-                                  Become a Seller
-                                </span>
-                                <span className="text-[10px] font-mono text-emerald-400 font-semibold">
-                                  Free Forever
-                                </span>
+                        {/* Mobile Seller Card / Guide Hook - hidden when agent or admin is logged in */}
+                        {!isAgent && (
+                          <div className="px-4 mb-5">
+                            <div className="rounded-xl bg-gradient-to-br from-ink to-[#2b2b2a] text-paper p-4 border border-line shadow-hard-sm relative overflow-hidden">
+                              <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-marigold opacity-20 rounded-full blur-xl" />
+                              <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <span className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-wider font-bold bg-marigold text-white px-2 py-0.5 rounded-full">
+                                    Become a Seller
+                                  </span>
+                                  <span className="text-[10px] font-mono text-emerald-400 font-semibold">
+                                    Free Forever
+                                  </span>
+                                </div>
+                                <h4 className="font-display font-extrabold text-sm text-paper mb-1">
+                                  Sell your products on HaatPoint
+                                </h4>
+                                <p className="text-[11px] text-[#B9B7B0] mb-3 leading-relaxed">
+                                  Zero listing fee &bull; Pathao delivery handled &bull; Keep your 100% sell profit
+                                </p>
+                                <Link
+                                  href="/sell"
+                                  onClick={() => setIsMobileMenuOpen(false)}
+                                  className="inline-flex items-center justify-center w-full gap-2 rounded-sm bg-marigold hover:bg-marigold-dark text-white font-bold text-xs py-2 shadow-hard-sm transition-colors"
+                                >
+                                  <span>Start Selling Free</span>
+                                  <span aria-hidden="true">&rarr;</span>
+                                </Link>
                               </div>
-                              <h4 className="font-display font-extrabold text-sm text-paper mb-1">
-                                Sell your products on HaatPoint
-                              </h4>
-                              <p className="text-[11px] text-[#B9B7B0] mb-3 leading-relaxed">
-                                Zero listing fee &bull; Pathao delivery handled &bull; Keep your 100% sell profit
-                              </p>
-                              <Link
-                                href="/sell"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="inline-flex items-center justify-center w-full gap-2 rounded-sm bg-marigold hover:bg-marigold-dark text-white font-bold text-xs py-2 shadow-hard-sm transition-colors"
-                              >
-                                <span>Start Selling Free</span>
-                                <span aria-hidden="true">&rarr;</span>
-                              </Link>
                             </div>
                           </div>
-                        </div>
+                        )}
 
                         {/* Navigation */}
                         <nav className="space-y-1 px-4" aria-label="Mobile navigation">
