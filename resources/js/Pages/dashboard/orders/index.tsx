@@ -593,7 +593,7 @@ const StatusDropdown = ({
                                                             { label: 'Method',   val: order.shipping_method || '—'   },
                                                             { label: 'Tracking', val: order.tracking_number || 'N/A' },
                                                             { label: 'Payment',  val: order.payment_method           },
-                                                            { label: 'Weight',   val: `${order.item_weight} kg`      },
+                                                            { label: 'Weight',   val: `${Number(order.item_weight) > 0 ? Number(order.item_weight) : 0.5} kg` },
                                                         ].map(row => (
                                                             <div key={row.label} className="flex justify-between text-sm">
                                                                 <span className="text-text-soft">{row.label}</span>

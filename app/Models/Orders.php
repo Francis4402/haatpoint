@@ -108,13 +108,13 @@ class Orders extends Model
         'total' => 'decimal:2',
         'amount_to_collect' => 'decimal:2',
         'discount_amount' => 'decimal:2',
+        'item_weight' => 'decimal:2',
 
         // Integers
         'recipient_city' => 'integer',
         'recipient_zone' => 'integer',
         'recipient_area' => 'integer',
         'item_quantity' => 'integer',
-        'item_weight' => 'integer', // In schema it's integer
         'delivery_type' => 'integer',
         'item_type' => 'integer',
 
@@ -405,6 +405,43 @@ class Orders extends Model
             return null;
         }
         return 'https://merchant.pathao.com/tracking?consignment_id=' . urlencode((string) $tracking);
+    }
+
+    public function getItemWeightAttribute($value)
+    {
+        $weight = (float) $value;
+        if ($weight > 0) {
+            return $weight;
+        }
+
+        // If weight was stored as 0 due to legacy integer truncation, compute from orderItems
+        if ($this->relationLoaded('orderItems') && $this->orderItems->isNotEmpty()) {
+            $sum = 0.0;
+            foreach ($this->orderItems as $item) {
+                $itemWeight = (float) ($item->product?->item_weight ?? 0.5);
+                $sum += $itemWeight * ($item->quantity ?? 1);
+            }
+            if ($sum > 0) {
+                return round($sum, 2);
+            }
+        }
+
+        if (!empty($this->items)) {
+            $rawItems = is_string($this->items) ? json_decode($this->items, true) : $this->items;
+            if (is_array($rawItems)) {
+                $sum = 0.0;
+                foreach ($rawItems as $it) {
+                    $w = isset($it['item_weight']) ? (float)$it['item_weight'] : 0.5;
+                    $q = isset($it['quantity']) ? (int)$it['quantity'] : 1;
+                    $sum += ($w * $q);
+                }
+                if ($sum > 0) {
+                    return round($sum, 2);
+                }
+            }
+        }
+
+        return 0.5;
     }
 
     public function isPathaoEligible(): bool

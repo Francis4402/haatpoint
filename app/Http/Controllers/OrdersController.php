@@ -69,19 +69,20 @@ class OrdersController extends Controller
             $scoped->where('payment_status', $payment);
         }
 
-        $orders = $scoped->with(['orderItems', 'store.agent'])
+        $orders = $scoped->with(['orderItems.product', 'store.agent'])
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
 
-        if (in_array($userRole, ['admin', 'superadmin'], true)) {
-            $orders->getCollection()->transform(function ($order) {
+        $orders->getCollection()->transform(function ($order) use ($userRole) {
+            $order->item_weight = (float) $order->item_weight;
+            if (in_array($userRole, ['admin', 'superadmin'], true)) {
                 $order->whatsapp_url = WhatsAppNotificationService::getWhatsAppDirectUrl($order, $order->store);
                 $order->agent_phone = $order->store?->mobile ?? $order->store?->agent?->mobile ?? $order->sender_phone;
                 $order->whatsapp_message = WhatsAppNotificationService::buildOrderMessage($order, $order->store);
-                return $order;
-            });
-        }
+            }
+            return $order;
+        });
 
         return Inertia::render('dashboard/adminorders/index', [
             'orders' => $orders->items(),
@@ -197,7 +198,7 @@ class OrdersController extends Controller
                 'total' => 'required|numeric',
                 'amount_to_collect' => 'required|numeric',
                 'item_quantity' => 'required|integer|min:1|max:5',
-                'item_weight' => 'required|numeric|min:0.1',
+                'item_weight' => 'required|numeric|min:0.01',
                 'item_description' => 'required|string',
                 'store_name' => 'required|string',
                 'order_number' => 'required|string|unique:orders',
@@ -280,7 +281,7 @@ class OrdersController extends Controller
 
                 // Order Details
                 'item_quantity' => $validated['item_quantity'],
-                'item_weight' => $validated['item_weight'],
+                'item_weight' => (float) $validated['item_weight'],
                 'amount_to_collect' => $amountToCollect,
                 'item_description' => $validated['item_description'],
                 'store_name' => $validated['store_name'],

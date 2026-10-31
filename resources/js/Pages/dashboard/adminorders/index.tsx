@@ -1063,7 +1063,7 @@ const AdminOrders = ({ orders, auth, revenue, orderRules, pagination, filters, s
                                                                 <DetailRow label="Weight">
                                                                     <span className="inline-flex items-center gap-1.5">
                                                                         <FaWeightHanging className="h-3 w-3" />
-                                                                        {selectedOrder.item_weight} kg
+                                                                        {Number(selectedOrder.item_weight) > 0 ? Number(selectedOrder.item_weight) : 0.5} kg
                                                                     </span>
                                                                 </DetailRow>
                                                             </dl>

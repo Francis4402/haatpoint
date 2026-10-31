@@ -330,6 +330,22 @@ const ProductCard = ({
                 ★ Pro
               </span>
             )}
+            {store?.storetype && /wholesale/i.test(store.storetype) && (
+              <span
+                className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-800 border border-amber-200 font-mono text-[9px] font-bold uppercase shrink-0"
+                title="Wholesale Store"
+              >
+                Wholesale
+              </span>
+            )}
+            {store?.storetype && (/service/i.test(store.storetype) || /provider/i.test(store.storetype)) && (
+              <span
+                className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 border border-blue-200 font-mono text-[9px] font-bold uppercase shrink-0"
+                title="Service Provider"
+              >
+                Service
+              </span>
+            )}
           </div>
           {variant === "trending" && !badge && !product.brand && (
             <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-[#E7F4EF] text-[#4F6B63] font-mono text-[9px] font-bold">

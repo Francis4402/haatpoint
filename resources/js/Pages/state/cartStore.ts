@@ -1,5 +1,6 @@
 import { citytypes, zonetypes, areatypes, CartItem, storeType, Product } from '@/types'
 import { withMarkup } from '@/Pages/utils/price'
+import { isServiceProvider } from '@/Pages/utils/storeType';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { create } from 'zustand'
@@ -517,7 +518,16 @@ export const useStore = create<Store>()(
                         return Promise.reject('Incomplete delivery info');
                     }
 
-                    if (!state.pathaoCharges) {
+                    const isService = isServiceProvider(storeInfo?.storetype);
+                    if (!state.pathaoCharges && isService) {
+                        state.setPathaoCharges({
+                            delivery_charge: 0,
+                            base_charge: 0,
+                            service_fee: 0,
+                            weight_surcharge: 0,
+                            weight_surcharge_percentage: 0,
+                        });
+                    } else if (!state.pathaoCharges) {
                         toast.error('Please calculate shipping charges');
                         return Promise.reject('Shipping charges are required');
                     }
@@ -571,11 +581,11 @@ export const useStore = create<Store>()(
                         item_description: 'Products order',
                         store_name: storeInfo.name,
                         subtotal: state.getBaseSubTotal(),
-                        delivery_charge: state.pathaoCharges.delivery_charge,
-                        base_delivery_charge: state.pathaoCharges.base_charge || state.pathaoCharges.delivery_charge - 20 - (state.pathaoCharges.weight_surcharge || 0),
-                        weight_surcharge: state.pathaoCharges.weight_surcharge || 0,
-                        weight_surcharge_percentage: state.pathaoCharges.weight_surcharge_percentage || 0,
-                        service_fee: 20,
+                        delivery_charge: state.pathaoCharges ? state.pathaoCharges.delivery_charge : 0,
+                        base_delivery_charge: state.pathaoCharges ? (state.pathaoCharges.base_charge || 0) : 0,
+                        weight_surcharge: state.pathaoCharges?.weight_surcharge || 0,
+                        weight_surcharge_percentage: state.pathaoCharges?.weight_surcharge_percentage || 0,
+                        service_fee: isService ? 0 : 20,
                         total: summary.total,
                         coupon_code: state.couponCode || null,
                         discount_amount: state.discountAmount || 0,

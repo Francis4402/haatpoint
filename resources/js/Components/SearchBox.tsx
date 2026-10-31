@@ -8,6 +8,7 @@ import { FiSearch, FiX, FiLoader, FiArrowRight, FiGrid, FiTag, FiShoppingBag, Fi
 import { FaStar } from 'react-icons/fa';
 import FormatPrice from '@/Pages/utils/FormatePrice';
 import { withMarkup } from '@/Pages/utils/price';
+import { formatStoreType } from '@/Pages/utils/storeType';
 
 export interface SearchProduct {
   id: string;
@@ -663,7 +664,7 @@ const SearchBox = ({
                       </div>
                       <span className="flex-1">
                         <span className="block font-medium text-ink">{store.name}</span>
-                        <span className="block text-[10.5px] text-text-soft">{store.storetype}</span>
+                        <span className="block text-[10.5px] text-text-soft">{formatStoreType(store.storetype)}</span>
                       </span>
                       {store.rating > 0 && (
                         <span className="flex items-center gap-1 font-mono text-[10.5px] text-text-soft">

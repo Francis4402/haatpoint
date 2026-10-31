@@ -28,6 +28,7 @@ import FormatPrice from '../utils/FormatePrice';
 import { withMarkup } from '../utils/price';
 import Eyebrow from '../Components/Eyebrow';
 import SeoHead from '@/Components/SeoHead';
+import { isServiceProvider } from '../utils/storeType';
 
 
 interface CheckoutProps {
@@ -54,6 +55,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
   } = useStore();
 
   const store = cartItems[0]?.store;
+  const isService = isServiceProvider(store?.storetype);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -842,7 +844,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
 
                         <button
                           type="submit"
-                          disabled={processing || isProcessing || cartItems.length === 0 || !selectedCity || !selectedZone || !pathaoCharges || !termsAccepted || summary.item_count > 5}
+                          disabled={processing || isProcessing || cartItems.length === 0 || !selectedCity || !selectedZone || (!isService && !pathaoCharges) || !termsAccepted || summary.item_count > 5}
                           className="w-full py-4 bg-gray-900 hover:bg-marigold text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center text-sm sm:text-base"
                         >
                           <FaLock className="h-5 w-5 mr-2" />
@@ -856,6 +858,8 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                               </svg>
                               Processing...
                             </span>
+                          ) : isService ? (
+                            'Confirm Service Booking'
                           ) : (
                             'Place Order'
                           )}

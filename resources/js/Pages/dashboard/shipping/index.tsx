@@ -255,7 +255,7 @@ const Shipping: React.FC<ShippingProps> = ({ orders = [], auth }) => {
                           <p className="text-xs text-text-soft">Item Weight</p>
                           <p className="font-medium text-ink">
                             <FaWeightHanging className="h-3 w-3 inline mr-1 text-text-soft" />
-                            {selectedOrder.item_weight} kg
+                            {Number(selectedOrder.item_weight) > 0 ? Number(selectedOrder.item_weight) : 0.5} kg
                           </p>
                         </div>
                         <div className="p-3 bg-paper-dim rounded-xl border border-line">

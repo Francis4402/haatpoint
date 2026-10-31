@@ -5,6 +5,7 @@ import { Autoplay, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { FaStore, FaStar } from "react-icons/fa";
 import { storeType } from "@/types";
+import { formatStoreType } from "@/Pages/utils/storeType";
 import Eyebrow from "./Eyebrow";
 
 import "swiper/css";
@@ -130,7 +131,7 @@ const StoresSlider = ({ stores }: StoresSliderProps) => {
                         </h3>
                         <span className="inline-flex items-center px-2 py-1 text-xs border border-gray-300 rounded-md">
                           <FaStore className="h-3 w-3 mr-1" />
-                          {store.storetype}
+                          {formatStoreType(store.storetype)}
                         </span>
                       </div>
                     </div>

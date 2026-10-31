@@ -20,6 +20,7 @@ import AppLayout from "@/Layouts/AppLayout";
 import { Link, router } from "@inertiajs/react";
 import SeoHead from '@/Components/SeoHead';
 import { storeType } from "@/types";
+import { formatStoreType } from "@/Pages/utils/storeType";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -234,7 +235,7 @@ const StoreListPage = ({ auth, stores, wishlist }: StoreListPageProps) => {
             ? parseInt(store.review_count, 10) || 0
             : Number(store.review_count) || 0;
 
-        const storeTypeDisplay = store.storetype || "General Store";
+        const storeTypeDisplay = formatStoreType(store.storetype);
         const addressDisplay = store.address || "Address not specified";
         const storeName = store.name || "Unnamed Store";
 

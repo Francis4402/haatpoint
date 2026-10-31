@@ -35,6 +35,7 @@ import ClearCartDialog from '../dialogpopups/ClearCartDialog';
 import FormatPrice from '../utils/FormatePrice';
 import { withMarkup } from '../utils/price';
 import { parseVariantList } from '../utils/parseVariants';
+import { isServiceProvider } from '../utils/storeType';
 import Eyebrow from '../Components/Eyebrow';
 import SeoHead from '@/Components/SeoHead';
 
@@ -177,6 +178,21 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
   };
 
   const calculatePathaoPrice = async (cityId: string, zoneId: string, areaId?: string) => {
+    const firstStore = cartItems[0]?.store;
+    if (isServiceProvider(firstStore?.storetype)) {
+      setPathaoCharges({
+        delivery_charge: 0,
+        base_charge: 0,
+        service_fee: 0,
+        weight_surcharge: 0,
+        weight_surcharge_percentage: 0
+      });
+      setPathaoBaseCharge(0);
+      setLoadingPathao(false);
+      toast.success('Digital / On-Site Service: Free delivery (No shipping fee)');
+      return;
+    }
+
     if (!cityId || !zoneId) {
       toast.error('Please select city and zone');
       return;

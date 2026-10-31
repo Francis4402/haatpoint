@@ -41,6 +41,7 @@ import WishlistButton from "../buttons/WishListButton";
 import AdSenseDisplay from "@/Components/AdSenseDisplay";
 import AdSenseMultiplex from "@/Components/AdSenseMultiplex";
 import { formatProductDescription } from "../utils/formatHtml";
+import { formatStoreType, isServiceProvider, isWholesale } from "../utils/storeType";
 
 interface ProductDetailsPageProps {
   product: Product;
@@ -624,7 +625,7 @@ const ProductDetailsPage = ({
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] sm:text-xs text-text-soft">{store.storetype} Store</div>
+                        <div className="text-[11px] sm:text-xs text-text-soft">{formatStoreType(store.storetype)}</div>
                       </div>
                     </div>
                     <div className="flex items-center text-xs bg-paper-dim px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-line">
@@ -1174,7 +1175,7 @@ const ProductDetailsPage = ({
                             </div>
                             <div className="flex justify-between pb-2 border-b border-line gap-3">
                               <span className="text-text-soft shrink-0">Store Type</span>
-                              <span className="font-medium text-ink text-right break-words min-w-0">{store.storetype}</span>
+                              <span className="font-medium text-ink text-right break-words min-w-0">{formatStoreType(store.storetype)}</span>
                             </div>
                             <div className="flex justify-between pb-2 border-b border-line gap-3">
                               <span className="text-text-soft shrink-0">Store Rating</span>
@@ -1301,8 +1302,14 @@ const ProductDetailsPage = ({
                     <h2 className="text-lg sm:text-xl font-bold text-ink truncate" title={store.name}>
                       {store.name}
                     </h2>
-                    <span className="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-paper-dim border border-line text-text-soft font-semibold">
-                      {store.storetype} Store
+                    <span className={`text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full font-semibold border ${
+                      isWholesale(store.storetype)
+                        ? 'bg-amber-500/10 text-amber-700 border-amber-300'
+                        : isServiceProvider(store.storetype)
+                        ? 'bg-blue-500/10 text-blue-700 border-blue-300'
+                        : 'bg-paper-dim border-line text-text-soft'
+                    }`}>
+                      {formatStoreType(store.storetype)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
