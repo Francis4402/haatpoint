@@ -27,6 +27,20 @@ class ProfileUpdateRequest extends FormRequest
                 $this->merge([$field => null]);
             }
         }
+
+        foreach (['mobile', 'phone'] as $phoneField) {
+            if ($this->filled($phoneField)) {
+                $clean = preg_replace('/[^0-9]/', '', (string) $this->input($phoneField));
+                if (str_starts_with($clean, '8801') && strlen($clean) === 13) {
+                    $clean = substr($clean, 2);
+                }
+                $this->merge([$phoneField => $clean]);
+            }
+        }
+
+        if ($this->filled('mobile') && ! $this->filled('phone')) {
+            $this->merge(['phone' => $this->input('mobile')]);
+        }
     }
 
     /**

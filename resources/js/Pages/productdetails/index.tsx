@@ -20,7 +20,11 @@ import {
   FaTwitter,
   FaWhatsapp,
   FaLink,
-  FaLayerGroup
+  FaLayerGroup,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaEnvelope,
+  FaArrowRight
 } from "react-icons/fa";
 import { Product, storeType, Comments } from "@/types";
 import AppLayout from "@/Layouts/AppLayout";
@@ -1164,17 +1168,17 @@ const ProductDetailsPage = ({
                         <div className="bg-paper-dim p-6 rounded-xl border border-line">
                           <h4 className="font-bold text-ink mb-4 text-lg">Store Information</h4>
                           <div className="space-y-3">
-                            <div className="flex justify-between pb-2 border-b border-line">
-                              <span className="text-text-soft">Store Name</span>
-                              <span className="font-medium text-ink">{store.name}</span>
+                            <div className="flex justify-between pb-2 border-b border-line gap-3">
+                              <span className="text-text-soft shrink-0">Store Name</span>
+                              <span className="font-medium text-ink text-right break-words min-w-0">{store.name}</span>
                             </div>
-                            <div className="flex justify-between pb-2 border-b border-line">
-                              <span className="text-text-soft">Store Type</span>
-                              <span className="font-medium text-ink">{store.storetype}</span>
+                            <div className="flex justify-between pb-2 border-b border-line gap-3">
+                              <span className="text-text-soft shrink-0">Store Type</span>
+                              <span className="font-medium text-ink text-right break-words min-w-0">{store.storetype}</span>
                             </div>
-                            <div className="flex justify-between pb-2 border-b border-line">
-                              <span className="text-text-soft">Store Rating</span>
-                              <div className="flex items-center gap-2">
+                            <div className="flex justify-between pb-2 border-b border-line gap-3">
+                              <span className="text-text-soft shrink-0">Store Rating</span>
+                              <div className="flex items-center gap-2 justify-end">
                                 <div className="flex items-center gap-0.5">
                                   {renderStars(displayStoreRating)}
                                 </div>
@@ -1184,13 +1188,13 @@ const ProductDetailsPage = ({
                                 <span className="text-xs text-text-soft">({displayStoreReviewCount} reviews)</span>
                               </div>
                             </div>
-                            <div className="flex justify-between pb-2 border-b border-line">
-                              <span className="text-text-soft">Contact</span>
-                              <span className="font-medium text-ink">{store.mobile}</span>
+                            <div className="flex justify-between pb-2 border-b border-line gap-3">
+                              <span className="text-text-soft shrink-0">Contact</span>
+                              <span className="font-medium text-ink text-right break-all min-w-0">{store.mobile}</span>
                             </div>
-                            <div className="flex justify-between pb-2">
-                              <span className="text-text-soft">Address</span>
-                              <span className="font-medium text-ink text-right">{store.address}</span>
+                            <div className="flex justify-between pb-2 gap-3">
+                              <span className="text-text-soft shrink-0">Address</span>
+                              <span className="font-medium text-ink text-right break-words min-w-0">{store.address}</span>
                             </div>
                           </div>
                         </div>
@@ -1278,64 +1282,114 @@ const ProductDetailsPage = ({
           </div>
 
           {/* Store Info Section */}
-          <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-8">
-            <h2 className="text-2xl font-bold text-ink mb-6">About the Store</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2 space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-full overflow-hidden bg-marigold/10 flex items-center justify-center border border-line shrink-0">
-                    <img
-                      src={store.logo ? (store.logo.startsWith('http') || store.logo.startsWith('/') ? store.logo : `/storage/${store.logo}`) : '/fallback-logo.png'}
-                      alt={store.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/fallback-logo.png';
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-ink">{store.name}</h3>
-                    <div className="text-text-soft">{store.storetype} Store</div>
-                  </div>
+          <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-4 sm:p-6 overflow-hidden">
+            {/* Header: Store Identity & Action */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-marigold/10 flex items-center justify-center border border-line shrink-0 shadow-sm">
+                  <img
+                    src={store.logo ? (store.logo.startsWith('http') || store.logo.startsWith('/') ? store.logo : `/storage/${store.logo}`) : '/fallback-logo.png'}
+                    alt={store.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/fallback-logo.png';
+                    }}
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="text-text-soft">
-                      <span className="font-medium text-ink">Seller address:</span><br />
-                      {store.address}
-                    </div>
-                    <div className="text-text-soft">
-                      <span className="font-medium text-ink">Seller phone:</span><br />
-                      {store.mobile}
-                    </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-lg sm:text-xl font-bold text-ink truncate" title={store.name}>
+                      {store.name}
+                    </h2>
+                    <span className="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-paper-dim border border-line text-text-soft font-semibold">
+                      {store.storetype} Store
+                    </span>
                   </div>
-                  <div className="space-y-2">
-                    <div className="text-text-soft">
-                      <span className="font-medium text-ink">Store rating:</span><br />
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex items-center gap-0.5">
-                          {renderStars(displayStoreRating)}
-                        </div>
-                        <span className="font-medium text-ink">
-                          {displayStoreRating.toFixed(1)}
-                        </span>
-                        <span className="text-xs text-text-soft">({displayStoreReviewCount} reviews)</span>
-                      </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-0.5 text-xs">
+                      {renderStars(displayStoreRating)}
                     </div>
-                    <div className="text-text-soft">
-                      <span className="font-medium text-ink">Seller email:</span><br />
-                      {store.email || 'N/A'}
-                    </div>
+                    <span className="font-semibold text-xs sm:text-sm text-ink">
+                      {displayStoreRating.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-text-soft">
+                      ({displayStoreReviewCount} review{displayStoreReviewCount !== 1 ? 's' : ''})
+                    </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-center md:justify-end">
+              <div className="shrink-0">
                 <Link
                   href={`/stores/${store.id}`}
-                  className="px-8 py-3 bg-gray-900 hover:bg-marigold text-white font-medium rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-ink hover:bg-marigold text-white hover:text-ink font-semibold rounded-xl text-sm transition-all duration-200 shadow-sm active:scale-95"
                 >
-                  Visit Store
+                  <FaStore className="w-3.5 h-3.5" />
+                  <span>Visit Store</span>
+                  <FaArrowRight className="w-3 h-3 ml-0.5" />
                 </Link>
+              </div>
+            </div>
+
+            {/* Store Details Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 pt-3.5 border-t border-line">
+              {/* Address */}
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-paper-dim/60 border border-line/60 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-white border border-line flex items-center justify-center text-marigold shrink-0 mt-0.5">
+                  <FaMapMarkerAlt className="w-3.5 h-3.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="block text-[11px] font-mono uppercase text-text-soft tracking-wider font-semibold">
+                    Seller Address
+                  </span>
+                  <p className="text-xs sm:text-sm font-medium text-ink break-words mt-0.5" title={store.address || 'N/A'}>
+                    {store.address || 'N/A'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-paper-dim/60 border border-line/60 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-white border border-line flex items-center justify-center text-marigold shrink-0 mt-0.5">
+                  <FaPhone className="w-3 h-3" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="block text-[11px] font-mono uppercase text-text-soft tracking-wider font-semibold">
+                    Seller Phone
+                  </span>
+                  {store.mobile ? (
+                    <a
+                      href={`tel:${store.mobile}`}
+                      className="text-xs sm:text-sm font-medium text-ink hover:text-marigold transition-colors break-all block mt-0.5"
+                    >
+                      {store.mobile}
+                    </a>
+                  ) : (
+                    <p className="text-xs sm:text-sm font-medium text-text-soft mt-0.5">N/A</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-paper-dim/60 border border-line/60 min-w-0 sm:col-span-2 lg:col-span-1">
+                <div className="w-8 h-8 rounded-lg bg-white border border-line flex items-center justify-center text-marigold shrink-0 mt-0.5">
+                  <FaEnvelope className="w-3.5 h-3.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="block text-[11px] font-mono uppercase text-text-soft tracking-wider font-semibold">
+                    Seller Email
+                  </span>
+                  {store.email ? (
+                    <a
+                      href={`mailto:${store.email}`}
+                      className="text-xs sm:text-sm font-medium text-ink hover:text-marigold transition-colors break-all block mt-0.5"
+                      title={store.email}
+                    >
+                      {store.email}
+                    </a>
+                  ) : (
+                    <p className="text-xs sm:text-sm font-medium text-text-soft mt-0.5">N/A</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

@@ -42,12 +42,35 @@ export default function UpdateProfileInformation({ status, user }: Props) {
     image: null as File | null,
   });
 
+  // Sync form state if the user prop updates (e.g. after save or page refresh)
+  useEffect(() => {
+    setData(prev => ({
+      ...prev,
+      name: user.name,
+      email: user.email,
+      mobile: user.mobile ?? user.phone ?? '',
+      national_id: user.national_id ?? '',
+      address: user.address ?? '',
+      city_id: user.city_id ?? '',
+      city_name: user.city_name ?? '',
+      zone_id: user.zone_id ?? '',
+      zone_name: user.zone_name ?? '',
+      area_id: user.area_id ?? '',
+      area_name: user.area_name ?? '',
+    }));
+    if (user.images) {
+      setImagePreview(user.images.startsWith('http') ? user.images : `/storage/${user.images}`);
+    } else {
+      setImagePreview(null);
+    }
+  }, [user]);
+
   useEffect(() => {
     let active = true;
     axios.get('/api/pathao/cities')
       .then((res) => {
         if (!active) return;
-        const list = res.data?.data?.data ?? [];
+        const list = res.data?.data?.data ?? res.data?.data ?? res.data ?? [];
         setCities(list.map((c: any) => ({
           city_id: c.city_id,
           city_name: c.city_name,
@@ -59,7 +82,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
       axios.get(`/api/pathao/zones/${user.city_id}`)
         .then((res) => {
           if (!active) return;
-          const list = res.data?.data?.data ?? [];
+          const list = res.data?.data?.data ?? res.data?.data ?? res.data ?? [];
           setZones(list.map((z: any) => ({
             zone_id: z.zone_id,
             zone_name: z.zone_name,
@@ -72,7 +95,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
       axios.get(`/api/pathao/areas/${user.zone_id}`)
         .then((res) => {
           if (!active) return;
-          const list = res.data?.data?.data ?? [];
+          const list = res.data?.data?.data ?? res.data?.data ?? res.data ?? [];
           setAreas(list.map((a: any) => ({
             area_id: a.area_id,
             area_name: a.area_name,
@@ -102,7 +125,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
     if (cityId) {
       try {
         const res = await axios.get(`/api/pathao/zones/${cityId}`);
-        const list = res.data?.data?.data ?? [];
+        const list = res.data?.data?.data ?? res.data?.data ?? res.data ?? [];
         setZones(list.map((z: any) => ({
           zone_id: z.zone_id,
           zone_name: z.zone_name,
@@ -126,7 +149,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
     if (zoneId) {
       try {
         const res = await axios.get(`/api/pathao/areas/${zoneId}`);
-        const list = res.data?.data?.data ?? [];
+        const list = res.data?.data?.data ?? res.data?.data ?? res.data ?? [];
         setAreas(list.map((a: any) => ({
           area_id: a.area_id,
           area_name: a.area_name,
@@ -195,7 +218,6 @@ export default function UpdateProfileInformation({ status, user }: Props) {
         setTimeout(() => setShowSuccessModal(false), 2000);
       }
     });
-    reset();
   };
 
   return (
@@ -222,10 +244,9 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                   alt={user.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    if (useStorage && user.images) {
-                      setUseStorage(false);
-                    } else {
-                      (e.target as HTMLImageElement).src = '/placeholder.png';
+                    const target = e.currentTarget as HTMLImageElement;
+                    if (!target.src.endsWith('/placeholder.png')) {
+                      target.src = '/placeholder.png';
                     }
                   }}
                 />

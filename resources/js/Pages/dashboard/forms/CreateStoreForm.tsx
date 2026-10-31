@@ -85,7 +85,7 @@ export default function CreateStoreForm({auth}: PageProps) {
     axios.get('/api/pathao/cities')
       .then((res) => {
         if (!active) return;
-        const list = res.data?.data?.data ?? [];
+        const list = res.data?.data?.data ?? res.data?.data ?? res.data ?? [];
         setCities(list.map((city: any) => ({
           city_id: city.city_id,
           city_name: city.city_name,

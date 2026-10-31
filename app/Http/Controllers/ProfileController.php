@@ -31,7 +31,13 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $user->fill($request->validated());
+        $validated = $request->validated();
+
+        if (isset($validated['mobile']) && !isset($validated['phone'])) {
+            $validated['phone'] = $validated['mobile'];
+        }
+
+        $user->fill($validated);
 
         if ($request->hasFile('image')) {
             // Delete old image if exists

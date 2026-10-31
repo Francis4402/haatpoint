@@ -72,7 +72,7 @@ export default function Register() {
     axios.get('/api/pathao/cities')
       .then((res) => {
         if (!active) return;
-        const list = res.data?.data?.data ?? [];
+        const list = res.data?.data?.data ?? res.data?.data ?? res.data ?? [];
         setCities(list.map((c: any) => ({
           city_id: c.city_id,
           city_name: c.city_name,
@@ -116,7 +116,7 @@ export default function Register() {
       setLoadingZones(true);
       try {
         const res = await axios.get(`/api/pathao/zones/${cityId}`);
-        const list = res.data?.data?.data ?? [];
+        const list = res.data?.data?.data ?? res.data?.data ?? res.data ?? [];
         setZones(list.map((z: any) => ({
           zone_id: z.zone_id,
           zone_name: z.zone_name,
@@ -145,7 +145,7 @@ export default function Register() {
       setLoadingAreas(true);
       try {
         const res = await axios.get(`/api/pathao/areas/${zoneId}`);
-        const list = res.data?.data?.data ?? [];
+        const list = res.data?.data?.data ?? res.data?.data ?? res.data ?? [];
         setAreas(list.map((a: any) => ({
           area_id: a.area_id,
           area_name: a.area_name,
