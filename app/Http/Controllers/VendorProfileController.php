@@ -56,8 +56,19 @@ class VendorProfileController extends Controller
             'images' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120', new SafeImage],
         ]);
 
-        if ($request->hasFile('images')) {
+        if ($request->boolean('remove_image')) {
+            if ($agent->images && !str_starts_with($agent->images, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($agent->images);
+            }
+            $validated['images'] = null;
+        } elseif ($request->hasFile('images')) {
+            if ($agent->images && !str_starts_with($agent->images, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($agent->images);
+            }
             $validated['images'] = $request->file('images')->store('agent-images', 'public');
+        } else {
+            // Preserve existing image when no new file is uploaded
+            unset($validated['images']);
         }
 
         $agent->update($validated);

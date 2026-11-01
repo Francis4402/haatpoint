@@ -29,6 +29,7 @@ import SearchBox from "@/Components/SearchBox"
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import logoutUrl from "@/Components/logoutUrl"
 import { useTranslation } from "@/state/languageStore"
+import UserAvatar from "@/Components/UserAvatar"
 
 // Lazy loaded logo component
 const LazyLogo = ({ className }: { className?: string }) => (
@@ -492,17 +493,18 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                   aria-expanded={userMenuOpen}
                   aria-haspopup="true"
                 >
-                  <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-[#6E7F5C] to-[#57654A] flex items-center justify-center text-white font-medium text-sm">
-                    {user ? (
-                      <LazyAvatar
-                        src={getUserAvatarUrl(user) || ''}
-                        alt={user.name}
-                        className="h-full w-full"
-                      />
-                    ) : (
+                  {user ? (
+                    <UserAvatar
+                      src={user.images}
+                      name={user.name}
+                      className="h-8 w-8"
+                      textClassName="text-xs"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-[#6E7F5C] to-[#57654A] flex items-center justify-center text-white font-medium text-sm">
                       <FiUser className="h-4 w-4" aria-hidden="true" />
-                    )}
-                  </div>
+                    </div>
+                  )}
                   {user && (
                     <span className="hidden sm:inline text-sm font-semibold" style={{ color: '#1B1B1B' }}>
                       {user.name.split(" ")[0]}
@@ -535,13 +537,12 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                       <>
                         <div className="px-4 py-4 bg-[#F2F2EE] border-b border-[#E3E1DB]">
                           <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 rounded-full overflow-hidden bg-gradient-to-br from-[#6E7F5C] to-[#57654A] flex items-center justify-center text-white font-medium text-lg flex-shrink-0">
-                              <LazyAvatar
-                                src={getUserAvatarUrl(user) || ''}
-                                alt={user.name}
-                                className="h-full w-full"
-                              />
-                            </div>
+                            <UserAvatar
+                              src={user.images}
+                              name={user.name}
+                              className="h-12 w-12 shrink-0"
+                              textClassName="text-base"
+                            />
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold truncate" style={{ color: '#1B1B1B' }}>{user.name}</p>
                               <p className="text-sm truncate" style={{ color: '#767470' }}>{user.email}</p>
@@ -807,13 +808,12 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                         {user && (
                           <div className="px-6 mb-6">
                             <div className="flex items-center gap-3 p-4 bg-[#F2F2EE] rounded-sm border border-[#E3E1DB]">
-                              <div className="h-12 w-12 rounded-full overflow-hidden bg-gradient-to-br from-[#6E7F5C] to-[#57654A] flex items-center justify-center text-white font-medium text-lg flex-shrink-0">
-                                <LazyAvatar
-                                  src={getUserAvatarUrl(user) || ''}
-                                  alt={user.name}
-                                  className="h-full w-full"
-                                />
-                              </div>
+                              <UserAvatar
+                                src={user.images}
+                                name={user.name}
+                                className="h-12 w-12 shrink-0"
+                                textClassName="text-base"
+                              />
                               <div className="flex-1 min-w-0">
                                 <p className="font-semibold truncate" style={{ color: '#1B1B1B' }}>{user.name}</p>
                                 <p className="text-sm truncate" style={{ color: '#767470' }}>{user.email}</p>

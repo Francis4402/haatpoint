@@ -33,6 +33,7 @@ import logoutUrl from '@/Components/logoutUrl';
 import SearchBox from '@/Components/SearchBox';
 import IncompleteVendorProfileBanner from '@/Components/IncompleteVendorProfileBanner';
 import SubscriptionBanner from '@/Components/SubscriptionBanner';
+import UserAvatar from '@/Components/UserAvatar';
 import { useTranslation } from '@/state/languageStore';
 
 interface DashboardLayoutProps {
@@ -708,19 +709,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                   className="flex items-center focus:outline-none focus:ring-2 focus:ring-marigold focus:ring-offset-2 rounded-full transition-all duration-200 hover:ring-2 hover:ring-marigold/50"
                   onClick={() => setProfileOpen(!profileOpen)}
                 >
-                  <img
-                    src={
-                      user.images
-                        ? user.images.startsWith('http')
-                            ? user.images
-                            : `/storage/${user.images}`
-                        : '/placeholder.png'
-                    }
-                    alt={user.name}
-                    className="inline-block size-8 rounded-full ring-2 ring-line outline -outline-offset-1 outline-white transition-transform hover:scale-105"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/placeholder.png';
-                    }}
+                  <UserAvatar
+                    src={user.images}
+                    name={user.name}
+                    className="inline-block size-8 ring-2 ring-line outline -outline-offset-1 outline-white transition-transform hover:scale-105"
+                    textClassName="text-xs"
                   />
                 </button>
 
@@ -738,19 +731,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = 'Da
                     {/* User Info */}
                     <div className="px-4 py-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <img
-                          src={
-                            user.images
-                              ? user.images.startsWith('http')
-                                  ? user.images
-                                  : `/storage/${user.images}`
-                              : '/placeholder.png'
-                          }
-                          alt={user.name}
-                          className="size-10 rounded-full ring-2 ring-line shrink-0 object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/placeholder.png';
-                          }}
+                        <UserAvatar
+                          src={user.images}
+                          name={user.name}
+                          className="size-10 ring-2 ring-line shrink-0"
+                          textClassName="text-sm"
                         />
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-ink truncate" title={user.name}>{user.name}</p>

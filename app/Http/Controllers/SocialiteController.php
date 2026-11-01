@@ -205,9 +205,13 @@ class SocialiteController extends Controller
                     throw new \RuntimeException('This account has been blocked. Please contact support for assistance.');
                 }
 
-                $identity->forceFill([
+                $forceUpdates = [
                     'email_verified_at' => $identity->email_verified_at ?? now(),
-                ]);
+                ];
+                if (empty($identity->images) && $socialUser->getAvatar()) {
+                    $forceUpdates['images'] = $socialUser->getAvatar();
+                }
+                $identity->forceFill($forceUpdates);
 
                 if ($identity->provider !== $provider || $identity->provider_id !== $providerId) {
                     $identity->forceFill([

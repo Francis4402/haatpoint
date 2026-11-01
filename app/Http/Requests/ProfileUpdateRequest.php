@@ -57,6 +57,7 @@ class ProfileUpdateRequest extends FormRequest
         $rules = [
             'name' => ['required', 'string', 'max:255', new CleanText],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120', new SafeImage],
+            'remove_image' => ['nullable', 'boolean'],
             'email' => [
                 'required',
                 'string',

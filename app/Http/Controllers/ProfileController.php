@@ -37,11 +37,22 @@ class ProfileController extends Controller
             $validated['phone'] = $validated['mobile'];
         }
 
+        // Handle explicit remove image request
+        if ($request->boolean('remove_image')) {
+            if ($user->images && !str_starts_with($user->images, 'http')) {
+                Storage::disk('public')->delete($user->images);
+            }
+            $user->images = null;
+        }
+
+        // Never let fill() overwrite images/image with null
+        unset($validated['image'], $validated['images'], $validated['remove_image']);
+
         $user->fill($validated);
 
         if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($user->images) {
+            // Delete old custom image if exists (and not an external URL)
+            if ($user->images && !str_starts_with($user->images, 'http')) {
                 Storage::disk('public')->delete($user->images);
             }
 

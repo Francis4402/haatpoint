@@ -14,6 +14,7 @@ import {
 } from 'react-icons/fa';
 import UpdateProfileInformation from './Partials/UpdateProfileInformationForm';
 import DeleteUserForm from './Partials/DeleteUserForm';
+import UserAvatar from '@/Components/UserAvatar';
 
 interface PageProps {
   auth: {
@@ -113,16 +114,11 @@ export default function Edit({ auth, status }: PageProps) {
                     {/* User Info Card */}
                     <div className="flex items-center gap-4 mb-8">
                       <div className="relative group">
-                        <img
-                          src={getProfileImageUrl()}
-                          alt={auth.user.name}
-                          className="w-16 h-16 rounded-full ring-4 ring-marigold/20 border-2 border-line object-cover"
-                          onError={(e) => {
-                            const target = e.currentTarget as HTMLImageElement;
-                            if (!target.src.endsWith('/placeholder.png')) {
-                              target.src = '/placeholder.png';
-                            }
-                          }}
+                        <UserAvatar
+                          src={auth.user.images}
+                          name={auth.user.name}
+                          className="w-16 h-16 ring-4 ring-marigold/20 border-2 border-line"
+                          textClassName="text-xl font-bold"
                         />
                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
                           <span className="w-1.5 h-1.5 rounded-full bg-white"></span>

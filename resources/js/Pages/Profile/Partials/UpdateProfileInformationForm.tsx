@@ -1,9 +1,10 @@
 import { useForm } from '@inertiajs/react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState, useRef, useEffect } from 'react';
-import { FaUserEdit, FaCheckCircle, FaExclamationTriangle, FaCamera, FaUser, FaTruck, FaMapMarkerAlt, FaCity, FaBuilding } from 'react-icons/fa';
+import { FaUserEdit, FaCheckCircle, FaExclamationTriangle, FaCamera, FaUser, FaTruck, FaMapMarkerAlt, FaCity, FaBuilding, FaTrash } from 'react-icons/fa';
 import axios from 'axios';
 import { User, citytypes, zonetypes, areatypes } from '@/types';
+import UserAvatar from '@/Components/UserAvatar';
 
 interface Props {
   status?: string;
@@ -40,6 +41,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
     area_id: user.area_id ?? '',
     area_name: user.area_name ?? '',
     image: null as File | null,
+    remove_image: false,
   });
 
   // Sync form state if the user prop updates (e.g. after save or page refresh)
@@ -57,6 +59,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
       zone_name: user.zone_name ?? '',
       area_id: user.area_id ?? '',
       area_name: user.area_name ?? '',
+      remove_image: false,
     }));
     if (user.images) {
       setImagePreview(user.images.startsWith('http') ? user.images : `/storage/${user.images}`);
@@ -201,10 +204,24 @@ export default function UpdateProfileInformation({ status, user }: Props) {
       return;
     }
 
-    setData('image', file);
+    setData(prev => ({
+      ...prev,
+      image: file,
+      remove_image: false,
+    }));
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setData(prev => ({
+      ...prev,
+      image: null,
+      remove_image: true,
+    }));
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const submit = (e: React.FormEvent) => {
@@ -236,19 +253,14 @@ export default function UpdateProfileInformation({ status, user }: Props) {
         {/* Profile Image Upload */}
         <div className="bg-paper-dim border border-line rounded-2xl p-6">
           <h4 className="text-sm font-semibold text-ink mb-4">Profile Picture</h4>
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-white ring-4 ring-marigold/20 border-2 border-line shadow-hard-sm">
-                <img
-                  src={getProfileImageUrl()}
-                  alt={user.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.currentTarget as HTMLImageElement;
-                    if (!target.src.endsWith('/placeholder.png')) {
-                      target.src = '/placeholder.png';
-                    }
-                  }}
+          <div className="flex items-center gap-6 flex-wrap sm:flex-nowrap">
+            <div className="relative shrink-0">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-white ring-4 ring-marigold/20 border-2 border-line shadow-hard-sm flex items-center justify-center">
+                <UserAvatar
+                  src={imagePreview || (data.remove_image ? null : user.images)}
+                  name={data.name || user.name}
+                  className="w-full h-full"
+                  textClassName="text-2xl font-bold"
                 />
               </div>
               <button
@@ -256,6 +268,8 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={processing}
                 className="absolute bottom-0 right-0 w-7 h-7 bg-ink rounded-full flex items-center justify-center text-white hover:bg-ink/90 transition-colors disabled:opacity-50 shadow-md"
+                title="Upload new picture"
+                aria-label="Upload new picture"
               >
                 <FaCamera className="w-3.5 h-3.5" />
               </button>
@@ -267,7 +281,7 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                 className="hidden"
               />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-ink">Upload new picture (Optional)</p>
               <p className="text-xs text-text-soft mt-1">JPG, PNG, GIF, WEBP up to 2MB</p>
               {data.image && (
@@ -275,6 +289,23 @@ export default function UpdateProfileInformation({ status, user }: Props) {
                   <FaCheckCircle className="w-3 h-3 text-emerald-600" />
                   {data.image.name}
                 </p>
+              )}
+              {data.remove_image && (
+                <p className="text-xs text-amber-700 mt-1 flex items-center gap-1 font-medium">
+                  <FaExclamationTriangle className="w-3 h-3 text-amber-600" />
+                  Picture will be removed when you save changes
+                </p>
+              )}
+              {(imagePreview || (user.images && !data.remove_image)) && (
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  disabled={processing}
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-semibold transition-colors disabled:opacity-50"
+                >
+                  <FaTrash className="w-3 h-3 text-red-500" />
+                  <span>Remove Picture</span>
+                </button>
               )}
             </div>
           </div>

@@ -6,7 +6,8 @@ import { PageProps } from '@/types';
 import {
     HiOutlineExclamationCircle,
 } from 'react-icons/hi2';
-import { FaBuilding, FaIdCard, FaLocationDot, FaMobile, FaUser } from 'react-icons/fa6';
+import { FaBuilding, FaIdCard, FaLocationDot, FaMobile, FaUser, FaTrash } from 'react-icons/fa6';
+import UserAvatar from '@/Components/UserAvatar';
 
 interface VendorProfilePage extends PageProps {
     vendor: {
@@ -38,10 +39,15 @@ export default function VendorProfile({ vendor, missingFields, isComplete }: Ven
         national_id: vendor.national_id ?? '',
         address: vendor.address ?? '',
         images: null as File | null,
+        remove_image: false,
     });
 
     const [preview, setPreview] = useState<string | null>(
-        vendor.images ? `/storage/${vendor.images}` : null
+        vendor.images
+            ? vendor.images.startsWith('http')
+                ? vendor.images
+                : `/storage/${vendor.images}`
+            : null
     );
 
     const missing = missingFields ?? [];
@@ -65,9 +71,23 @@ export default function VendorProfile({ vendor, missingFields, isComplete }: Ven
             return;
         }
 
-        setData('images', file);
+        setData((prev) => ({
+            ...prev,
+            images: file,
+            remove_image: false,
+        }));
         if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
         setPreview(URL.createObjectURL(file));
+    };
+
+    const onRemoveLogo = () => {
+        setData((prev) => ({
+            ...prev,
+            images: null,
+            remove_image: true,
+        }));
+        if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview);
+        setPreview(null);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -239,30 +259,40 @@ export default function VendorProfile({ vendor, missingFields, isComplete }: Ven
                         </div>
 
                         <div className='flex items-center gap-5'>
-                            <img
-                                src={preview || '/placeholder.png'}
-                                alt='Vendor'
-                                className='h-20 w-20 rounded-full object-cover border border-line bg-paper-dim'
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).src = '/placeholder.png';
-                                }}
+                            <UserAvatar
+                                src={preview || (data.remove_image ? null : vendor.images)}
+                                name={data.name || vendor.name}
+                                className='h-20 w-20 border border-line shadow-sm'
+                                textClassName='text-2xl font-bold'
                             />
 
-                            <div>
-                                <input
-                                    id='vendor-image'
-                                    type='file'
-                                    accept='image/*'
-                                    className='hidden'
-                                    onChange={onLogoChange}
-                                />
-                                <label
-                                    htmlFor='vendor-image'
-                                    className='inline-block cursor-pointer rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-paper-dim transition-colors'
-                                >
-                                    {preview ? 'Change photo' : 'Upload photo'}
-                                </label>
-                                <p className='text-xs text-text-soft mt-2'>
+                            <div className='flex flex-col gap-2'>
+                                <div className='flex items-center gap-2'>
+                                    <input
+                                        id='vendor-image'
+                                        type='file'
+                                        accept='image/*'
+                                        className='hidden'
+                                        onChange={onLogoChange}
+                                    />
+                                    <label
+                                        htmlFor='vendor-image'
+                                        className='inline-block cursor-pointer rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-paper-dim transition-colors'
+                                    >
+                                        {(preview || (vendor.images && !data.remove_image)) ? 'Change photo' : 'Upload photo'}
+                                    </label>
+                                    {(preview || (vendor.images && !data.remove_image)) && (
+                                        <button
+                                            type='button'
+                                            onClick={onRemoveLogo}
+                                            className='inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors'
+                                        >
+                                            <FaTrash className='h-3.5 w-3.5' />
+                                            Remove
+                                        </button>
+                                    )}
+                                </div>
+                                <p className='text-xs text-text-soft'>
                                     Optional. JPG, PNG or WEBP, up to 5MB.
                                 </p>
                                 <FieldError field='images' />
