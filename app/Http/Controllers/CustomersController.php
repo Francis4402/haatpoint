@@ -146,37 +146,11 @@ class CustomersController extends Controller
     }
 
     /**
-     * Convert an agent back to a user. Admin/Superadmin only.
+     * An agent cannot become a user. Admin/Superadmin too.
      */
     public function makeUser(Agent $agent): RedirectResponse
     {
-        if (User::where('email', $agent->email)->exists()) {
-            return redirect()->back()->with('error', "{$agent->name} is already a customer.");
-        }
-
-        DB::transaction(function () use ($agent) {
-            DB::table('users')->insert([
-                'id' => (string) \Illuminate\Support\Str::uuid(),
-                'name' => $agent->name,
-                'email' => $agent->email,
-                'password' => $agent->password,
-                'role' => 'user',
-                'images' => $agent->images,
-                'email_verified_at' => $agent->email_verified_at,
-                'blocked' => $agent->blocked,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            // Drop agent ownership so the store/order dashboards don't show
-            // these under a non-agent account.
-            DB::table('stores')->where('agent_id', $agent->id)->update(['agent_id' => null]);
-            DB::table('orders')->where('agent_id', $agent->id)->update(['agent_id' => null]);
-
-            $agent->delete();
-        });
-
-        return redirect()->back()->with('success', "{$agent->name} is now a customer.");
+        return redirect()->back()->with('error', 'Agents, admins, and superadmins cannot become customers.');
     }
 
     /**
@@ -366,7 +340,20 @@ class CustomersController extends Controller
         } elseif ($type === 'user') {
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255', new CleanText],
-                'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($customer->id)],
+                'email' => [
+                    'required',
+                    'email',
+                    'max:255',
+                    Rule::unique('users')->ignore($customer->id),
+                    function ($attribute, $value, $fail) {
+                        if (Agent::where('email', $value)->exists()) {
+                            $fail('This email belongs to an agent and cannot be assigned to a customer.');
+                        }
+                        if (Admin::where('email', $value)->exists()) {
+                            $fail('This email belongs to an administrator and cannot be assigned to a customer.');
+                        }
+                    },
+                ],
                 'mobile' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
                 'phone' => ['nullable', 'string', 'regex:/^01[3-9]\d{8}$/'],
                 'address' => ['nullable', 'string', 'max:1000', new CleanText],

@@ -16,7 +16,7 @@ class ResolveAuthGuard
      */
     public function handle(Request $request, Closure $next): Response
     {
-        foreach (['web', 'superadmin', 'admin', 'agent'] as $guard) {
+        foreach (['superadmin', 'admin', 'agent', 'web'] as $guard) {
             if (Auth::guard($guard)->check()) {
                 Auth::shouldUse($guard);
                 break;

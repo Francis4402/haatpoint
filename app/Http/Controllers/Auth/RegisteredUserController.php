@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\Agent;
 use App\Models\User;
 use App\Rules\CleanText;
@@ -43,6 +44,9 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class, new GmailAddress, function ($attribute, $value, $fail) {
                 if (Agent::where('email', $value)->exists()) {
                     $fail('This email is already registered as an agent and cannot be used to create a customer account.');
+                }
+                if (Admin::where('email', $value)->exists()) {
+                    $fail('This email is already registered as an administrator and cannot be used to create a customer account.');
                 }
             }],
             'phone' => ['required', 'string', 'regex:/^01[3-9]\d{8}$/'],

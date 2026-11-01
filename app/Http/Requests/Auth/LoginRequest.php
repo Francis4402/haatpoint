@@ -75,7 +75,7 @@ class LoginRequest extends FormRequest
         $credentials = $this->only('email', 'password');
         $remember = $this->boolean('remember');
 
-        foreach (['agent', 'web'] as $guard) {
+        foreach (['admin', 'agent', 'web'] as $guard) {
             $account = Auth::guard($guard)->getProvider()->retrieveByCredentials($credentials);
 
             if ($account && $account->blocked) {

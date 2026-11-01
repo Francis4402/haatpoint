@@ -39,7 +39,7 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerType | null>(null);
   const [actionCandidate, setActionCandidate] = useState<{
     customer: CustomerType;
-    action: 'admin' | 'agent' | 'user' | 'block' | 'unblock' | 'delete';
+    action: 'admin' | 'agent' | 'block' | 'unblock' | 'delete';
   } | null>(null);
 
   const [editingCustomer, setEditingCustomer] = useState<CustomerType | null>(null);
@@ -114,13 +114,6 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
       endpoint: 'make-agent',
       variant: 'info',
       verb: 'convert to an agent',
-    },
-    user: {
-      title: 'Make Customer',
-      message: 'will be reverted to a customer. Their agent store ownership will be detached.',
-      endpoint: 'make-user',
-      variant: 'info',
-      verb: 'revert to a customer',
     },
     block: {
       title: 'Block Account',
@@ -444,19 +437,6 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                                     >
                                       <FaEdit className="h-3 w-3" />
                                       Edit
-                                    </button>
-                                  )}
-                                  {isAdminOrSuperAdmin && customer.role === 'agent' && (
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setActionCandidate({ customer, action: 'user' });
-                                      }}
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 text-white text-xs font-semibold hover:bg-gray-700 hover:ring-2 hover:ring-gray-700/30 transition-all duration-200 shadow-sm"
-                                    >
-                                      <FaUserCog className="h-3 w-3" />
-                                      Make Customer
                                     </button>
                                   )}
                                   {isAdminOrSuperAdmin && customer.role === 'user' && (
@@ -811,16 +791,6 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                               View Orders
                             </Link>
                           </div>
-                          {isAdminOrSuperAdmin && selectedCustomer.role === 'agent' && (
-                            <button
-                              type="button"
-                              onClick={() => setActionCandidate({ customer: selectedCustomer, action: 'user' })}
-                              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 text-white rounded-xl hover:bg-gray-700 hover:ring-2 hover:ring-gray-700/30 transition-all duration-200 font-semibold text-sm shadow-sm"
-                            >
-                              <FaUserCog className="h-4 w-4" />
-                              Make Customer
-                            </button>
-                          )}
                           {isAdminOrSuperAdmin && selectedCustomer.role === 'user' && (
                             <button
                               type="button"

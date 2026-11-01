@@ -49,7 +49,7 @@ class SocialiteController extends Controller
             'guard' => 'web',
             'create' => true,
             'exclusive' => false,
-            'resolves' => ['agent', 'user'],
+            'resolves' => ['admin', 'agent', 'user'],
         ],
         'superadmin' => ['model' => Admin::class, 'guard' => 'admin', 'create' => true, 'exclusive' => true],
         'admin' => ['model' => Admin::class, 'guard' => 'admin', 'create' => false, 'exclusive' => false],
@@ -59,7 +59,7 @@ class SocialiteController extends Controller
             'guard' => 'web',
             'create' => true,
             'exclusive' => false,
-            'resolves' => ['agent', 'user'],
+            'resolves' => ['admin', 'agent', 'user'],
         ],
     ];
 
@@ -233,6 +233,15 @@ class SocialiteController extends Controller
 
                 return redirect()->route('auth.social.choose');
             } elseif ($config['create']) {
+                if ($resolved === 'user') {
+                    if (Agent::where('email', $email)->orWhere(fn ($q) => $q->where('provider', $provider)->where('provider_id', $providerId))->exists()) {
+                        throw new \RuntimeException('This email is registered as an agent and cannot create a customer account.');
+                    }
+                    if (Admin::where('email', $email)->orWhere(fn ($q) => $q->where('provider', $provider)->where('provider_id', $providerId))->exists()) {
+                        throw new \RuntimeException('This email is registered as an administrator and cannot create a customer account.');
+                    }
+                }
+
                 // An exclusive destination may bootstrap only once. The register
                 // page is the first gate, but a caller can reach this callback
                 // directly with a hand-set session, so the same rule has to be
@@ -338,6 +347,12 @@ class SocialiteController extends Controller
             return redirect()->route('login');
         }
 
+        if (Agent::where('email', $pending['email'])->exists() || Admin::where('email', $pending['email'])->exists()) {
+            $request->session()->forget('socialite_pending');
+
+            return redirect()->route('login')->with('error', 'This account is already registered as an agent or administrator.');
+        }
+
         return Inertia::render('Auth/SocialAccountChoice', [
             'socialUser' => $pending,
         ]);
@@ -362,6 +377,19 @@ class SocialiteController extends Controller
         $email = $pending['email'];
         $provider = $pending['provider'];
         $providerId = $pending['provider_id'];
+
+        if ($role === 'user') {
+            if (Agent::where('email', $email)->exists()) {
+                $request->session()->forget('socialite_pending');
+
+                return redirect()->route('login')->with('error', 'This email is registered as an agent and cannot become a customer account.');
+            }
+            if (Admin::where('email', $email)->exists()) {
+                $request->session()->forget('socialite_pending');
+
+                return redirect()->route('login')->with('error', 'This email is registered as an administrator and cannot become a customer account.');
+            }
+        }
 
         $config = self::DESTINATIONS[$role];
         $model = $config['model'];

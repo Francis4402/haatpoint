@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\Admin;
 use App\Models\Agent;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -55,6 +56,13 @@ class AgentAuthController extends StaffAuthController
     protected function registrationRules(): array
     {
         return [
+            'email' => [
+                function ($attribute, $value, $fail) {
+                    if (Admin::where('email', $value)->exists()) {
+                        $fail('This email is already registered as an administrator and cannot be used to create an agent account.');
+                    }
+                },
+            ],
             'name' => ['required', 'string', 'max:255', 'unique:agents,name'],
             'address' => 'required|string|max:255',
             'mobile' => ['required', 'string', 'regex:/^01[3-9]\d{8}$/', 'unique:agents,mobile'],

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Admin;
 use App\Models\Agent;
+use App\Models\User;
 use App\Rules\CleanText;
 use App\Rules\GmailAddress;
 use App\Rules\SafeImage;
@@ -70,6 +72,20 @@ class ProfileUpdateRequest extends FormRequest
                 // could not re-save this form at all.
                 ...($this->emailChanged($user) ? [new GmailAddress] : []),
                 Rule::unique($table)->ignore($id),
+                function ($attribute, $value, $fail) use ($user) {
+                    if ($user instanceof User) {
+                        if (Agent::where('email', $value)->exists()) {
+                            $fail('This email is registered as an agent and cannot be used for a customer account.');
+                        }
+                        if (Admin::where('email', $value)->exists()) {
+                            $fail('This email is registered as an administrator and cannot be used for a customer account.');
+                        }
+                    } elseif ($user instanceof Agent) {
+                        if (Admin::where('email', $value)->exists()) {
+                            $fail('This email is registered as an administrator and cannot be used for an agent account.');
+                        }
+                    }
+                },
             ],
         ];
 
