@@ -75,7 +75,14 @@ class LoginRequest extends FormRequest
         $credentials = $this->only('email', 'password');
         $remember = $this->boolean('remember');
 
-        foreach (['admin', 'agent', 'web'] as $guard) {
+        // Superadmins and admins can only log in through /admin/login
+        if (\App\Models\Admin::where('email', $credentials['email'])->exists()) {
+            throw ValidationException::withMessages([
+                'email' => 'Administrators must log in through the admin login page at /admin/login.',
+            ]);
+        }
+
+        foreach (['agent', 'web'] as $guard) {
             $account = Auth::guard($guard)->getProvider()->retrieveByCredentials($credentials);
 
             if ($account && $account->blocked) {

@@ -49,7 +49,7 @@ class SocialiteController extends Controller
             'guard' => 'web',
             'create' => true,
             'exclusive' => false,
-            'resolves' => ['admin', 'agent', 'user'],
+            'resolves' => ['agent', 'user'],
         ],
         'superadmin' => ['model' => Admin::class, 'guard' => 'admin', 'create' => true, 'exclusive' => true],
         'admin' => ['model' => Admin::class, 'guard' => 'admin', 'create' => false, 'exclusive' => false],
@@ -59,7 +59,7 @@ class SocialiteController extends Controller
             'guard' => 'web',
             'create' => true,
             'exclusive' => false,
-            'resolves' => ['admin', 'agent', 'user'],
+            'resolves' => ['agent', 'user'],
         ],
     ];
 
@@ -175,6 +175,15 @@ class SocialiteController extends Controller
             $config = self::DESTINATIONS[$destination];
             $model = $config['model'];
             $providerId = (string) $socialUser->getId();
+
+            // Superadmins and admins can only log in through /admin/login
+            if (in_array($destination, ['user', 'choose'], true)
+                && Admin::where('email', $email)
+                    ->orWhere(fn ($q) => $q->where('provider', $provider)->where('provider_id', $providerId))
+                    ->exists()
+            ) {
+                throw new \RuntimeException('Administrators must log in through the admin login page at /admin/login.');
+            }
 
             // A surface shared by more than one role cannot assume which table
             // holds the visitor, so the role is resolved from the email before
