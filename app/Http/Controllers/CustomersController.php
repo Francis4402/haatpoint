@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -20,10 +21,19 @@ class CustomersController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index() {
+    public function index(Request $request)
+    {
+        $currentUser = $request->user();
+        $isSuperAdmin = $currentUser && $currentUser->role === 'superadmin';
+
+        // Admins cannot see superadmins in customers/users list
+        $admins = $isSuperAdmin
+            ? Admin::all()
+            : Admin::where('role', '!=', 'superadmin')->get();
+
         $customers = collect()
             ->merge(User::all())
-            ->merge(Admin::all())
+            ->merge($admins)
             ->merge(Agent::all())
             ->values();
 
@@ -45,6 +55,10 @@ class CustomersController extends Controller
      */
     public function promote(Request $request, string $type, string $customerId): RedirectResponse
     {
+        if ($request->user()->role !== 'superadmin') {
+            abort(403, 'Unauthorized. Only superadmins can promote accounts to admin.');
+        }
+
         $customer = $this->resolveCustomer($type, $customerId);
 
         return $this->executePromotion($customer);
@@ -55,6 +69,10 @@ class CustomersController extends Controller
      */
     public function promoteLegacy(string $customerId): RedirectResponse
     {
+        if (request()->user()->role !== 'superadmin') {
+            abort(403, 'Unauthorized. Only superadmins can promote accounts to admin.');
+        }
+
         $customer = User::find($customerId) ?? Agent::findOrFail($customerId);
 
         return $this->executePromotion($customer);
@@ -62,6 +80,11 @@ class CustomersController extends Controller
 
     private function executePromotion(User|Agent|Admin $customer): RedirectResponse
     {
+        // Superadmin role cannot be changed
+        if ($customer->role === 'superadmin') {
+            return redirect()->back()->with('error', 'Superadmin role cannot be changed.');
+        }
+
         if ($customer instanceof Admin || Admin::where('email', $customer->email)->exists()) {
             return redirect()->back()->with('error', "{$customer->name} is already an admin.");
         }
@@ -70,7 +93,7 @@ class CustomersController extends Controller
             // Copy the user's/agent's password hash verbatim. Admin has a 'hashed' cast,
             // so mass-assigning would double-hash it and break login.
             DB::table('admins')->insert([
-                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'id' => (string) Str::uuid(),
                 'name' => $customer->name,
                 'email' => $customer->email,
                 'password' => $customer->password,
@@ -104,45 +127,100 @@ class CustomersController extends Controller
     }
 
     /**
-     * Convert a user to an agent. Admin/Superadmin only.
+     * Convert a user or admin to an agent.
+     * - user -> agent: allowed for superadmin and admin.
+     * - admin -> agent: allowed for superadmin ONLY.
+     * - superadmin role can NEVER be changed!
      */
-    public function makeAgent(User $user): RedirectResponse
+    public function makeAgent(Request $request, string $type, string $customerId): RedirectResponse
     {
-        if (Agent::where('email', $user->email)->exists()) {
-            return redirect()->back()->with('error', "{$user->name} is already an agent.");
+        $customer = $this->resolveCustomer($type, $customerId);
+
+        if ($customer->role === 'superadmin') {
+            return redirect()->back()->with('error', 'Superadmin role cannot be changed.');
         }
 
-        DB::transaction(function () use ($user) {
-            $agentId = (string) \Illuminate\Support\Str::uuid();
+        if ($type === 'admin') {
+            if ($request->user()->role !== 'superadmin') {
+                abort(403, 'Unauthorized. Only superadmins can convert an administrator to an agent.');
+            }
+
+            if (Agent::where('email', $customer->email)->exists()) {
+                return redirect()->back()->with('error', "{$customer->name} is already an agent.");
+            }
+
+            DB::transaction(function () use ($customer) {
+                $agentId = (string) Str::uuid();
+
+                DB::table('agents')->insert([
+                    'id' => $agentId,
+                    'name' => $customer->name,
+                    'email' => $customer->email,
+                    'password' => $customer->password,
+                    'role' => 'agent',
+                    'images' => $customer->images,
+                    'email_verified_at' => $customer->email_verified_at,
+                    'blocked' => (bool) $customer->blocked,
+                    'plan' => 'free',
+                    'subscription_ends_at' => now()->addYear(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('stores')->where('user_id', $customer->id)->update([
+                    'user_id' => null,
+                    'agent_id' => $agentId,
+                ]);
+                DB::table('orders')->where('user_id', $customer->id)->update(['user_id' => null]);
+                DB::table('products')->where('user_id', $customer->id)->update(['user_id' => null]);
+
+                $customer->delete();
+            });
+
+            return redirect()->back()->with('success', "{$customer->name} has been converted from admin to agent.");
+        }
+
+        if (Agent::where('email', $customer->email)->exists()) {
+            return redirect()->back()->with('error', "{$customer->name} is already an agent.");
+        }
+
+        DB::transaction(function () use ($customer) {
+            $agentId = (string) Str::uuid();
 
             DB::table('agents')->insert([
                 'id' => $agentId,
-                'name' => $user->name,
-                'email' => $user->email,
-                'password' => $user->password,
+                'name' => $customer->name,
+                'email' => $customer->email,
+                'password' => $customer->password,
                 'role' => 'agent',
-                'images' => $user->images,
-                'email_verified_at' => $user->email_verified_at,
-                'blocked' => $user->blocked,
+                'images' => $customer->images,
+                'email_verified_at' => $customer->email_verified_at,
+                'blocked' => (bool) $customer->blocked,
                 'plan' => 'free',
                 'subscription_ends_at' => now()->addYear(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            // Keep the user's stores owned by them under the new agent id,
-            // but detach purchase/order ownership so it survives the delete.
-            DB::table('stores')->where('user_id', $user->id)->update([
+            DB::table('stores')->where('user_id', $customer->id)->update([
                 'user_id' => null,
                 'agent_id' => $agentId,
             ]);
-            DB::table('orders')->where('user_id', $user->id)->update(['user_id' => null]);
-            DB::table('products')->where('user_id', $user->id)->update(['user_id' => null]);
+            DB::table('orders')->where('user_id', $customer->id)->update(['user_id' => null]);
+            DB::table('products')->where('user_id', $customer->id)->update(['user_id' => null]);
 
-            $user->delete();
+            $customer->delete();
         });
 
-        return redirect()->back()->with('success', "{$user->name} is now an agent.");
+        return redirect()->back()->with('success', "{$customer->name} is now an agent.");
+    }
+
+    /**
+     * Legacy endpoint for user -> agent conversion.
+     */
+    public function makeAgentLegacy(User $user): RedirectResponse
+    {
+        return $this->makeAgent(request(), 'user', $user->id);
     }
 
     /**
@@ -159,6 +237,14 @@ class CustomersController extends Controller
     public function toggleBlock(Request $request, string $type, string $customerId): RedirectResponse
     {
         $customer = $this->resolveCustomer($type, $customerId);
+
+        if ($customer->role === 'superadmin') {
+            return redirect()->back()->with('error', 'Superadmin accounts cannot be blocked.');
+        }
+
+        if ($type === 'admin' && $request->user()->role !== 'superadmin') {
+            abort(403, 'Unauthorized. Admins cannot block administrator accounts.');
+        }
 
         if ($request->user()->id === $customer->id) {
             return redirect()->back()->with('error', 'You cannot block your own account.');
@@ -177,6 +263,14 @@ class CustomersController extends Controller
     public function destroy(Request $request, string $type, string $customerId): RedirectResponse
     {
         $customer = $this->resolveCustomer($type, $customerId);
+
+        if ($customer->role === 'superadmin') {
+            return redirect()->back()->with('error', 'Superadmin accounts cannot be deleted.');
+        }
+
+        if ($type === 'admin' && $request->user()->role !== 'superadmin') {
+            abort(403, 'Unauthorized. Admins cannot delete administrator accounts.');
+        }
 
         if ($request->user()->id === $customer->id) {
             return redirect()->back()->with('error', 'You cannot delete your own account.');
@@ -318,8 +412,10 @@ class CustomersController extends Controller
     {
         $customer = $this->resolveCustomer($type, $customerId);
 
-        if ($type === 'admin' && $customer->role === 'superadmin' && $request->user()->role !== 'superadmin') {
-            abort(403, 'Unauthorized.');
+        if ($type === 'admin') {
+            if ($request->user()->role !== 'superadmin') {
+                abort(403, 'Unauthorized. Admins cannot update administrator accounts.');
+            }
         }
 
         if ($type === 'agent') {
@@ -367,8 +463,24 @@ class CustomersController extends Controller
         } elseif ($type === 'admin') {
             $validated = $request->validate([
                 'name' => ['required', 'string', 'max:255', new CleanText],
-                'email' => ['required', 'email', 'max:255', Rule::unique('admins')->ignore($customer->id)],
+                'email' => [
+                    'required',
+                    'email',
+                    'max:255',
+                    Rule::unique('admins')->ignore($customer->id),
+                    function ($attribute, $value, $fail) {
+                        if (Agent::where('email', $value)->exists()) {
+                            $fail('This email belongs to an agent and cannot be assigned to an administrator.');
+                        }
+                        if (User::where('email', $value)->exists()) {
+                            $fail('This email belongs to a customer and cannot be assigned to an administrator.');
+                        }
+                    },
+                ],
             ]);
+
+            // Superadmin role cannot be changed by anyone
+            unset($validated['role']);
 
             $customer->update($validated);
         }

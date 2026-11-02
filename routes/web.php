@@ -213,8 +213,11 @@ Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])
     Route::post('/dashboard/customers/{customer}/promote', [CustomersController::class, 'promoteLegacy'])
         ->name('dashboard.customer.promote.legacy')
         ->middleware('role:superadmin');
-    Route::post('/dashboard/customers/{user}/make-agent', [CustomersController::class, 'makeAgent'])
-        ->name('dashboard.customer.make-agent');
+    Route::post('/dashboard/customers/{type}/{customer}/make-agent', [CustomersController::class, 'makeAgent'])
+        ->name('dashboard.customer.make-agent')
+        ->where('type', 'user|admin');
+    Route::post('/dashboard/customers/{user}/make-agent', [CustomersController::class, 'makeAgentLegacy'])
+        ->name('dashboard.customer.make-agent.legacy');
     Route::post('/dashboard/customers/{agent}/make-user', [CustomersController::class, 'makeUser'])
         ->name('dashboard.customer.make-user');
 

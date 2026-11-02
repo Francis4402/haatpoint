@@ -84,6 +84,12 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
     setEditErrors({});
 
     const type = resourceType(editingCustomer.role);
+    if (type === 'admin' && currentUserRole !== 'superadmin') {
+      setEditErrors({ email: 'Admins cannot update administrator accounts.' });
+      setIsUpdating(false);
+      return;
+    }
+
     router.put(`/dashboard/customers/${type}/${editingCustomer.id}`, editForm, {
       preserveScroll: true,
       onSuccess: () => {
@@ -152,7 +158,7 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
     if (action === 'admin') {
       return `/dashboard/customers/${type}/${customer.id}/promote`;
     }
-    return `/dashboard/customers/${customer.id}/${actionMeta[action].endpoint}`;
+    return `/dashboard/customers/${type}/${customer.id}/make-agent`;
   };
 
   useEffect(() => {
@@ -164,9 +170,16 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
   const currentUserRole = auth.user?.role || 'user';
   const isAdminOrSuperAdmin = ['superadmin', 'admin'].includes(currentUserRole);
 
-  const filteredCustomers = isAdminOrSuperAdmin
-    ? customers
-    : customers.filter(customer => !['superadmin', 'admin'].includes(customer.role));
+  const filteredCustomers = customers.filter(customer => {
+    // Admin cannot see superadmin in customers/users list
+    if (currentUserRole !== 'superadmin' && customer.role === 'superadmin') {
+      return false;
+    }
+    if (!isAdminOrSuperAdmin && ['superadmin', 'admin'].includes(customer.role)) {
+      return false;
+    }
+    return true;
+  });
 
   const getRoleColor = (role: CustomerType['role']) => {
     const colors: Record<CustomerType['role'], string> = {
@@ -209,7 +222,10 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
 
   const canManageCustomer = (customer: CustomerType) => {
     if (currentUserRole === 'superadmin') return true;
-    if (currentUserRole === 'admin' && customer.role !== 'superadmin') return true;
+    if (currentUserRole === 'admin') {
+      // Admin can only manage user and agent accounts; cannot update or manage any admin account
+      return customer.role === 'user' || customer.role === 'agent';
+    }
     return false;
   };
 
@@ -277,19 +293,21 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Super Admins</p>
-                      <p className="text-2xl font-bold text-ink mt-1">
-                        {customers.filter(c => c.role === 'superadmin').length}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                      <FaUserShield className="h-6 w-6 text-purple-600" />
+                {currentUserRole === 'superadmin' && (
+                  <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-mono text-text-soft uppercase tracking-wide">Super Admins</p>
+                        <p className="text-2xl font-bold text-ink mt-1">
+                          {customers.filter(c => c.role === 'superadmin').length}
+                        </p>
+                      </div>
+                      <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                        <FaUserShield className="h-6 w-6 text-purple-600" />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
                 <div className="bg-white rounded-2xl shadow-hard-sm border border-line p-6 hover:shadow-xl transition-all duration-300">
                   <div className="flex items-center justify-between">
                     <div>
@@ -439,7 +457,7 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                                       Edit
                                     </button>
                                   )}
-                                  {isAdminOrSuperAdmin && customer.role === 'user' && (
+                                  {((isAdminOrSuperAdmin && customer.role === 'user') || (currentUserRole === 'superadmin' && customer.role === 'admin')) && (
                                     <button
                                       type="button"
                                       onClick={(e) => {
@@ -465,7 +483,7 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                                       Make Admin
                                     </button>
                                   )}
-                                  {currentUserRole === 'superadmin' && customer.id !== (auth.user as any)?.id && (
+                                  {currentUserRole === 'superadmin' && customer.role !== 'superadmin' && customer.id !== (auth.user as any)?.id && (
                                     <>
                                       <button
                                         type="button"
@@ -791,7 +809,7 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                               View Orders
                             </Link>
                           </div>
-                          {isAdminOrSuperAdmin && selectedCustomer.role === 'user' && (
+                          {((isAdminOrSuperAdmin && selectedCustomer.role === 'user') || (currentUserRole === 'superadmin' && selectedCustomer.role === 'admin')) && (
                             <button
                               type="button"
                               onClick={() => setActionCandidate({ customer: selectedCustomer, action: 'agent' })}
@@ -811,7 +829,7 @@ const Customers: React.FC<PageTypes> = ({ customers: initialCustomers, auth }) =
                               Promote to Admin
                             </button>
                           )}
-                          {currentUserRole === 'superadmin' && selectedCustomer.id !== (auth.user as any)?.id && (
+                          {currentUserRole === 'superadmin' && selectedCustomer.role !== 'superadmin' && selectedCustomer.id !== (auth.user as any)?.id && (
                             <div className="grid grid-cols-2 gap-3 pt-1">
                               <button
                                 type="button"
