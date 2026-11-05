@@ -87,7 +87,7 @@ class SitemapController extends Controller
                 foreach ($stores as $store) {
                     $sitemap->add(
                         $this->withLastModified(
-                            Url::create($this->absolute(route('stores.show', $store->id, false)))
+                            Url::create($this->absolute(route('stores.show', $store->name, false)))
                                 ->setPriority(0.7)
                                 ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY),
                             $store->updated_at
@@ -188,7 +188,7 @@ class SitemapController extends Controller
         foreach ($stores as $store) {
             $sitemap->add(
                 $this->withLastModified(
-                    Url::create($this->absolute(route('stores.show', $store->id, false)))
+                    Url::create($this->absolute(route('stores.show', $store->name, false)))
                         ->setPriority(0.7)
                         ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY),
                     $store->updated_at

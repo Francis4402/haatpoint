@@ -299,7 +299,7 @@ const ProductCard = ({
           <div className="flex items-center gap-2 flex-wrap min-w-0">
             {store ? (
               <Link
-                href={`/stores/${store.id}`}
+                href={`/stores/${encodeURIComponent(store.name || store.id)}`}
                 className="shrink-0 flex items-center gap-1.5 min-w-0"
                 title={`Visit ${vendor}`}
                 aria-label={`Visit ${vendor}`}

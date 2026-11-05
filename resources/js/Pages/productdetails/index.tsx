@@ -614,7 +614,7 @@ const ProductDetailsPage = ({
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <Link
-                            href={`/stores/${store.id}`}
+                            href={`/stores/${encodeURIComponent(store.name || store.id)}`}
                             className="text-sm sm:text-base font-semibold text-ink hover:text-marigold transition-colors"
                           >
                             {store.name}
@@ -1327,7 +1327,7 @@ const ProductDetailsPage = ({
               </div>
               <div className="shrink-0">
                 <Link
-                  href={`/stores/${store.id}`}
+                  href={`/stores/${encodeURIComponent(store.name || store.id)}`}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-ink hover:bg-marigold text-white hover:text-ink font-semibold rounded-xl text-sm transition-all duration-200 shadow-sm active:scale-95"
                 >
                   <FaStore className="w-3.5 h-3.5" />

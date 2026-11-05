@@ -137,7 +137,7 @@ export default function StoreShow({
           '@type': 'Store',
           name: store.name,
           image: store.logo ? `https://www.haatpoint.com/storage/${store.logo}` : 'https://www.haatpoint.com/og-image.png',
-          url: `https://www.haatpoint.com/stores/${store.id}`,
+          url: `https://www.haatpoint.com/stores/${encodeURIComponent(store.name || store.id)}`,
           address: {
             '@type': 'PostalAddress',
             streetAddress: store.address,

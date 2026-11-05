@@ -251,12 +251,53 @@ class StoreController extends Controller
 
     /**
      * Display the specified resource.
+     * Accessible by store name (/stores/storename) or UUID with canonical redirect.
      */
-    public function show($id)
+    public function show(Request $request, $store)
     {
-        $store = Store::findOrFail($id);
+        $storeModel = null;
 
-        abort_if(! $store->is_active, 404);
+        if ($store instanceof Store) {
+            $storeModel = $store;
+        } else {
+            // 1. Direct name match
+            $storeModel = Store::where('name', $store)->first();
+
+            // 2. URL-decoded name match
+            if (! $storeModel) {
+                $decoded = urldecode((string) $store);
+                if ($decoded !== $store) {
+                    $storeModel = Store::where('name', $decoded)->first();
+                }
+            }
+
+            // 3. Normalized / hyphenated / case-insensitive match
+            if (! $storeModel) {
+                $storeModel = Store::whereRaw('LOWER(name) = ?', [strtolower((string) $store)])
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower(str_replace('-', ' ', (string) $store))])
+                    ->orWhereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [strtolower((string) $store)])
+                    ->first();
+            }
+
+            // 4. Fallback by UUID
+            if (! $storeModel && Str::isUuid((string) $store)) {
+                $storeModel = Store::where('id', $store)->first();
+            }
+
+            if (! $storeModel) {
+                abort(404);
+            }
+        }
+
+        abort_if(! $storeModel->is_active, 404);
+
+        // If accessed by UUID, permanently (301) redirect to the canonical store name URL
+        $rawParam = (string) $request->route('store');
+        if (Str::isUuid($rawParam) || $rawParam === $storeModel->id) {
+            return redirect()->route('stores.show', ['store' => $storeModel->name], 301);
+        }
+
+        $store = $storeModel;
 
         // Every product that belongs to this store, paginated so a store with a
         // large catalogue does not send the whole table to the browser.

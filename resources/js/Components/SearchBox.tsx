@@ -229,7 +229,7 @@ const SearchBox = ({
       })
     );
     results.stores.forEach((store) =>
-      list.push({ key: `s-${store.id}`, href: `/stores/${store.id}`, group: 'store' })
+      list.push({ key: `s-${store.id}`, href: `/stores/${encodeURIComponent(store.name || store.id)}`, group: 'store' })
     );
     results.quick_links.forEach((link) =>
       list.push({ key: `q-${link.href}`, href: link.href, group: 'quick' })
@@ -642,7 +642,7 @@ const SearchBox = ({
                 {results.stores.map((store, index) => (
                   <li key={store.id} role="option" aria-selected={isActive(storeOffset + index)}>
                     <Link
-                      href={`/stores/${store.id}`}
+                      href={`/stores/${encodeURIComponent(store.name || store.id)}`}
                       onClick={() => {
                         setOpen(false);
                         onNavigate?.();

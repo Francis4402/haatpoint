@@ -13,6 +13,52 @@ class Store extends Model
 
     protected $guarded = [];
 
+    public function getRouteKeyName(): string
+    {
+        return 'name';
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $field = $field ?? $this->getRouteKeyName();
+
+        if ($field !== 'name') {
+            return $this->where($field, $value)->first();
+        }
+
+        // 1. Direct name match
+        $store = $this->where('name', $value)->first();
+        if ($store) {
+            return $store;
+        }
+
+        // 2. URL-decoded name match
+        $decoded = urldecode((string) $value);
+        if ($decoded !== $value) {
+            $store = $this->where('name', $decoded)->first();
+            if ($store) {
+                return $store;
+            }
+        }
+
+        // 3. Case-insensitive / hyphenated match
+        $store = $this->whereRaw('LOWER(name) = ?', [strtolower((string) $value)])
+            ->orWhereRaw('LOWER(name) = ?', [strtolower($decoded)])
+            ->orWhereRaw('LOWER(name) = ?', [strtolower(str_replace('-', ' ', (string) $value))])
+            ->orWhereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [strtolower((string) $value)])
+            ->first();
+        if ($store) {
+            return $store;
+        }
+
+        // 4. Fallback by UUID
+        if (\Illuminate\Support\Str::isUuid((string) $value)) {
+            return $this->where('id', $value)->first();
+        }
+
+        return null;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

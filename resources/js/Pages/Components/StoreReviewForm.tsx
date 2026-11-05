@@ -66,7 +66,7 @@ export default function StoreReviewForm({
     setIsSubmitting(true);
 
     router.post(
-      `/stores/${storeId}/review`,
+      `/stores/${encodeURIComponent(storeName || storeId)}/review`,
       {
         rating,
         comment: comment.trim() || null,

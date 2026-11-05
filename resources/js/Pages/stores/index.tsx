@@ -220,7 +220,7 @@ const StoreListPage = ({ auth, stores, wishlist }: StoreListPageProps) => {
         };
 
         const handleCardClick = () => {
-            router.visit(`/stores/${store.id}`);
+            router.visit(`/stores/${encodeURIComponent(store.name || store.id)}`);
         };
 
         const safeRating = typeof store.rating === 'string'

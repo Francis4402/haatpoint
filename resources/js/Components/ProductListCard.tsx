@@ -149,7 +149,7 @@ export default function ProductListCard({
                   <>
                     <span className="text-line">•</span>
                     <Link
-                      href={`/stores/${product.store.id}`}
+                      href={`/stores/${encodeURIComponent(product.store.name || product.store.id)}`}
                       className="inline-flex items-center gap-1 font-medium text-ink hover:text-marigold transition-colors truncate max-w-[130px] sm:max-w-none"
                     >
                       <FaStore className="w-2.5 h-2.5 text-marigold shrink-0" />

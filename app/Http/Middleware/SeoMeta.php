@@ -282,9 +282,26 @@ class SeoMeta
      */
     private function storeContent(Request $request, array $defaults): array
     {
-        $store = Store::query()
-            ->where('is_active', true)
-            ->find($request->route('store'));
+        $param = $request->route('store');
+
+        $store = null;
+        if ($param instanceof Store) {
+            $store = $param;
+        } elseif (is_string($param)) {
+            $store = Store::query()->where('is_active', true)
+                ->where('name', $param)
+                ->orWhere('id', $param)
+                ->first();
+
+            if (! $store) {
+                $decoded = urldecode($param);
+                $store = Store::query()->where('is_active', true)
+                    ->where('name', $decoded)
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower($param)])
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower(str_replace('-', ' ', $param))])
+                    ->first();
+            }
+        }
 
         if (! $store) {
             return $defaults;

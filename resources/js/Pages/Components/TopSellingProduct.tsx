@@ -230,7 +230,7 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                 <div className="flex items-center gap-2 mb-2 text-xs text-text-soft">
                   {product.store && (
                     <Link
-                      href={`/stores/${product.store.id}`}
+                      href={`/stores/${encodeURIComponent(product.store.name || product.store.id)}`}
                       className="inline-flex items-center gap-1.5 hover:text-ink transition-colors truncate max-w-[140px]"
                     >
                       {storeLogo ? (

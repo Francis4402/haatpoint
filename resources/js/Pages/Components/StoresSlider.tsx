@@ -107,7 +107,7 @@ const StoresSlider = ({ stores }: StoresSliderProps) => {
             return (
               <SwiperSlide key={store.id}>
                 <Link
-                  href={`/stores/${store.id}`}
+                  href={`/stores/${encodeURIComponent(store.name || store.id)}`}
                   className="block bg-white border border-line h-full rounded-2xl hover:border-marigold hover:shadow-hard-sm transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="p-6 h-full flex flex-col">
