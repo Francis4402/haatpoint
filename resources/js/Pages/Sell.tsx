@@ -191,9 +191,8 @@ export default function Sell({ auth, agentRegisterRoute }: PageProps<{ agentRegi
       <div className="h-10 sm:h-16 bg-paper" />
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-ink text-paper">
-        <div className="absolute right-[-140px] top-[-180px] h-[460px] w-[460px] bg-marigold opacity-90 clip-cta" />
-        <div className="relative z-10 container py-20 sm:py-28 text-center max-w-3xl mx-auto">
+      <section className="bg-ink text-paper">
+        <div className="container py-20 sm:py-28 text-center max-w-3xl mx-auto">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 backdrop-blur-sm">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-marigold" />
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.14em]">
