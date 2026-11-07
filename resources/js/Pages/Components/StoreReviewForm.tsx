@@ -2,6 +2,7 @@ import { useState } from "react";
 import { router } from "@inertiajs/react";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import { toast } from "sonner";
+import { storeSlug } from "@/Pages/utils/storeType";
 
 interface StoreReviewFormProps {
   storeId: string;
@@ -66,7 +67,7 @@ export default function StoreReviewForm({
     setIsSubmitting(true);
 
     router.post(
-      `/stores/${encodeURIComponent(storeName || storeId)}/review`,
+      `/stores/${storeSlug(storeName, storeId)}/review`,
       {
         rating,
         comment: comment.trim() || null,

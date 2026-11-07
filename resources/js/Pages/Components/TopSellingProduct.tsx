@@ -21,6 +21,7 @@ import { Product } from "@/types";
 import WishlistButton from "../buttons/WishListButton";
 import { parseVariantList } from "../utils/parseVariants";
 import SelectOptionsDialog from "@/Components/SelectOptionsDialog";
+import { storeSlug } from "../utils/storeType";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -230,7 +231,7 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                 <div className="flex items-center gap-2 mb-2 text-xs text-text-soft">
                   {product.store && (
                     <Link
-                      href={`/stores/${encodeURIComponent(product.store.name || product.store.id)}`}
+                      href={`/stores/${storeSlug(product.store)}`}
                       className="inline-flex items-center gap-1.5 hover:text-ink transition-colors truncate max-w-[140px]"
                     >
                       {storeLogo ? (

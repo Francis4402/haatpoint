@@ -271,11 +271,23 @@ class StoreController extends Controller
                 }
             }
 
-            // 3. Normalized / hyphenated / case-insensitive match
+            // 3. Normalized / hyphenated / ampersand / case-insensitive match
             if (! $storeModel) {
+                $decoded = $decoded ?? urldecode((string) $store);
+                $unhyphenated = str_replace('-', ' ', (string) $store);
+                $decodedUnhyphenated = str_replace('-', ' ', $decoded);
+                $withAmpersand1 = str_ireplace(['-and-', ' and '], [' & ', ' & '], (string) $store);
+                $withAmpersand2 = str_ireplace(' and ', ' & ', $unhyphenated);
                 $storeModel = Store::whereRaw('LOWER(name) = ?', [strtolower((string) $store)])
-                    ->orWhereRaw('LOWER(name) = ?', [strtolower(str_replace('-', ' ', (string) $store))])
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower($decoded)])
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower($unhyphenated)])
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower($decodedUnhyphenated)])
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower($withAmpersand1)])
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower($withAmpersand2)])
                     ->orWhereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [strtolower((string) $store)])
+                    ->orWhereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [strtolower($decoded)])
+                    ->orWhereRaw('LOWER(REPLACE(REPLACE(name, "&", "and"), " ", "-")) = ?', [strtolower((string) $store)])
+                    ->orWhereRaw('LOWER(REPLACE(REPLACE(name, "&", "and"), " ", "-")) = ?', [strtolower($decoded)])
                     ->first();
             }
 
@@ -291,10 +303,14 @@ class StoreController extends Controller
 
         abort_if(! $storeModel->is_active, 404);
 
-        // If accessed by UUID, permanently (301) redirect to the canonical store name URL
+        // Canonical dashed slug for store URL (e.g. "Adnan-Lifestyle", "Rahman-and-Sons")
+        $canonicalSlug = Store::slugifyName($storeModel->name);
         $rawParam = (string) $request->route('store');
-        if (Str::isUuid($rawParam) || $rawParam === $storeModel->id) {
-            return redirect()->route('stores.show', ['store' => $storeModel->name], 301);
+
+        // If accessed by UUID, with %20, %26, raw ampersand, or differing casing/slug,
+        // permanently (301) redirect to the clean dashed canonical store URL
+        if ($rawParam !== $canonicalSlug && urldecode($rawParam) !== $canonicalSlug) {
+            return redirect()->route('stores.show', ['store' => $canonicalSlug], 301);
         }
 
         $store = $storeModel;

@@ -12,6 +12,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import WishlistButton from "@/Pages/buttons/WishListButton";
 import { parseVariantList } from "@/Pages/utils/parseVariants";
 import SelectOptionsDialog from "@/Components/SelectOptionsDialog";
+import { storeSlug } from "@/Pages/utils/storeType";
 
 
 interface ProductCardProps {
@@ -299,7 +300,7 @@ const ProductCard = ({
           <div className="flex items-center gap-2 flex-wrap min-w-0">
             {store ? (
               <Link
-                href={`/stores/${encodeURIComponent(store.name || store.id)}`}
+                href={`/stores/${storeSlug(store)}`}
                 className="shrink-0 flex items-center gap-1.5 min-w-0"
                 title={`Visit ${vendor}`}
                 aria-label={`Visit ${vendor}`}

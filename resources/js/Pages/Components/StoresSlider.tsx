@@ -5,7 +5,7 @@ import { Autoplay, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { FaStore, FaStar } from "react-icons/fa";
 import { storeType } from "@/types";
-import { formatStoreType } from "@/Pages/utils/storeType";
+import { formatStoreType, storeSlug } from "@/Pages/utils/storeType";
 import Eyebrow from "./Eyebrow";
 
 import "swiper/css";
@@ -107,7 +107,7 @@ const StoresSlider = ({ stores }: StoresSliderProps) => {
             return (
               <SwiperSlide key={store.id}>
                 <Link
-                  href={`/stores/${encodeURIComponent(store.name || store.id)}`}
+                  href={`/stores/${storeSlug(store)}`}
                   className="block bg-white border border-line h-full rounded-2xl hover:border-marigold hover:shadow-hard-sm transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="p-6 h-full flex flex-col">

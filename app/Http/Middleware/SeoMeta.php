@@ -299,6 +299,9 @@ class SeoMeta
                     ->where('name', $decoded)
                     ->orWhereRaw('LOWER(name) = ?', [strtolower($param)])
                     ->orWhereRaw('LOWER(name) = ?', [strtolower(str_replace('-', ' ', $param))])
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower(str_ireplace('-and-', ' & ', $param))])
+                    ->orWhereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [strtolower($param)])
+                    ->orWhereRaw('LOWER(REPLACE(REPLACE(name, "&", "and"), " ", "-")) = ?', [strtolower($param)])
                     ->first();
             }
         }

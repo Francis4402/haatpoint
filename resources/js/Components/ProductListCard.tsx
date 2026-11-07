@@ -8,6 +8,7 @@ import { parseVariantList } from '@/Pages/utils/parseVariants';
 import WishlistButton from '@/Pages/buttons/WishListButton';
 import AddtoCartButton from '@/Pages/buttons/AddtoCartButton';
 import SelectOptionsDialog from '@/Components/SelectOptionsDialog';
+import { storeSlug } from '@/Pages/utils/storeType';
 
 interface ProductListCardProps {
   product: Product;
@@ -149,7 +150,7 @@ export default function ProductListCard({
                   <>
                     <span className="text-line">•</span>
                     <Link
-                      href={`/stores/${encodeURIComponent(product.store.name || product.store.id)}`}
+                      href={`/stores/${storeSlug(product.store)}`}
                       className="inline-flex items-center gap-1 font-medium text-ink hover:text-marigold transition-colors truncate max-w-[130px] sm:max-w-none"
                     >
                       <FaStore className="w-2.5 h-2.5 text-marigold shrink-0" />

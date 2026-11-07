@@ -8,7 +8,7 @@ import { FiSearch, FiX, FiLoader, FiArrowRight, FiGrid, FiTag, FiShoppingBag, Fi
 import { FaStar } from 'react-icons/fa';
 import FormatPrice from '@/Pages/utils/FormatePrice';
 import { withMarkup } from '@/Pages/utils/price';
-import { formatStoreType } from '@/Pages/utils/storeType';
+import { formatStoreType, storeSlug } from '@/Pages/utils/storeType';
 
 export interface SearchProduct {
   id: string;
@@ -229,7 +229,7 @@ const SearchBox = ({
       })
     );
     results.stores.forEach((store) =>
-      list.push({ key: `s-${store.id}`, href: `/stores/${encodeURIComponent(store.name || store.id)}`, group: 'store' })
+      list.push({ key: `s-${store.id}`, href: `/stores/${storeSlug(store)}`, group: 'store' })
     );
     results.quick_links.forEach((link) =>
       list.push({ key: `q-${link.href}`, href: link.href, group: 'quick' })
@@ -642,7 +642,7 @@ const SearchBox = ({
                 {results.stores.map((store, index) => (
                   <li key={store.id} role="option" aria-selected={isActive(storeOffset + index)}>
                     <Link
-                      href={`/stores/${encodeURIComponent(store.name || store.id)}`}
+                      href={`/stores/${storeSlug(store)}`}
                       onClick={() => {
                         setOpen(false);
                         onNavigate?.();

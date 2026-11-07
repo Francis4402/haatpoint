@@ -23,3 +23,25 @@ export function isWholesale(type?: string | null): boolean {
     if (!type) return false;
     return /wholesale/i.test(type);
 }
+
+/**
+ * Convert a store name (or store object) into a clean URL-friendly dashed slug.
+ * Spaces/gaps are replaced with dashes (-), ampersands (&) are replaced with 'and',
+ * while preserving the casing of the store name.
+ * E.g.:
+ * - "Adnan Lifestyle" -> "Adnan-Lifestyle"
+ * - "Rahman & Sons"   -> "Rahman-and-Sons"
+ * - "H&M"             -> "H-and-M"
+ */
+export function storeSlug(store?: string | { name?: string | null; id?: string | null } | null, fallback?: string | null): string {
+    if (!store) return fallback || '';
+    const raw = typeof store === 'string' ? store : (store.name || store.id || fallback || '');
+    if (!raw) return '';
+    const cleaned = raw
+        .trim()
+        .replace(/&/g, ' and ')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    return encodeURIComponent(cleaned);
+}

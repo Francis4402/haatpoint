@@ -20,7 +20,7 @@ import AppLayout from "@/Layouts/AppLayout";
 import { Link, router } from "@inertiajs/react";
 import SeoHead from '@/Components/SeoHead';
 import { storeType } from "@/types";
-import { formatStoreType } from "@/Pages/utils/storeType";
+import { formatStoreType, storeSlug } from "@/Pages/utils/storeType";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -220,7 +220,7 @@ const StoreListPage = ({ auth, stores, wishlist }: StoreListPageProps) => {
         };
 
         const handleCardClick = () => {
-            router.visit(`/stores/${encodeURIComponent(store.name || store.id)}`);
+            router.visit(`/stores/${storeSlug(store)}`);
         };
 
         const safeRating = typeof store.rating === 'string'

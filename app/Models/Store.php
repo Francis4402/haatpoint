@@ -13,9 +13,27 @@ class Store extends Model
 
     protected $guarded = [];
 
+    public static function slugifyName(?string $name): string
+    {
+        if (! $name) {
+            return '';
+        }
+
+        $replaced = str_replace('&', ' and ', $name);
+        $dashed = preg_replace('/\s+/', '-', trim($replaced));
+        $collapsed = preg_replace('/-+/', '-', (string) $dashed);
+
+        return trim((string) $collapsed, '-');
+    }
+
     public function getRouteKeyName(): string
     {
         return 'name';
+    }
+
+    public function getRouteKey(): mixed
+    {
+        return self::slugifyName($this->name);
     }
 
     public function resolveRouteBinding($value, $field = null)
@@ -41,11 +59,22 @@ class Store extends Model
             }
         }
 
-        // 3. Case-insensitive / hyphenated match
+        // 3. Case-insensitive / hyphenated / ampersand match
+        $unhyphenated = str_replace('-', ' ', (string) $value);
+        $decodedUnhyphenated = str_replace('-', ' ', $decoded);
+        $withAmpersand1 = str_ireplace(['-and-', ' and '], [' & ', ' & '], (string) $value);
+        $withAmpersand2 = str_ireplace(' and ', ' & ', $unhyphenated);
+
         $store = $this->whereRaw('LOWER(name) = ?', [strtolower((string) $value)])
             ->orWhereRaw('LOWER(name) = ?', [strtolower($decoded)])
-            ->orWhereRaw('LOWER(name) = ?', [strtolower(str_replace('-', ' ', (string) $value))])
+            ->orWhereRaw('LOWER(name) = ?', [strtolower($unhyphenated)])
+            ->orWhereRaw('LOWER(name) = ?', [strtolower($decodedUnhyphenated)])
+            ->orWhereRaw('LOWER(name) = ?', [strtolower($withAmpersand1)])
+            ->orWhereRaw('LOWER(name) = ?', [strtolower($withAmpersand2)])
             ->orWhereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [strtolower((string) $value)])
+            ->orWhereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [strtolower($decoded)])
+            ->orWhereRaw('LOWER(REPLACE(REPLACE(name, "&", "and"), " ", "-")) = ?', [strtolower((string) $value)])
+            ->orWhereRaw('LOWER(REPLACE(REPLACE(name, "&", "and"), " ", "-")) = ?', [strtolower($decoded)])
             ->first();
         if ($store) {
             return $store;
