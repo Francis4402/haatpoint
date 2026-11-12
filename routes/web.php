@@ -381,6 +381,12 @@ Route::get('/products', [ProductsController::class, 'products'])->name('products
 
 Route::get('/aboutus', [PageController::class, 'aboutus'])->name('aboutus.index');
 
+// 301 redirects for legacy / GSC product filter URLs
+Route::redirect('/products/trending', '/products?product_type=trending', 301);
+Route::redirect('/products/featured', '/products?product_type=featured', 301);
+Route::redirect('/products/top-selling', '/products', 301);
+Route::redirect('/products/new-arrival', '/new-arrivals', 301);
+
 Route::get('/products/{slug}', [ProductsController::class, 'show'])->name('products.details');
 
 Route::get('/cart', [PageController::class, 'cartpage'])->name('cart.index');
@@ -410,6 +416,8 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/privacy-policy', 'privacypolicy')->name('privacy.policy');
     Route::get('/terms-and-conditions', 'termsandconditions')->name('terms.and.conditions');
     Route::get('/terms', fn () => redirect()->route('terms.and.conditions', [], 301));
+    Route::get('/privacy', fn () => redirect()->route('privacy.policy', [], 301));
+    Route::get('/contact', fn () => redirect()->route('contact.index', [], 301));
 });
 
 Route::post('/reviews', [ReviewsController::class, 'store'])->name('reviews.store');
