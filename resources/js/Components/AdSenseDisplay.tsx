@@ -7,6 +7,67 @@ interface AdSenseDisplayProps {
   label?: boolean;
 }
 
+export function isLocalDevHost(): boolean {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname;
+  return (
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host === '::1' ||
+    host.endsWith('.local') ||
+    host.endsWith('.test') ||
+    /^192\.168\.|^10\.|^172\.(1[6-9]|2\d|3[01])\./.test(host)
+  );
+}
+
+export function useAdSenseInit(
+  adRef: React.RefObject<HTMLModElement | null>,
+  deps: unknown[]
+): boolean {
+  const [isLocalhost, setIsLocalhost] = useState(false);
+
+  useEffect(() => {
+    const local = isLocalDevHost();
+    setIsLocalhost(local);
+    if (local) return;
+
+    let rafId = 0;
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    const initAd = () => {
+      const el = adRef.current;
+      if (!el) return;
+
+      // Avoid double-initializing the same <ins> tag (StrictMode / hydration)
+      if (el.getAttribute('data-adsbygoogle-status')) return;
+
+      // Wait until block container has layout width to prevent availableWidth=0 TagError
+      if (el.offsetWidth === 0) {
+        if (attempts < maxAttempts) {
+          attempts += 1;
+          rafId = window.requestAnimationFrame(initAd);
+        }
+        return;
+      }
+
+      try {
+        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      } catch (e) {
+        console.debug('AdSense push:', e);
+      }
+    };
+
+    rafId = window.requestAnimationFrame(initAd);
+
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, deps);
+
+  return isLocalhost;
+}
+
 export default function AdSenseDisplay({
   className = '',
   slot = '8587585300',
@@ -14,28 +75,7 @@ export default function AdSenseDisplay({
   label = true,
 }: AdSenseDisplayProps) {
   const adRef = useRef<HTMLModElement>(null);
-  const pushedRef = useRef(false);
-  const [isLocalhost, setIsLocalhost] = useState(false);
-
-  useEffect(() => {
-    const isLocal =
-      typeof window !== 'undefined' &&
-      (window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1' ||
-        window.location.hostname.endsWith('.local'));
-    setIsLocalhost(isLocal);
-
-    if (pushedRef.current) return;
-
-    try {
-      if (typeof window !== 'undefined') {
-        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-        pushedRef.current = true;
-      }
-    } catch (e) {
-      console.debug('AdSense Display push:', e);
-    }
-  }, []);
+  const isLocalhost = useAdSenseInit(adRef, [slot, adClient]);
 
   return (
     <div className={`w-full my-8 text-center overflow-hidden ${className}`}>
@@ -44,7 +84,7 @@ export default function AdSenseDisplay({
           Advertisement
         </div>
       )}
-      <div className="min-h-[100px] sm:min-h-[120px] flex items-center justify-center bg-paper-dim/40 border border-line/50 rounded-xl p-2 overflow-hidden shadow-sm relative">
+      <div className="block w-full min-h-[100px] sm:min-h-[120px] bg-paper-dim/40 border border-line/50 rounded-xl p-2 overflow-hidden shadow-sm relative">
         <ins
           ref={adRef}
           className="adsbygoogle"
@@ -53,7 +93,6 @@ export default function AdSenseDisplay({
           data-ad-slot={slot}
           data-ad-format="auto"
           data-full-width-responsive="true"
-          {...(isLocalhost ? { 'data-adtest': 'on' } : {})}
         />
 
         {/* Localhost visual preview placeholder */}

@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
+import { useAdSenseInit } from './AdSenseDisplay';
 
 interface AdSenseMultiplexProps {
   className?: string;
@@ -14,28 +15,7 @@ export default function AdSenseMultiplex({
   title = 'Sponsored Recommendations',
 }: AdSenseMultiplexProps) {
   const adRef = useRef<HTMLModElement>(null);
-  const pushedRef = useRef(false);
-  const [isLocalhost, setIsLocalhost] = useState(false);
-
-  useEffect(() => {
-    const isLocal =
-      typeof window !== 'undefined' &&
-      (window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1' ||
-        window.location.hostname.endsWith('.local'));
-    setIsLocalhost(isLocal);
-
-    if (pushedRef.current) return;
-
-    try {
-      if (typeof window !== 'undefined') {
-        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-        pushedRef.current = true;
-      }
-    } catch (e) {
-      console.debug('AdSense Multiplex push:', e);
-    }
-  }, []);
+  const isLocalhost = useAdSenseInit(adRef, [slot, adClient]);
 
   return (
     <div className={`w-full my-10 overflow-hidden ${className}`}>
@@ -47,7 +27,7 @@ export default function AdSenseMultiplex({
           Ads by Google
         </span>
       </div>
-      <div className="min-h-[160px] bg-paper-dim/40 border border-line/50 rounded-2xl p-3 sm:p-5 overflow-hidden shadow-sm">
+      <div className="block w-full min-h-[160px] bg-paper-dim/40 border border-line/50 rounded-2xl p-3 sm:p-5 overflow-hidden shadow-sm">
         <ins
           ref={adRef}
           className="adsbygoogle"
@@ -55,7 +35,6 @@ export default function AdSenseMultiplex({
           data-ad-format="autorelaxed"
           data-ad-client={adClient}
           data-ad-slot={slot}
-          {...(isLocalhost ? { 'data-adtest': 'on' } : {})}
         />
 
         {/* Localhost visual preview placeholder */}
