@@ -23,8 +23,9 @@ export function isLocalDevHost(): boolean {
 export function useAdSenseInit(
   adRef: React.RefObject<HTMLModElement | null>,
   deps: unknown[]
-): boolean {
+): { isLocalhost: boolean; isUnfilled: boolean } {
   const [isLocalhost, setIsLocalhost] = useState(false);
+  const [isUnfilled, setIsUnfilled] = useState(false);
 
   useEffect(() => {
     const local = isLocalDevHost();
@@ -60,12 +61,25 @@ export function useAdSenseInit(
 
     rafId = window.requestAnimationFrame(initAd);
 
+    // Watch for AdSense setting data-ad-status="unfilled" to hide empty container cleanly
+    const el = adRef.current;
+    let observer: MutationObserver | null = null;
+    if (el) {
+      observer = new MutationObserver(() => {
+        if (el.getAttribute('data-ad-status') === 'unfilled') {
+          setIsUnfilled(true);
+        }
+      });
+      observer.observe(el, { attributes: true, attributeFilter: ['data-ad-status'] });
+    }
+
     return () => {
       if (rafId) window.cancelAnimationFrame(rafId);
+      if (observer) observer.disconnect();
     };
   }, deps);
 
-  return isLocalhost;
+  return { isLocalhost, isUnfilled };
 }
 
 export default function AdSenseDisplay({
@@ -75,7 +89,11 @@ export default function AdSenseDisplay({
   label = true,
 }: AdSenseDisplayProps) {
   const adRef = useRef<HTMLModElement>(null);
-  const isLocalhost = useAdSenseInit(adRef, [slot, adClient]);
+  const { isLocalhost, isUnfilled } = useAdSenseInit(adRef, [slot, adClient]);
+
+  if (isUnfilled && !isLocalhost) {
+    return null;
+  }
 
   return (
     <div className={`w-full my-8 text-center overflow-hidden ${className}`}>

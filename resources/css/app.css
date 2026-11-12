@@ -259,3 +259,8 @@ h1, h2, h3 {
 .product-rich-description .ql-size-large { font-size: 1.25em; }
 .product-rich-description .ql-size-huge { font-size: 1.5em; font-weight: 700; }
 
+/* Hide unfilled Google AdSense units cleanly */
+ins.adsbygoogle[data-ad-status="unfilled"] {
+  display: none !important;
+}
+

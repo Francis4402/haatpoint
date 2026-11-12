@@ -15,7 +15,11 @@ export default function AdSenseMultiplex({
   title = 'Sponsored Recommendations',
 }: AdSenseMultiplexProps) {
   const adRef = useRef<HTMLModElement>(null);
-  const isLocalhost = useAdSenseInit(adRef, [slot, adClient]);
+  const { isLocalhost, isUnfilled } = useAdSenseInit(adRef, [slot, adClient]);
+
+  if (isUnfilled && !isLocalhost) {
+    return null;
+  }
 
   return (
     <div className={`w-full my-10 overflow-hidden ${className}`}>
