@@ -43,7 +43,7 @@ Route::get('/', function () {
     $products = Products::with('store')
             ->visible()
             ->orderBy('created_at', 'desc')
-            ->paginate(2);
+            ->paginate(3);
     $reviews = [];
     $wishlist = Wishlist::forOwner()->paginate(12);
 
