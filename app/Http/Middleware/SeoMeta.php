@@ -164,7 +164,7 @@ class SeoMeta
             'title' => $title,
             'description' => $description,
             'canonical' => $this->canonicalFor($request),
-            'robots' => $this->robotsFor($routeName),
+            'robots' => $this->robotsFor($request, $routeName),
             'ogType' => $ogType,
             'ogTitle' => $title,
             'ogDescription' => $description,
@@ -370,12 +370,18 @@ class SeoMeta
         return $path === '/' ? self::SITE_URL : self::SITE_URL . $path;
     }
 
-    private function robotsFor(?string $routeName): string
+    private function robotsFor(Request $request, ?string $routeName): string
     {
         foreach (self::NO_INDEX_PREFIXES as $prefix) {
             if ($routeName !== null && str_starts_with($routeName, $prefix)) {
                 return 'noindex, follow';
             }
+        }
+
+        // Prevent Soft 404s on thin / empty query filter variants (?category=..., ?product_type=...)
+        // Clean /products catalog root stays index, follow.
+        if ($routeName === 'products.index' && ($request->has('category') || $request->has('product_type') || $request->has('search') || $request->has('brand') || $request->has('subcategory'))) {
+            return 'noindex, follow';
         }
 
         return 'index, follow';

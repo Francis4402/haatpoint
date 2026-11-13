@@ -784,6 +784,16 @@ class ProductsController extends Controller
             ->paginate(24)
             ->withQueryString();
 
+        // If no products have a discounted sale price yet, fall back to active products
+        // so /hotdeals always displays a catalog and never triggers an empty Soft 404.
+        if ($products->total() === 0) {
+            $products = Products::with('store')
+                ->visible()
+                ->latest()
+                ->paginate(24)
+                ->withQueryString();
+        }
+
         $ratings = Comments::whereIn('product_id', $products->pluck('id'))
             ->whereNotNull('rating')
             ->select('product_id', 'rating')

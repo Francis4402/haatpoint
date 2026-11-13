@@ -418,6 +418,11 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/terms', fn () => redirect()->route('terms.and.conditions', [], 301));
     Route::get('/privacy', fn () => redirect()->route('privacy.policy', [], 301));
     Route::get('/contact', fn () => redirect()->route('contact.index', [], 301));
+    Route::get('/seller/terms', fn () => redirect()->route('terms.and.conditions', [], 301));
+    Route::get('/seller-policy', fn () => redirect()->route('terms.and.conditions', [], 301));
+    Route::get('/customer-support', fn () => redirect()->route('contact.index', [], 301));
+    Route::get('/customer-service', fn () => redirect()->route('contact.index', [], 301));
+    Route::get('/faq', fn () => redirect()->to('/sell#faq', 301));
 });
 
 Route::post('/reviews', [ReviewsController::class, 'store'])->name('reviews.store');

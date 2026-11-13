@@ -297,11 +297,15 @@ class StoreController extends Controller
             }
 
             if (! $storeModel) {
-                abort(404);
+                // If a legacy store link (UUID or obsolete slug) no longer exists,
+                // permanently redirect to the active stores directory (/stores) to avoid 404s
+                return redirect()->route('stores.index', [], 301);
             }
         }
 
-        abort_if(! $storeModel->is_active, 404);
+        if (! $storeModel->is_active) {
+            return redirect()->route('stores.index', [], 301);
+        }
 
         // Canonical dashed slug for store URL (e.g. "Adnan-Lifestyle", "Rahman-and-Sons")
         $canonicalSlug = Store::slugifyName($storeModel->name);
