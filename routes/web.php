@@ -40,6 +40,22 @@ use Inertia\Inertia;
 
 Route::get('/', [ProductsController::class, 'products'])->name('home');
 
+// Superadmin Production Database Seeder Trigger (Protected with Secret Key)
+Route::get('/system/import-products/{key}', function ($key) {
+    if ($key !== 'haatpoint-seed-2026') {
+        abort(403, 'Unauthorized.');
+    }
+    \Illuminate\Support\Facades\Artisan::call('shopbase:import', ['--fresh' => true]);
+    $count = \App\Models\Products::count();
+
+    return response()->json([
+        'status' => 'success',
+        'message' => "Successfully imported {$count} products with maximum profit pricing into production database!",
+        'total_products' => $count,
+        'terminal_output' => \Illuminate\Support\Facades\Artisan::output(),
+    ]);
+})->name('system.seed-products');
+
 Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])->group(function () {
     Route::get('/dashboard/categories', [CategoriesController::class, 'index'])->name('dashboard.categories');
     Route::post('/dashboard/categories', [CategoriesController::class, 'store'])->name('dashboard.storecategory');
