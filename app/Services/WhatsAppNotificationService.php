@@ -74,14 +74,14 @@ class WhatsAppNotificationService
             $lines[] = "• *ডেলিভারি চার্জ:* ৳" . number_format((float) $order->delivery_charge, 2);
         }
 
-        // 10% cut from buyers (platform fee / markup)
+        // 45% markup from buyers (platform fee / markup)
         $buyerCut = (float) $order->total - (float) $order->delivery_charge - (float) $order->subtotal + (float) $order->discount_amount;
         if ($buyerCut <= 0 && (float) $order->subtotal > 0) {
-            $buyerCut = round((float) $order->subtotal * 0.10, 2);
+            $buyerCut = round((float) $order->subtotal * 0.45, 2);
         }
 
         if ($buyerCut > 0) {
-            $lines[] = "• *বায়ার থেকে ১০% কাট:* ৳" . number_format((float) $buyerCut, 2);
+            $lines[] = "• *বায়ার থেকে ৪৫% কাট:* ৳" . number_format((float) $buyerCut, 2);
         }
 
         if ((float) $order->discount_amount > 0) {

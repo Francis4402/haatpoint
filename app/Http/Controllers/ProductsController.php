@@ -712,7 +712,7 @@ class ProductsController extends Controller
             default => $query->withProBoost()->latest(),
         };
 
-        $products = $query->paginate(20)->withQueryString();
+        $products = $query->paginate(24)->withQueryString();
 
         // Rating summary for the products on the current page.
         $ratings = Comments::whereIn('product_id', $products->pluck('id'))

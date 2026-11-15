@@ -2,23 +2,15 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
     public function run(): void
     {
-        $this->call([
-            CategoriesSeeder::class,
-        ]);
-
-        $this->command?->newLine();
-        $this->command?->info('Seeding complete. Categories seeded successfully.');
+        $this->command->call('shopbase:import', ['--fresh' => true]);
     }
 }

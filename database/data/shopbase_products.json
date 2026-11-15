@@ -1,0 +1,219 @@
+{
+  "ok": true,
+  "action": "script",
+  "intent": "Extract batch of products with full details and variations across multiple categories",
+  "value": {
+    "products": [
+      {
+        "additionalImages": [
+          "https://shopbasebd.com/public/uploads/shop/products/1794490612_L_2.jpeg",
+          "https://shopbasebd.com/public/uploads/shop/products/1794490612_L_3.jpeg"
+        ],
+        "category": "জেন্টস উইন্টার (Men's Winter)",
+        "description": "✨ প্রিমিয়াম কোয়ালিটির স্টাইলিশ সলিড কালারের ডিটিএফ প্রিন্ট হুডি। | ❤️ আরামদায়ক কটন ফেব্রিক ও আকর্ষণীয় ডিজাইনে শীতের জন্য পারফেক্ট। | 📌 প্রোডাক্ট ডিটেইলসঃ | ফেব্রিক: ১০০% কটন। | GSM: ৩০০+ GSM। | ডিজাইন: স্টাইলিশ ফ্রন্ট প্রিন্ট। | হুড: ড্র-স্ট্রিংসহ অ্যাডজাস্টেবল হুড।",
+        "imageUrl": "https://shopbasebd.com/public/uploads/shop/products/1794490612_L_1.jpeg",
+        "sizes": [
+          "M",
+          "L",
+          "XL",
+          "XXL"
+        ],
+        "sku": "35035",
+        "subcategory": "সলিড হুডি (Solid Hoodie)",
+        "suggestedRetailPrice": 800,
+        "title": "Stylish Solid Printed Cotton Hoodie",
+        "wholesalePrice": 450,
+        "sellingPrice": 810,
+        "regularPrice": 1100,
+        "estimatedProfit": 360
+      },
+      {
+        "additionalImages": [
+          "https://shopbasebd.com/public/uploads/shop/products/1794490612_L_1.jpeg",
+          "https://shopbasebd.com/public/uploads/shop/products/1794490612_L_3.jpeg"
+        ],
+        "category": "জেন্টস উইন্টার (Men's Winter)",
+        "description": "✨ প্রিমিয়াম কোয়ালিটির স্টাইলিশ সলিড কালারের ডিটিএফ প্রিন্ট হুডি। | ❤️ আরামদায়ক কটন ফেব্রিক ও আকর্ষণীয় ডিজাইনে শীতের জন্য পারফেক্ট। | 📌 প্রোডাক্ট ডিটেইলসঃ | ফেব্রিক: ১০০% কটন। | GSM: ৩০০+ GSM। | ডিজাইন: স্টাইলিশ ফ্রন্ট প্রিন্ট। | হুড: ড্র-স্ট্রিংসহ অ্যাডজাস্টেবল হুড।",
+        "imageUrl": "https://shopbasebd.com/public/uploads/shop/products/1794490612_L_2.jpeg",
+        "sizes": [
+          "M",
+          "L",
+          "XL",
+          "XXL"
+        ],
+        "sku": "35036",
+        "subcategory": "সলিড হুডি (Solid Hoodie)",
+        "suggestedRetailPrice": 800,
+        "title": "Stylish Solid Printed Cotton Hoodie",
+        "wholesalePrice": 450,
+        "sellingPrice": 810,
+        "regularPrice": 1100,
+        "estimatedProfit": 360
+      },
+      {
+        "additionalImages": [
+          "https://shopbasebd.com/public/uploads/shop/products/1794314138_L_2.jpeg"
+        ],
+        "category": "মেয়েদের পোশাক (Women's Clothing)",
+        "description": "অভিজাত ও আকর্ষণীয় লুকে নিজেকে সাজিয়ে তুলুন প্রিমিয়াম ইন্ডিয়ান সারারা ড্রেসে। | ডায়মন্ড জর্জেট কাপড়ে মনোমুগ্ধকর এমব্রয়ডারি ও কারচুপির কাজের নিখুঁত সমন্বয়ে তৈরি এই ড্রেসটি উৎসব, পার্টি ও যেকোনো বিশেষ অনুষ্ঠানের জন্য অসাধারণ। | 📌 প্রোডাক্ট ডিটেইলসঃ | ড্রেসের ধরন: ইন্ডিয়ান সারারা ড্রেস | ডিজাইন: এলিগেন",
+        "imageUrl": "https://shopbasebd.com/public/uploads/shop/products/1794314138_L_1.jpeg",
+        "sizes": [
+          "38",
+          "40",
+          "42",
+          "44",
+          "46"
+        ],
+        "sku": "34927",
+        "subcategory": "রেডিমেড থ্রিপিস (Readymade 3-Piece)",
+        "suggestedRetailPrice": 2700,
+        "title": "Indian Diamond Georgette Sharara",
+        "wholesalePrice": 1920,
+        "sellingPrice": 2850,
+        "regularPrice": 3850,
+        "estimatedProfit": 930
+      },
+      {
+        "additionalImages": [
+          "https://shopbasebd.com/public/uploads/shop/products/1794314138_L_1.jpeg"
+        ],
+        "category": "মেয়েদের পোশাক (Women's Clothing)",
+        "description": "অভিজাত ও আকর্ষণীয় লুকে নিজেকে সাজিয়ে তুলুন প্রিমিয়াম ইন্ডিয়ান সারারা ড্রেসে। | ডায়মন্ড জর্জেট কাপড়ে মনোমুগ্ধকর এমব্রয়ডারি ও কারচুপির কাজের নিখুঁত সমন্বয়ে তৈরি এই ড্রেসটি উৎসব, পার্টি ও যেকোনো বিশেষ অনুষ্ঠানের জন্য অসাধারণ। | 📌 প্রোডাক্ট ডিটেইলসঃ | ড্রেসের ধরন: ইন্ডিয়ান সারারা ড্রেস | ডিজাইন: এলিগেন",
+        "imageUrl": "https://shopbasebd.com/public/uploads/shop/products/1794314138_L_2.jpeg",
+        "sizes": [
+          "38",
+          "40",
+          "42",
+          "44",
+          "46"
+        ],
+        "sku": "34928",
+        "subcategory": "রেডিমেড থ্রিপিস (Readymade 3-Piece)",
+        "suggestedRetailPrice": 2700,
+        "title": "Indian Diamond Georgette Sharara",
+        "wholesalePrice": 1920,
+        "sellingPrice": 2850,
+        "regularPrice": 3850,
+        "estimatedProfit": 930
+      },
+      {
+        "additionalImages": [
+          "https://shopbasebd.com/public/uploads/shop/products/1792472266_L_2.jpeg",
+          "https://shopbasebd.com/public/uploads/shop/products/1792472266_L_4.jpeg"
+        ],
+        "category": "ছেলেদের পোশাক (Men's Clothing)",
+        "description": "Fabric: PK Cotton | Body -Skin Print | Gsm:210+(-+10) | Export Quality Seweing | Size: M,L,XL | Size Description : | M - ( Chest-38, Long-28)",
+        "imageUrl": "https://shopbasebd.com/public/uploads/shop/products/1792472266_L_1.jpeg",
+        "sizes": [
+          "M",
+          "L",
+          "XL"
+        ],
+        "sku": "33839",
+        "subcategory": "পলো শার্ট (Polo Shirt)",
+        "suggestedRetailPrice": 550,
+        "title": "Stylish Polo Shirt",
+        "wholesalePrice": 280,
+        "sellingPrice": 550,
+        "regularPrice": 750,
+        "estimatedProfit": 270
+      },
+      {
+        "additionalImages": [
+          "https://shopbasebd.com/public/uploads/shop/products/1792472266_L_1.jpeg",
+          "https://shopbasebd.com/public/uploads/shop/products/1792472266_L_4.jpeg"
+        ],
+        "category": "ছেলেদের পোশাক (Men's Clothing)",
+        "description": "Fabric: PK Cotton | Body -Skin Print | Gsm:210+(-+10) | Export Quality Seweing | Size: M,L,XL | Size Description : | M - ( Chest-38, Long-28)",
+        "imageUrl": "https://shopbasebd.com/public/uploads/shop/products/1792472266_L_2.jpeg",
+        "sizes": [
+          "M",
+          "L",
+          "XL"
+        ],
+        "sku": "33840",
+        "subcategory": "পলো শার্ট (Polo Shirt)",
+        "suggestedRetailPrice": 550,
+        "title": "Stylish Polo Shirt",
+        "wholesalePrice": 280,
+        "sellingPrice": 550,
+        "regularPrice": 750,
+        "estimatedProfit": 270
+      },
+      {
+        "additionalImages": [
+          "https://shopbasebd.com/public/uploads/shop/products/1785935068_L_7.jpeg"
+        ],
+        "category": "হোম অ্যান্ড ডেকোর (Home & Decor)",
+        "description": "চেরি কটন ফেব্রিকের উপর 3D প্রিন্টের ৪ পিসের বেডশিট। | আমাদের প্যাকেজটি তে থাকছে:- | ১। কিং সাইজের বেডশিট (৭ ফিট/ ৮ ফিট) | ২। ২ পিস বালিশের কাভার (১৮/২৬\") | ৩। ১ পিস কোলবালিশের কাভার (৩২/৩৮\") | বিশেষ দ্রষ্টব্যঃ | এই বিছানার চাদর গুলো order কনফার্ম করার আগে কিছু বিষয় খেয়াল রাখবেন।",
+        "imageUrl": "https://shopbasebd.com/public/uploads/shop/products/1785935068_L_5.jpeg",
+        "sizes": [],
+        "sku": "31867",
+        "subcategory": "রেগুলার বেডশীট (Bedsheet)",
+        "suggestedRetailPrice": 1300,
+        "title": "3D Print Bedsheet Four Piece",
+        "wholesalePrice": 780,
+        "sellingPrice": 1300,
+        "regularPrice": 1800,
+        "estimatedProfit": 520
+      },
+      {
+        "additionalImages": [
+          "https://shopbasebd.com/public/uploads/shop/products/1785935068_L_5.jpeg"
+        ],
+        "category": "হোম অ্যান্ড ডেকোর (Home & Decor)",
+        "description": "চেরি কটন ফেব্রিকের উপর 3D প্রিন্টের ৪ পিসের বেডশিট। | আমাদের প্যাকেজটি তে থাকছে:- | ১। কিং সাইজের বেডশিট (৭ ফিট/ ৮ ফিট) | ২। ২ পিস বালিশের কাভার (১৮/২৬\") | ৩। ১ পিস কোলবালিশের কাভার (৩২/৩৮\") | বিশেষ দ্রষ্টব্যঃ | এই বিছানার চাদর গুলো order কনফার্ম করার আগে কিছু বিষয় খেয়াল রাখবেন।",
+        "imageUrl": "https://shopbasebd.com/public/uploads/shop/products/1785935068_L_7.jpeg",
+        "sizes": [],
+        "sku": "31869",
+        "subcategory": "রেগুলার বেডশীট (Bedsheet)",
+        "suggestedRetailPrice": 1300,
+        "title": "3D Print Bedsheet Four Piece",
+        "wholesalePrice": 780,
+        "sellingPrice": 1300,
+        "regularPrice": 1800,
+        "estimatedProfit": 520
+      },
+      {
+        "additionalImages": [
+          "https://shopbasebd.com/public/uploads/shop/products/1740420449_L_3.jpg",
+          "https://shopbasebd.com/public/uploads/shop/products/1740420449_L_4.jpg"
+        ],
+        "category": "ইলেকট্রনিক্স এবং গ্যাজেট (Electronics)",
+        "description": "-(সুবহানাল্লাহ, সুবহানাল্লাহ, সুবহানাল্লাহ রোজার মাসে এরকম | জিকির করতে আপনি ব্যবহার করতে পারেন ডিজিটাল তাসবীহ) | -উডেন ডিজিটাল তাসবীহ | -১০০০০ পর্যন্ত কাউন্ট করতে পারবেন। | -হাতের সাথে খুব সুন্দর ভাবে ফিটিং হয় তাই ব্যবহার করতে পারবেন স্বাচ্ছন্দে। | -একটি রিসেট বাটন আছে যার মাধ্যমে আপনি সহজেই আবার ",
+        "imageUrl": "https://shopbasebd.com/public/uploads/shop/products/1740420449_L_2.jpg",
+        "sizes": [],
+        "sku": "18161",
+        "subcategory": "গ্যাজেটস (Gadgets)",
+        "suggestedRetailPrice": 450,
+        "title": "Digital tasbeeh etectronic counter",
+        "wholesalePrice": 280,
+        "sellingPrice": 490,
+        "regularPrice": 700,
+        "estimatedProfit": 210
+      },
+      {
+        "additionalImages": [
+          "https://shopbasebd.com/public/uploads/shop/products/1740420449_L_2.jpg",
+          "https://shopbasebd.com/public/uploads/shop/products/1740420449_L_4.jpg"
+        ],
+        "category": "ইলেকট্রনিক্স এবং গ্যাজেট (Electronics)",
+        "description": "-(সুবহানাল্লাহ, সুবহানাল্লাহ, সুবহানাল্লাহ রোজার মাসে এরকম | জিকির করতে আপনি ব্যবহার করতে পারেন ডিজিটাল তাসবীহ) | -উডেন ডিজিটাল তাসবীহ | -১০০০০ পর্যন্ত কাউন্ট করতে পারবেন। | -হাতের সাথে খুব সুন্দর ভাবে ফিটিং হয় তাই ব্যবহার করতে পারবেন স্বাচ্ছন্দে। | -একটি রিসেট বাটন আছে যার মাধ্যমে আপনি সহজেই আবার ",
+        "imageUrl": "https://shopbasebd.com/public/uploads/shop/products/1740420449_L_3.jpg",
+        "sizes": [],
+        "sku": "18162",
+        "subcategory": "গ্যাজেটস (Gadgets)",
+        "suggestedRetailPrice": 450,
+        "title": "Digital tasbeeh etectronic counter",
+        "wholesalePrice": 280,
+        "sellingPrice": 490,
+        "regularPrice": 700,
+        "estimatedProfit": 210
+      }
+    ],
+    "totalExtracted": 10
+  },
+  "saved_to": "C:\\Users\\franc\\.gemini\\antigravity\\brain\\661497f5-2ec3-4f32-95b7-83f86bc937a0\\browser_sandbox\\outputs\\step_33.json",
+  "has_screenshot": true,
+  "has_hud": true
+}

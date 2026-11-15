@@ -133,51 +133,51 @@ export default function MarketplaceLinksHub({ categories = [] }: MarketplaceLink
           </ul>
         </div>
 
-        {/* Sell with Us */}
+        {/* Explore Categories */}
         <div>
           <div className="flex items-center gap-2 mb-4 text-ink font-bold font-display text-base border-b border-line pb-2">
             <FaStore className="text-marigold text-sm" />
-            <h3>Vendor &amp; Merchant Hub</h3>
+            <h3>Explore &amp; Categories</h3>
           </div>
           <ul className="space-y-2 text-sm">
             <li>
               <Link
-                href="/sell"
+                href="/categories"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Become a Seller &amp; Agent
+                All 24 Product Categories
               </Link>
             </li>
             <li>
               <Link
-                href="/pricing"
+                href="/products?category=Men's Fashion"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Seller Membership &amp; Pro Plans
+                Men's Fashion &amp; Clothing
               </Link>
             </li>
             <li>
               <Link
-                href="/stores"
+                href="/products?category=Women's Fashion"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Browse All Marketplace Stores
+                Women's Clothing &amp; Sarees
               </Link>
             </li>
             <li>
               <Link
-                href="/agent/register"
+                href="/products?category=Electronics"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Register Agent Account
+                Electronics &amp; Smart Devices
               </Link>
             </li>
             <li>
               <Link
-                href="/agent/login"
+                href="/products?category=Home & Living"
                 className="text-text-soft hover:text-marigold hover:underline transition-colors block py-0.5"
               >
-                Agent &amp; Seller Login
+                Home, Kitchen &amp; Living
               </Link>
             </li>
           </ul>

@@ -108,8 +108,8 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
   // Primary routes visible directly on desktop navigation row
   const primaryNavigation = [
     { name: t('nav_home', 'Home'), href: "/", icon: FiHome },
-    { name: t('nav_products', 'Products'), href: "/products", icon: FiPackage },
-    { name: t('nav_stores', 'Stores'), href: "/stores", icon: FiShoppingBag },
+    { name: t('nav_categories', 'Categories'), href: "/categories", icon: FiGrid },
+    { name: t('nav_products', 'All Products'), href: "/products", icon: FiPackage },
     {
       name: t('nav_track_parcel', 'Track Parcel'),
       href: "/track-order",
@@ -137,10 +137,10 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
       description: 'Explore newly added products',
     },
     {
-      name: t('nav_pricing', 'Pricing & Seller Guide'),
-      href: "/sell#pricing",
-      icon: FiDollarSign,
-      description: 'Fee-free selling & store benefits',
+      name: t('nav_categories', 'Product Categories'),
+      href: "/categories",
+      icon: FiGrid,
+      description: 'Explore all 24 curated categories',
     },
     {
       name: t('nav_about_us', 'About Us'),
@@ -262,11 +262,10 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
               <span className="hidden md:inline text-white/20" aria-hidden="true">|</span>
 
               <Link
-                href="/sell"
+                href="/categories"
                 className="shrink-0 font-bold text-marigold hover:text-white transition-colors text-[11px] sm:text-xs inline-flex items-center gap-1"
               >
-                <span className="hidden sm:inline">Sell on HaatPoint</span>
-                <span className="sm:hidden inline">Sell Free</span>
+                <span>All Categories</span>
                 <span aria-hidden="true">&rarr;</span>
               </Link>
 
@@ -475,13 +474,13 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                 )}
               </Link>
 
-              {/* Sell on HaatPoint Button */}
+              {/* Categories Directory Button */}
               <Link
-                href="/sell"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-marigold hover:bg-marigold-dark text-white text-xs font-bold shadow-hard-sm hover:-translate-y-0.5 transition-all duration-150"
+                href="/categories"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-hard-sm hover:-translate-y-0.5 transition-all duration-150"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-                <span>Sell on HaatPoint</span>
+                <FiGrid className="h-3 w-3" />
+                <span>Categories</span>
               </Link>
 
               {/* User Dropdown */}
@@ -862,17 +861,17 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                                   </span>
                                 </div>
                                 <h4 className="font-display font-extrabold text-sm text-paper mb-1">
-                                  Sell your products on HaatPoint
+                                  Explore 24 Product Categories
                                 </h4>
                                 <p className="text-[11px] text-[#B9B7B0] mb-3 leading-relaxed">
-                                  Zero listing fee &bull; Pathao delivery handled &bull; Keep your 100% sell profit
+                                  Find trending winter hoodies, women's fashion, gadgets, electronics & home decor
                                 </p>
                                 <Link
-                                  href="/sell"
+                                  href="/categories"
                                   onClick={() => setIsMobileMenuOpen(false)}
-                                  className="inline-flex items-center justify-center w-full gap-2 rounded-sm bg-marigold hover:bg-marigold-dark text-white font-bold text-xs py-2 shadow-hard-sm transition-colors"
+                                  className="inline-flex items-center justify-center w-full gap-2 rounded-sm bg-primary hover:bg-primary/90 text-white font-bold text-xs py-2 shadow-hard-sm transition-colors"
                                 >
-                                  <span>Start Selling Free</span>
+                                  <span>Browse Categories</span>
                                   <span aria-hidden="true">&rarr;</span>
                                 </Link>
                               </div>

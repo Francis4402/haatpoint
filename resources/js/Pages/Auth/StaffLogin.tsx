@@ -230,11 +230,11 @@ export default function StaffLogin({
           />
 
           {/* Register Link */}
-          {type === 'agent' || canRegister ? (
+          {canRegister ? (
             <p className="mt-6 text-center text-sm font-body text-ink/60">
               Don't have an account?{' '}
               <Link
-                href={route(type === 'agent' ? 'agent.register' : type === 'superadmin' ? 'superadmin.register' : 'admin.register')}
+                href={route(type === 'superadmin' ? 'superadmin.register' : 'admin.register')}
                 className="font-body font-bold text-marigold hover:text-marigold-dark transition-colors"
               >
                 Create one

@@ -100,13 +100,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 });
 
-// Agent registration (agent LOGIN uses the default /login page)
-Route::middleware('guest:agent')->prefix('agent')->name('agent.')->group(function () {
-    Route::get('register', [AgentAuthController::class, 'showRegister'])->name('register');
-    Route::post('register', [AgentAuthController::class, 'register']);
-    Route::get('login', fn () => redirect()->route('login'))->name('login');
-});
-
+// Agent routes cleanly redirect to standard user auth
 Route::prefix('agent')->name('agent.')->group(function () {
-    Route::post('logout', [AgentAuthController::class, 'logout'])->name('logout');
+    Route::get('register', fn () => redirect()->route('register'))->name('register');
+    Route::get('login', fn () => redirect()->route('login'))->name('login');
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });

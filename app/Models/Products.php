@@ -33,25 +33,17 @@ class Products extends Model
     }
 
     /**
-     * Boost products owned by active Pro agents so they appear first and more often.
+     * Boost products for catalog sorting.
      */
     public function scopeWithProBoost($query)
     {
-        $now = now()->toDateTimeString();
-        return $query->orderByDesc(
-            \Illuminate\Support\Facades\DB::raw("(SELECT CASE WHEN agents.plan = 'pro' AND agents.subscription_ends_at > '{$now}' THEN 1 ELSE 0 END 
-                       FROM stores 
-                       INNER JOIN agents ON agents.id = stores.agent_id 
-                       WHERE stores.id = products.store_id 
-                       LIMIT 1)")
-        );
+        return $query->latest();
     }
 
     public function scopeVisible($query)
     {
         return $query->where('is_active', true)
-            ->where('is_blocked', false)
-            ->whereHas('store', fn ($q) => $q->where('is_active', true));
+            ->where('is_blocked', false);
     }
 
     public function reviews()

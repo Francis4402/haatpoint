@@ -1,14 +1,11 @@
-// Central place for the platform's product-price increase.
+// Central place for platform product price formatting.
 //
-// Agents enter their own price when uploading a product. The platform then
-// adds a fixed percentage on top and shows that increased amount to everyone
-// (customers and agents). The extra amount is the platform's cut, so it is
-// baked into the price instead of being shown as a separate tax/cut line.
-export const PRICE_MARKUP = 1.1;
+// Products in the database are stored with their final market-optimized retail selling price
+// (giving Superadmin the highest profit margin in the Bangladesh market).
+export const PRICE_MARKUP = 1.0;
 
 /**
- * Returns the customer-facing price: the agent's price plus the platform
- * markup, rounded to a whole number so customers never see decimals.
+ * Returns the customer-facing price rounded to a whole number (no decimals).
  * Always safe to call with numbers, numeric strings or null/undefined.
  */
 export function withMarkup(price: number | string | null | undefined): number {
@@ -20,7 +17,7 @@ export function withMarkup(price: number | string | null | undefined): number {
     return Math.round(value * PRICE_MARKUP);
 }
 
-/** The amount added on top of the agent's base price. */
+/** The amount added on top of the base price (0 when stored at retail). */
 export function markupAmount(price: number | string | null | undefined): number {
     const value = typeof price === 'string' ? parseFloat(price) : Number(price);
     if (!Number.isFinite(value)) return 0;

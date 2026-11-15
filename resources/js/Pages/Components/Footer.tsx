@@ -17,11 +17,11 @@ export default function Footer() {
       ]
     },
     {
-      heading: "Vendors",
+      heading: "About & Policies",
       links: [
-        { label: "Start selling", href: route('sell') },
-        { label: "Seller pricing", href: '/sell#pricing' },
-        { label: "Vendor dashboard", href: route('dashboard.store') },
+        { label: "About HaatPoint", href: route('aboutus.index') },
+        { label: "Privacy Policy", href: route('privacy.policy') },
+        { label: "Terms & Conditions", href: route('terms.and.conditions') },
       ]
     },
     {

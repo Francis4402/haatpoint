@@ -12,6 +12,15 @@ use Inertia\Inertia;
 
 class PageController extends Controller
 {
+    public function categories()
+    {
+        $wishlist = Wishlist::where('user_id', Auth::id())->paginate(12);
+        return Inertia::render('Categories', [
+            'categories' => \App\Support\CategoryCatalog::all(),
+            'wishlist' => $wishlist,
+        ]);
+    }
+
     public function privacypolicy()
     {
         $wishlist = Wishlist::where('user_id', Auth::id())->paginate(12);

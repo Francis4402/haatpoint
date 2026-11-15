@@ -38,168 +38,7 @@ use Inertia\Inertia;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    $categories = Cache::remember('all_categories', now()->addHours(6), fn () => Categories::all());
-    $products = Products::with('store')
-            ->visible()
-            ->orderBy('created_at', 'desc')
-            ->paginate(3);
-    $reviews = [];
-    $wishlist = Wishlist::forOwner()->paginate(12);
-
-    $showcase = function (?string $productType, int $limit = 6) {
-        $cacheKey = 'showcase_pool_' . ($productType ?? 'all');
-        $poolIds = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($productType) {
-            $q = Products::visible()->withProBoost();
-            if ($productType !== null) {
-                $q->where('product_type', $productType);
-            }
-            return $q->latest()->limit(50)->pluck('id')->all();
-        });
-
-        $chosenIds = [];
-        if (!empty($poolIds)) {
-            $poolCount = count($poolIds);
-            $pickCount = min($limit, $poolCount);
-            $keys = (array) array_rand($poolIds, $pickCount);
-            foreach ($keys as $k) {
-                $chosenIds[] = $poolIds[$k];
-            }
-        }
-
-        $rail = !empty($chosenIds)
-            ? Products::with('store.agent')->visible()->whereIn('id', $chosenIds)->get()
-            : collect();
-
-        if ($rail->count() >= $limit) {
-            return $rail;
-        }
-
-        $needed = $limit - $rail->count();
-        $topUpCacheKey = 'showcase_topup_' . ($productType ?? 'all');
-        $topUpPoolIds = Cache::remember($topUpCacheKey, now()->addMinutes(5), function () use ($productType) {
-            $q = Products::visible()->withProBoost();
-            if ($productType !== null) {
-                $q->where('product_type', '!=', $productType);
-            }
-            return $q->latest()->limit(50)->pluck('id')->all();
-        });
-
-        $existingIds = $rail->pluck('id')->all();
-        $availableTopUpIds = array_values(array_diff($topUpPoolIds, $existingIds));
-        $topUpChosen = [];
-        if (!empty($availableTopUpIds)) {
-            $topUpCount = count($availableTopUpIds);
-            $pickCount = min($needed, $topUpCount);
-            $keys = (array) array_rand($availableTopUpIds, $pickCount);
-            foreach ($keys as $k) {
-                $topUpChosen[] = $availableTopUpIds[$k];
-            }
-        }
-
-        $topUp = !empty($topUpChosen)
-            ? Products::with('store.agent')->visible()->whereIn('id', $topUpChosen)->get()
-            : collect();
-
-        return $rail->concat($topUp)->values();
-    };
-
-    $offeredProducts = $showcase('featured');
-    $trendingProducts = $showcase('trending');
-    $dailyDiscoverProducts = $showcase('regular');
-
-    $topSellingMinSold = 3;
-
-    $soldTotals = Cache::remember('home_sold_totals', now()->addMinutes(10), function () use ($topSellingMinSold) {
-        return DB::table('order_items')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->where('orders.order_status', '!=', 'cancelled')
-            ->where('orders.created_at', '>=', now()->startOfMonth())
-            ->groupBy('order_items.product_id')
-            ->havingRaw('SUM(order_items.quantity) > ?', [$topSellingMinSold])
-            ->orderByDesc(DB::raw('SUM(order_items.quantity)'))
-            ->limit(6)
-            ->get(['order_items.product_id', DB::raw('SUM(order_items.quantity) as sold_count')]);
-    });
-
-    $topSelling = Products::with('store')
-            ->visible()
-            ->whereIn('id', $soldTotals->pluck('product_id'))
-            ->get()
-            ->map(function ($product) use ($soldTotals) {
-                $product->sold_count = (int) ($soldTotals->firstWhere('product_id', $product->id)->sold_count ?? 0);
-
-                return $product;
-            })
-            ->sortByDesc('sold_count')
-            ->values();
-
-
-    $stores = Cache::remember('home_active_stores', now()->addMinutes(15), function () {
-        return Store::where('is_active', true)
-            ->whereExists(function ($query) {
-                $query->selectRaw('1')
-                    ->from('products')
-                    ->whereColumn('products.store_id', 'stores.id');
-            })
-            ->addSelect(['products_count' => Products::selectRaw('count(*)')
-                ->whereColumn('products.store_id', 'stores.id')])
-            ->orderByDesc('products_count')
-            ->orderBy('name')
-            ->limit(12)
-            ->get();
-    });
-
-    $showcaseIds = collect([
-        ...$offeredProducts->pluck('id'),
-        ...$trendingProducts->pluck('id'),
-        ...$dailyDiscoverProducts->pluck('id'),
-        ...$topSelling->pluck('id'),
-        ...$products->pluck('id'),
-    ])->unique()->values();
-
-    $showcaseRatings = Comments::whereIn('product_id', $showcaseIds)
-            ->whereNotNull('rating')
-            ->select('product_id', 'rating')
-            ->get()
-            ->groupBy('product_id')
-            ->map(fn ($rows) => [
-                'average' => round((float) $rows->avg('rating'), 1),
-                'count' => $rows->count(),
-            ]);
-
-    $withRatings = fn ($item) => [
-        ...$item->toArray(),
-        'rating' => $showcaseRatings[$item->id]['average'] ?? 0,
-        'review' => $showcaseRatings[$item->id]['count'] ?? 0,
-    ];
-
-    $productRatings = [];
-    foreach ($products as $product) {
-        $productRatings[$product->id] = [
-            'average' => $showcaseRatings[$product->id]['average'] ?? 0,
-            'count' => $showcaseRatings[$product->id]['count'] ?? 0,
-        ];
-    }
-
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-        'categories' => $categories,
-        'products' => $products,
-        'topSelling' => $topSelling->map($withRatings)->values(),
-        'topSellingMinSold' => $topSellingMinSold,
-        'offeredProducts' => $offeredProducts->map($withRatings)->values(),
-        'trendingProducts' => $trendingProducts->map($withRatings)->values(),
-        'dailyDiscoverProducts' => $dailyDiscoverProducts->map($withRatings)->values(),
-        'stores' => $stores,
-        'wishlist' => $wishlist,
-        'productRatings' => $productRatings,
-        'reviews' => $reviews,
-    ]);
-})->name('home');
+Route::get('/', [ProductsController::class, 'products'])->name('home');
 
 Route::middleware(['auth:admin,superadmin', 'role:admin,superadmin', 'blocked'])->group(function () {
     Route::get('/dashboard/categories', [CategoriesController::class, 'index'])->name('dashboard.categories');
@@ -354,10 +193,10 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked'])->group(functio
     Route::post('/dashboard/subscription/payment', [SubscriptionController::class, 'submitPayment'])->name('dashboard.subscription.payment.submit');
 });
 
-Route::get('/sell', [SubscriptionController::class, 'sell'])->name('sell');
-Route::get('/pricing', function () {
-    return redirect()->to('/sell#pricing');
-})->name('pricing');
+Route::redirect('/sell', '/products', 301)->name('sell');
+Route::redirect('/pricing', '/products', 301)->name('pricing');
+
+Route::get('/categories', [PageController::class, 'categories'])->name('categories.index');
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
@@ -422,7 +261,7 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/seller-policy', fn () => redirect()->route('terms.and.conditions', [], 301));
     Route::get('/customer-support', fn () => redirect()->route('contact.index', [], 301));
     Route::get('/customer-service', fn () => redirect()->route('contact.index', [], 301));
-    Route::get('/faq', fn () => redirect()->to('/sell#faq', 301));
+    Route::get('/faq', fn () => redirect()->route('contact.index', [], 301));
 });
 
 Route::post('/reviews', [ReviewsController::class, 'store'])->name('reviews.store');

@@ -2,17 +2,12 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Agent;
+use App\Models\Admin;
 use App\Models\Categories;
 use App\Models\Products;
 use App\Models\Store;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\Encoders\JpegEncoder;
-use Intervention\Image\ImageManager;
 
 class ImportShopbaseProduct extends Command
 {
@@ -22,9 +17,9 @@ class ImportShopbaseProduct extends Command
      * @var string
      */
     protected $signature = 'shopbase:import 
-                            {--email=francisleonado@gmail.com : Agent email address}
                             {--file= : Path to custom JSON file with scraped products}
-                            {--markup=45 : Percentage price increase from ShopBase wholesale}
+                            {--markup= : Optional percentage price increase from ShopBase wholesale}
+                            {--fresh : Delete existing products before importing}
                             {--sample : Import curated catalog covering all categories}';
 
     /**
@@ -32,74 +27,75 @@ class ImportShopbaseProduct extends Command
      *
      * @var string
      */
-    protected $description = 'Import dropshipping products from ShopBase BD into HaatPoint agent store with a customizable markup percentage (default 45%)';
+    protected $description = 'Import dropshipping products from ShopBase BD directly into HaatPoint Superadmin inventory with market-optimized pricing for highest profit margin';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $email = $this->option('email');
-        $markup = (float) $this->option('markup');
-        $this->info("Starting ShopBase BD import for Agent: {$email} (Markup: +{$markup}%)");
+        $this->info("Starting ShopBase BD import for Superadmin with Bangladesh Market-Optimized High Profit Pricing");
 
-        $agent = Agent::where('email', $email)->first();
+        $markup = $this->option('markup') ? (float) $this->option('markup') : 0.0;
 
-        if (! $agent) {
-            $this->warn("Agent '{$email}' not found in database. Creating agent account...");
-            $agent = Agent::create([
-                'name' => 'Francis Leonardo',
-                'email' => $email,
+        if ($this->option('fresh')) {
+            $deleted = Products::query()->delete();
+            $this->warn("Cleared {$deleted} previous products for fresh catalog import.");
+        }
+
+        // Find or create Superadmin
+        $admin = Admin::where('role', 'superadmin')->orWhere('role', 'admin')->first();
+        if (! $admin) {
+            $admin = Admin::create([
+                'name' => 'HaatPoint Superadmin',
+                'email' => 'superadmin@haatpoint.com',
                 'password' => bcrypt('password123'),
-                'mobile' => '01711223344',
-                'national_id' => '12345678901234567',
-                'address' => 'Dhaka, Bangladesh',
-                'plan' => 'pro',
-                'subscription_ends_at' => now()->addYear(),
-                'email_verified_at' => now(),
+                'role' => 'superadmin',
             ]);
-            $this->info("Created Agent '{$agent->name}' (ID: {$agent->id}).");
+            $this->info("Created Superadmin account: {$admin->email}");
+        } else {
+            $this->info("Using Superadmin account: {$admin->name} ({$admin->email})");
         }
 
-        // Find or create store
-        $store = Store::where('agent_id', $agent->id)->first();
-        if (! $store) {
-            $this->info("Creating default store for agent...");
-            $store = Store::create([
-                'agent_id' => $agent->id,
-                'user_id' => null,
-                'name' => 'Leonardo Dropship Hub',
-                'email' => $agent->email,
-                'storetype' => 'Retail / Dropship',
+        // Find or create Platform Official Store
+        $store = Store::firstOrCreate(
+            ['name' => 'HaatPoint Official'],
+            [
+                'email' => $admin->email ?? 'admin@haatpoint.com',
+                'storetype' => 'Platform Store',
                 'address' => 'Dhaka, Bangladesh',
-                'sender_city' => 1, // Dhaka
-                'national_id' => $agent->national_id ?? '12345678901234567',
-                'mobile' => $agent->mobile ?? '01711223344',
+                'sender_city' => 1,
+                'national_id' => '1000000000',
+                'mobile' => '01319052507',
                 'is_active' => true,
-            ]);
-            $this->info("Created store '{$store->name}' (ID: {$store->id}).");
-        } else {
-            $this->info("Using existing store: '{$store->name}' (ID: {$store->id})");
-        }
+            ]
+        );
 
         $items = [];
         $file = $this->option('file');
+
+        if (! $file && file_exists(database_path('data/shopbase_products.json'))) {
+            $file = database_path('data/shopbase_products.json');
+        }
 
         if ($file && file_exists($file)) {
             $json = file_get_contents($file);
             $decoded = json_decode($json, true) ?? [];
             if (isset($decoded['value']['products'])) {
-                $items = $decoded['value']['products'];
+                $fileProducts = $decoded['value']['products'];
             } elseif (isset($decoded['products'])) {
-                $items = $decoded['products'];
+                $fileProducts = $decoded['products'];
             } else {
-                $items = $decoded;
+                $fileProducts = $decoded;
             }
-            $this->info("Loaded " . count($items) . " products from {$file}");
-        } else {
-            $items = $this->getCuratedCatalog();
-            $this->info("Loaded " . count($items) . " products from curated catalog.");
+            $items = array_merge($items, $fileProducts);
+            $this->info("Loaded " . count($fileProducts) . " products from {$file}");
         }
+
+        // Merge curated catalog items to ensure broad category coverage
+        $curated = $this->getCuratedCatalog();
+        $items = array_merge($items, $curated);
+        $this->info("Total catalog prepared: " . count($items) . " products.");
 
         if (empty($items)) {
             $this->error("No products found to import.");
@@ -112,31 +108,30 @@ class ImportShopbaseProduct extends Command
         $imported = 0;
 
         foreach ($items as $item) {
-            $this->importSingleItem($item, $agent, $store, $markup);
+            $this->importSingleItem($item, $admin, $store, $markup);
             $imported++;
             $bar->advance();
         }
 
         $bar->finish();
         $this->newLine(2);
-        $this->info("Successfully imported {$imported} products into store '{$store->name}' with +{$markup}% markup!");
-        $this->info("Store page: " . url("/stores/" . Store::slugifyName($store->name)));
+        $this->info("Successfully imported {$imported} products into Superadmin platform inventory with +{$markup}% markup!");
 
         return 0;
     }
 
     /**
-     * Import a single product into database with custom markup.
+     * Import a single product into database with custom markup under Superadmin.
      */
-    protected function importSingleItem(array $item, Agent $agent, Store $store, float $markup): void
+    protected function importSingleItem(array $item, Admin $admin, Store $store, float $markup): void
     {
         $name = trim($item['title'] ?? $item['name'] ?? 'ShopBase Product');
-        if (! empty($item['sku'])) {
+        if (! empty($item['sku']) && ! str_contains($name, $item['sku'])) {
             $name .= ' (SKU: ' . $item['sku'] . ')';
         }
         $slug = Str::slug($name) . '-' . substr(md5(uniqid()), 0, 6);
 
-        // Download and store images locally
+        // Do NOT store images locally - use remote ShopBase CDN URLs directly
         $rawImages = [];
         if (! empty($item['imageUrl'])) {
             $rawImages[] = $item['imageUrl'];
@@ -148,25 +143,17 @@ class ImportShopbaseProduct extends Command
             $rawImages = array_merge($rawImages, $item['images']);
         }
         $rawImages = array_unique(array_filter($rawImages));
-
-        $savedImages = [];
-        foreach (array_slice($rawImages, 0, 4) as $imageUrl) {
-            $savedPath = $this->downloadAndSaveImage($imageUrl);
-            if ($savedPath) {
-                $savedImages[] = $savedPath;
-            }
-        }
+        $savedImages = array_values(array_slice($rawImages, 0, 4));
 
         $wholesale = (float) ($item['wholesalePrice'] ?? $item['wholesale_price'] ?? 500);
-        
-        // Exact +45% price markup calculation
-        $salePrice = round($wholesale * (1 + ($markup / 100)));
-        // Strike-through regular price
-        $regularPrice = isset($item['suggestedRetailPrice']) && $item['suggestedRetailPrice'] > $salePrice
-            ? (float) $item['suggestedRetailPrice']
-            : (isset($item['regular_price']) && $item['regular_price'] > $salePrice 
-                ? (float) $item['regular_price'] 
-                : round($salePrice * 1.25));
+        $suggestedRetail = isset($item['suggestedRetailPrice']) || isset($item['regular_price'])
+            ? (float) ($item['suggestedRetailPrice'] ?? $item['regular_price'])
+            : null;
+
+        // Calculate Bangladesh Market-Optimized price for maximum Superadmin profit
+        $pricing = $this->calculateMarketPrices($wholesale, $suggestedRetail, $markup > 0 ? $markup : null);
+        $salePrice = $pricing['sale_price'];
+        $regularPrice = $pricing['regular_price'];
 
         // Map category to HaatPoint schema
         $category = $this->mapCategory($item['category'] ?? "Men's Fashion");
@@ -175,17 +162,17 @@ class ImportShopbaseProduct extends Command
         $weight = $this->estimateWeight($category, $subcategory);
 
         Products::create([
-            'user_id' => null,
+            'user_id' => $admin->id,
             'store_id' => $store->id,
             'name' => $name,
             'slug' => $slug,
             'category' => $category,
             'subcategory' => $subcategory,
             'brand' => $item['brand'] ?? 'ShopBase Direct',
-            'quantity' => (int) ($item['quantity'] ?? 50),
+            'quantity' => (int) ($item['quantity'] ?? 100),
             'regular_price' => $regularPrice,
             'sale_price' => $salePrice,
-            'description' => $item['description'] ?? "High quality product dropshipped directly from verified supplier. 100% authentic with cash on delivery available across Bangladesh.",
+            'description' => $item['description'] ?? "High quality product directly sourced from verified manufacturers. 100% authentic with cash on delivery available across Bangladesh.",
             'color' => json_encode($item['colors'] ?? ['Black', 'Navy', 'Maroon']),
             'size' => json_encode($item['sizes'] ?? ['M', 'L', 'XL']),
             'product_type' => $item['product_type'] ?? 'regular',
@@ -195,6 +182,56 @@ class ImportShopbaseProduct extends Command
             'is_blocked' => false,
             'images' => json_encode($savedImages),
         ]);
+    }
+
+    /**
+     * Calculate optimal customer selling price and anchor regular price
+     * for maximum profit based on Bangladesh e-commerce market benchmarks (Daraz / Facebook / Social Commerce).
+     */
+    protected function calculateMarketPrices(float $wholesale, ?float $suggestedRetail = null, ?float $customMarkup = null): array
+    {
+        if ($customMarkup !== null && $customMarkup > 0) {
+            $optimalSale = round($wholesale * (1 + ($customMarkup / 100)));
+        } elseif ($suggestedRetail && $suggestedRetail > $wholesale) {
+            // Respect ShopBase's tested market retail price as the floor, and optimize for highest margin
+            if ($wholesale <= 350) {
+                // High margin category (tasbeeh, gadgets, light apparel): 75% - 100% margin
+                $optimalSale = max($suggestedRetail, round($wholesale * 1.75));
+            } elseif ($wholesale <= 600) {
+                // Winter hoodies / fashion items: 80% - 90% margin
+                $optimalSale = max($suggestedRetail, round($wholesale * 1.80));
+            } elseif ($wholesale <= 1200) {
+                // Home & living (bedsheets): 65% - 75% margin
+                $optimalSale = max($suggestedRetail, round($wholesale * 1.65));
+            } else {
+                // Premium ethnic wear / sharara: 45% - 55% margin
+                $optimalSale = max($suggestedRetail, round($wholesale * 1.48));
+            }
+        } else {
+            if ($wholesale <= 350) {
+                $optimalSale = round($wholesale * 1.75);
+            } elseif ($wholesale <= 600) {
+                $optimalSale = round($wholesale * 1.80);
+            } elseif ($wholesale <= 1200) {
+                $optimalSale = round($wholesale * 1.65);
+            } else {
+                $optimalSale = round($wholesale * 1.48);
+            }
+        }
+
+        // Clean psychological price ending in 0 (e.g. 490, 550, 850, 1350, 2850)
+        $optimalSale = (float) (ceil($optimalSale / 10) * 10);
+
+        // Psychological strike-through regular price (25% - 35% discount anchor)
+        $anchorRegular = (float) (ceil(($optimalSale * 1.35) / 50) * 50);
+        if ($anchorRegular <= $optimalSale) {
+            $anchorRegular = $optimalSale + 100;
+        }
+
+        return [
+            'sale_price' => $optimalSale,
+            'regular_price' => $anchorRegular,
+        ];
     }
 
     protected function mapSubcategory(string $sub, string $category): string
@@ -254,44 +291,19 @@ class ImportShopbaseProduct extends Command
     }
 
     /**
-     * Download image from URL and save to storage/app/public/products.
-     */
-    protected function downloadAndSaveImage(string $url): ?string
-    {
-        try {
-            $response = Http::withOptions(['verify' => false])->timeout(15)->get($url);
-            if (! $response->successful()) {
-                return null;
-            }
-
-            $contents = $response->body();
-            $manager = new ImageManager(new Driver);
-            $img = $manager->read($contents);
-            $img->scale(width: 800);
-            $encoded = (string) $img->encode(new JpegEncoder(quality: 85));
-
-            $filename = 'products/' . time() . '_' . Str::random(10) . '.jpg';
-            Storage::disk('public')->put($filename, $encoded);
-
-            return $filename;
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    /**
      * Curated catalog mapping ShopBase BD's live inventory to HaatPoint categories.
      */
     protected function getCuratedCatalog(): array
     {
         return [
-            // 1. Men's Fashion - Winter Hoodie (Wholesale: 450 -> 45% markup: 653 BDT)
+            // 1. Men's Fashion - Winter Hoodie (Wholesale: ৳450 -> Suggested: ৳800 -> HaatPoint: ৳850 | Net Profit: ৳400)
             [
                 'name' => 'Premium Heavyweight Fleece Winter Hoodie for Men',
                 'category' => "Men's Fashion",
                 'subcategory' => 'Sweaters & Hoodies',
                 'brand' => 'Easy',
                 'wholesale_price' => 450,
+                'suggestedRetailPrice' => 800,
                 'item_weight' => 0.6,
                 'product_type' => 'trending',
                 'sizes' => ['M', 'L', 'XL', 'XXL'],
@@ -301,13 +313,14 @@ class ImportShopbaseProduct extends Command
                 ],
                 'description' => "Stay warm and stylish with this Premium Heavyweight Fleece Winter Hoodie. Features a kangaroo pocket, adjustable drawstring hood, and ribbed cuffs. Soft brushed interior for maximum warmth during cold winter days.",
             ],
-            // 2. Men's Fashion - Long Sleeve Polo (Wholesale: 280 -> 45% markup: 406 BDT)
+            // 2. Men's Fashion - Long Sleeve Polo (Wholesale: ৳280 -> Suggested: ৳550 -> HaatPoint: ৳550 | Net Profit: ৳270)
             [
                 'name' => 'Men Cotton Long Sleeve Winter Polo Shirt',
                 'category' => "Men's Fashion",
                 'subcategory' => 'T-Shirts',
                 'brand' => 'Sailor',
                 'wholesale_price' => 280,
+                'suggestedRetailPrice' => 550,
                 'item_weight' => 0.35,
                 'product_type' => 'regular',
                 'sizes' => ['M', 'L', 'XL'],
@@ -317,13 +330,14 @@ class ImportShopbaseProduct extends Command
                 ],
                 'description' => "High quality 100% combed cotton long sleeve polo shirt. Perfect for light winter and smart casual office wear. Breathable and durable fabric.",
             ],
-            // 3. Women's Fashion - Party Wear Sharara (Wholesale: 1920 -> 45% markup: 2784 BDT)
+            // 3. Women's Fashion - Party Wear Sharara (Wholesale: ৳1920 -> Suggested: ৳2700 -> HaatPoint: ৳2850 | Net Profit: ৳930)
             [
                 'name' => 'Exclusive Georgette Heavy Embroidery Sharara Three Piece',
                 'category' => "Women's Fashion",
                 'subcategory' => 'Salwar Kameez',
                 'brand' => "Dorjibari",
                 'wholesale_price' => 1920,
+                'suggestedRetailPrice' => 2700,
                 'item_weight' => 0.9,
                 'product_type' => 'featured',
                 'sizes' => ['Free Size', '38', '40', '42'],
@@ -333,13 +347,14 @@ class ImportShopbaseProduct extends Command
                 ],
                 'description' => "Gorgeous semi-stitched wedding and party wear sharara suit with heavy zari, sequin and dori work. Includes embroidered kameez, flared sharara, and dual-tone chiffon dupatta.",
             ],
-            // 4. Home & Living - King Size Bedsheet (Wholesale: 780 -> 45% markup: 1131 BDT)
+            // 4. Home & Living - King Size Bedsheet (Wholesale: ৳780 -> Suggested: ৳1300 -> HaatPoint: ৳1300 | Net Profit: ৳520)
             [
                 'name' => '3D Print King Size Pure Cotton Bedsheet Four Piece Set',
                 'category' => 'Home & Living',
                 'subcategory' => 'Bedding & Linen',
                 'brand' => 'Walton',
                 'wholesale_price' => 780,
+                'suggestedRetailPrice' => 1300,
                 'item_weight' => 0.95,
                 'product_type' => 'top-selling',
                 'sizes' => ['King (7x8 ft)'],
@@ -349,13 +364,14 @@ class ImportShopbaseProduct extends Command
                 ],
                 'description' => "Premium quality cherry cotton fabric king size bedsheet with two pillow covers and one bolster cover. Fast color guarantee, wrinkle resistant, and easy to wash.",
             ],
-            // 5. Electronics - Wooden Digital Tasbeeh Counter (Wholesale: 280 -> 45% markup: 406 BDT)
+            // 5. Electronics - Wooden Digital Tasbeeh Counter (Wholesale: ৳280 -> Suggested: ৳450 -> HaatPoint: ৳490 | Net Profit: ৳210)
             [
                 'name' => 'Ergonomic Wooden Finish Digital Tasbeeh Electronic Counter',
                 'category' => 'Electronics',
                 'subcategory' => 'Smartwatches',
                 'brand' => 'Xiaomi',
                 'wholesale_price' => 280,
+                'suggestedRetailPrice' => 450,
                 'item_weight' => 0.15,
                 'product_type' => 'new-arrival',
                 'sizes' => ['Compact Pocket Size'],

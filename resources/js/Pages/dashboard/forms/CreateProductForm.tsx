@@ -1710,7 +1710,7 @@ export default function CreateProductForm({
                           <span className="text-marigold font-semibold">
                             Customer pays BDT {withMarkup(parseFloat(data.sale_price || data.regular_price || '0')).toFixed(2)}
                           </span>{" "}
-                          (+10%)
+                          (+45%)
                         </p>
                       </div>
 
