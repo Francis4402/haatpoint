@@ -445,14 +445,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
                 )}
               </Link>
 
-              {/* Categories Directory Button */}
-              <Link
-                href="/categories"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-hard-sm hover:-translate-y-0.5 transition-all duration-150"
-              >
-                <FiGrid className="h-3 w-3" />
-                <span>Categories</span>
-              </Link>
+
 
               {/* User Dropdown */}
               <div className="relative md:block hidden" ref={userMenuRef}>
