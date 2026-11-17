@@ -180,12 +180,25 @@ class SyncShopBaseProducts extends Command
                                 ? $imgSm
                                 : "https://shopbasebd.com/public/uploads/shop/products/{$imgSm}";
 
-                            $regularPrice = (float) ($item['price'] ?? 0);
-                            $salePrice = (float) ($item['sprice'] ?? $regularPrice);
+                            $wholesalePrice = (float) ($item['sprice'] ?? 0);
+                            $productPrice = (float) ($item['price'] ?? 0);
+
+                            // Keep the highest profit price for sell price (customer pays this)
+                            $sellPrice = max($productPrice, $wholesalePrice);
+                            if ($sellPrice <= 0) {
+                                $sellPrice = 500.0;
+                            }
+
+                            // Psychological anchor regular price (e.g., 25-30% discount anchor)
+                            $regularPrice = (float) (ceil(($sellPrice * 1.30) / 10) * 10);
+                            $salePrice = $sellPrice;
 
                             $slug = Str::slug($item['name']) . '-' . ($item['pid'] ?? rand(1000, 9999));
                             $productType = $productTypes[$typeIdx % count($productTypes)];
                             $typeIdx++;
+
+                            $color = $this->extractAccurateColor($item['name'], $meta['category'], $meta['subcategory'] ?? '', $imgUrl);
+                            $size = $this->extractAccurateSize($item['name'], $meta['category'], $meta['subcategory'] ?? '');
 
                             Products::updateOrCreate(
                                 ['slug' => $slug],
@@ -197,13 +210,13 @@ class SyncShopBaseProducts extends Command
                                     'images' => json_encode([$imgUrl]),
                                     'category' => $meta['category'],
                                     'subcategory' => $meta['subcategory'],
-                                    'brand' => 'ShopBase Official',
+                                    'brand' => '',
                                     'quantity' => 100,
                                     'regular_price' => $regularPrice,
                                     'sale_price' => $salePrice > 0 ? $salePrice : null,
                                     'description' => "প্রিমিয়াম কোয়ালিটির আসল পণ্য। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি সুবিধা এবং হোম ডেলিভারি পাওয়া যাবে।",
-                                    'color' => 'Standard',
-                                    'size' => 'M, L, XL',
+                                    'color' => $color,
+                                    'size' => $size,
                                     'product_type' => $productType,
                                     'item_weight' => 0.50,
                                     'inStock' => true,
@@ -223,9 +236,10 @@ class SyncShopBaseProducts extends Command
             }
         }
 
+        $appUrl = config('app.url', 'http://127.0.0.1:8000');
         $this->info("=================================================");
         $this->info("SUCCESS! Synced {$totalSynced} products into HaatPoint database!");
-        $this->info("Products are now live on: http://127.0.0.1:8000/");
+        $this->info("Products are now live on: {$appUrl}");
         $this->info("=================================================");
         return 0;
     }
@@ -261,5 +275,125 @@ class SyncShopBaseProducts extends Command
         }
 
         return $store;
+    }
+
+    protected function extractAccurateColor(string $name, string $category, string $subcategory = '', ?string $imageUrl = null): ?string
+    {
+        $nonColorCategories = [
+            'Electronics',
+            'Beauty & Personal Care',
+        ];
+        if (in_array($category, $nonColorCategories, true)) {
+            return null;
+        }
+
+        $colorKeywords = [
+            'pure black' => 'Black', 'jet black' => 'Black', 'black' => 'Black',
+            'off white' => 'Off White', 'white' => 'White', 'cream' => 'Cream',
+            'navy blue' => 'Navy Blue', 'royal blue' => 'Royal Blue', 'sky blue' => 'Sky Blue',
+            'navy' => 'Navy Blue', 'blue' => 'Blue',
+            'dark maroon' => 'Maroon', 'maroon' => 'Maroon',
+            'dark red' => 'Red', 'red' => 'Red',
+            'olive green' => 'Olive', 'olive' => 'Olive', 'bottle green' => 'Bottle Green', 'green' => 'Green',
+            'mustard' => 'Mustard', 'yellow' => 'Yellow',
+            'baby pink' => 'Pink', 'pink' => 'Pink', 'rose' => 'Rose',
+            'grey' => 'Grey', 'gray' => 'Grey', 'ash' => 'Ash',
+            'orange' => 'Orange', 'purple' => 'Purple', 'violet' => 'Violet', 'magenta' => 'Magenta',
+            'chocolate' => 'Chocolate', 'coffee' => 'Coffee', 'brown' => 'Brown', 'beige' => 'Beige',
+            'golden' => 'Golden', 'gold' => 'Golden', 'silver' => 'Silver',
+            'teal' => 'Teal', 'peach' => 'Peach', 'wine' => 'Wine', 'khaki' => 'Khaki',
+            'multicolor' => 'Multicolor',
+            'কালো' => 'Black', 'সাদা' => 'White', 'অফ হোয়াইট' => 'Off White',
+            'নেভি ব্লু' => 'Navy Blue', 'রয়্যাল ব্লু' => 'Royal Blue', 'আকাশি' => 'Sky Blue', 'নীল' => 'Blue',
+            'মেরুন' => 'Maroon', 'লাল' => 'Red', 'জলপাই' => 'Olive', 'সবুজ' => 'Green',
+            'মাস্টার্ড' => 'Mustard', 'হলুদ' => 'Yellow', 'গোলাপী' => 'Pink',
+            'অ্যাশ' => 'Ash', 'ধূসর' => 'Grey', 'কমলা' => 'Orange', 'বেগুনী' => 'Purple',
+            'বাদামী' => 'Brown', 'চকলেট' => 'Chocolate', 'কফি' => 'Coffee',
+            'গোল্ডেন' => 'Golden', 'সিলভার' => 'Silver',
+        ];
+
+        $nameLower = mb_strtolower($name);
+
+        if (preg_match('/(white\s*[\+\&]\s*black|black\s*[\+\&]\s*white)/i', $nameLower)) {
+            return 'Black, White';
+        }
+
+        $detected = [];
+        foreach ($colorKeywords as $keyword => $standardName) {
+            if (preg_match('/(^|[\s\-_,\(\)\/\+])' . preg_quote($keyword, '/') . '([\s\-_,\(\)\/\+]|$)/iu', $nameLower)) {
+                $detected[$standardName] = true;
+            }
+        }
+
+        if (!empty($detected)) {
+            return implode(', ', array_keys($detected));
+        }
+
+        // Analyze image if URL is present
+        if ($imageUrl && filter_var($imageUrl, FILTER_VALIDATE_URL)) {
+            $context = stream_context_create([
+                'http' => ['timeout' => 3, 'header' => "User-Agent: Mozilla/5.0\r\n"],
+                'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]
+            ]);
+            $data = @file_get_contents($imageUrl, false, $context);
+            if ($data) {
+                $imgColor = \App\Console\Commands\AnalyzeProductColors::analyzeImageContent($data);
+                if ($imgColor) {
+                    return $imgColor;
+                }
+            }
+        }
+
+        if (str_contains(mb_strtolower($category), 'women')) {
+            return 'Red, Pink';
+        }
+
+        return 'Black, Navy Blue';
+    }
+
+    protected function extractAccurateSize(string $name, string $category, string $subcategory = ''): ?string
+    {
+        $nameLower = mb_strtolower($name);
+        $catLower = mb_strtolower($category);
+        $subLower = mb_strtolower($subcategory);
+
+        // Footwear / shoes
+        if (str_contains($catLower, 'shoe') || str_contains($subLower, 'shoe') || str_contains($nameLower, 'shoe') || str_contains($nameLower, 'জুতা') || str_contains($nameLower, 'স্যান্ডেল')) {
+            return '39, 40, 41, 42, 43, 44';
+        }
+
+        // Panjabi
+        if (str_contains($nameLower, 'panjabi') || str_contains($subLower, 'পাঞ্জাবি')) {
+            return '38, 40, 42, 44';
+        }
+
+        // Men's fashion
+        if (str_contains($catLower, "men's fashion")) {
+            if (str_contains($subLower, 'প্যান্ট') || str_contains($subLower, 'ট্রাউজার') || str_contains($subLower, 'জগারস')) {
+                return '30, 32, 34, 36';
+            }
+            if (str_contains($subLower, 'এক্সেসরিজ') || str_contains($subLower, 'গিফট') || str_contains($subLower, 'ঘড়ি')) {
+                return null;
+            }
+            return 'M, L, XL, XXL';
+        }
+
+        // Women's fashion
+        if (str_contains($catLower, "women's fashion")) {
+            if (str_contains($subLower, 'শাড়ী') || str_contains($subLower, 'শাড়ি') || str_contains($subLower, 'হিজাব') || str_contains($subLower, 'নিকাব')) {
+                return 'Free Size';
+            }
+            return 'Free Size, M, L, XL';
+        }
+
+        // Kids' fashion
+        if (str_contains($catLower, "kids' fashion")) {
+            if (str_contains($subLower, 'খেলনা') || str_contains($subLower, 'টয়স')) {
+                return null;
+            }
+            return '2-3Y, 4-5Y, 6-7Y, 8-9Y';
+        }
+
+        return null;
     }
 }

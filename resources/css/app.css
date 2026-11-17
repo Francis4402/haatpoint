@@ -19,6 +19,21 @@ h1, h2, h3 {
   color: #fff;
 }
 
+/* Razor-sharp product image rendering & anti-blur optimization */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.product-sharp-img,
+.top-card img,
+.product-card-img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
 
 .no-scrollbar {
   scrollbar-width: none;

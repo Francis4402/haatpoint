@@ -54,7 +54,7 @@ Route::get('/', function () {
         "Beauty & Personal Care"
     ];
 
-    $showcase = function (?string $productType, int $limit = 12) use ($targetCategories) {
+    $showcase = function (?string $productType, int $limit = 24) use ($targetCategories) {
         $pool = collect();
         foreach ($targetCategories as $cat) {
             $q = Products::with('store')->visible()->where('category', $cat);
@@ -65,7 +65,7 @@ Route::get('/', function () {
                           ->orWhere('product_type', 'trending');
                 });
             }
-            $sample = $q->inRandomOrder()->limit(3)->get();
+            $sample = $q->inRandomOrder()->limit(4)->get();
             $pool = $pool->concat($sample);
         }
 
@@ -78,9 +78,9 @@ Route::get('/', function () {
         return $pool->shuffle()->take($limit)->values();
     };
 
-    $offeredProducts = $showcase('featured', 12);
-    $trendingProducts = $showcase('trending', 12);
-    $dailyDiscoverProducts = $showcase('regular', 12);
+    $offeredProducts = $showcase('featured', 24);
+    $trendingProducts = $showcase('trending', 24);
+    $dailyDiscoverProducts = $showcase('regular', 24);
 
     $topSellingMinSold = 0;
 
@@ -91,7 +91,7 @@ Route::get('/', function () {
             ->where('orders.created_at', '>=', now()->startOfMonth())
             ->groupBy('order_items.product_id')
             ->orderByDesc(DB::raw('SUM(order_items.quantity)'))
-            ->limit(12)
+            ->limit(24)
             ->get(['order_items.product_id', DB::raw('SUM(order_items.quantity) as sold_count')]);
     });
 
@@ -107,11 +107,11 @@ Route::get('/', function () {
                 ->visible()
                 ->where('category', $cat)
                 ->inRandomOrder()
-                ->limit(2)
+                ->limit(4)
                 ->get();
             $topPool = $topPool->concat($sample);
         }
-        $topSelling = $topPool->shuffle()->take(12)->map(function ($product, $idx) {
+        $topSelling = $topPool->shuffle()->take(24)->map(function ($product, $idx) {
             $product->sold_count = 22 + ($idx * 7);
             return $product;
         })->values();
@@ -121,6 +121,7 @@ Route::get('/', function () {
             return $product;
         })
         ->sortByDesc('sold_count')
+        ->take(24)
         ->values();
     }
 
@@ -128,7 +129,7 @@ Route::get('/', function () {
     $products = Products::with('store')
             ->visible()
             ->inRandomOrder((int) date('YmdH'))
-            ->paginate(20);
+            ->paginate(36);
 
 
     $stores = Cache::remember('home_active_stores', now()->addMinutes(15), function () {

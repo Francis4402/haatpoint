@@ -90,16 +90,29 @@ const ProductDetailsPage = ({
   const [reviewCount, setReviewCount] = useState<number>(initialReviewCount);
   const [loading, setLoading] = useState<boolean>(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
-  const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedColor, setSelectedColor] = useState<string>('');
+  const availableSizes = parseVariantList(product.size);
+  const availableColors = parseVariantList(product.color);
+
+  const initialSize = availableSizes.length === 1 ? availableSizes[0] : '';
+  const initialColor = availableColors.length === 1 ? availableColors[0] : '';
+
+  const [selectedSize, setSelectedSize] = useState<string>(initialSize);
+  const [selectedColor, setSelectedColor] = useState<string>(initialColor);
   const [useSeparateVariants, setUseSeparateVariants] = useState<boolean>(false);
   const [activeItemIndex, setActiveItemIndex] = useState<number>(0);
   const [itemConfigs, setItemConfigs] = useState<{ size: string; color: string }[]>([
-    { size: '', color: '' },
+    { size: initialSize, color: initialColor },
   ]);
 
-  const availableSizes = parseVariantList(product.size);
-  const availableColors = parseVariantList(product.color);
+  useEffect(() => {
+    const sz = availableSizes.length === 1 ? availableSizes[0] : '';
+    const col = availableColors.length === 1 ? availableColors[0] : '';
+    setSelectedSize(sz);
+    setSelectedColor(col);
+    setUseSeparateVariants(false);
+    setActiveItemIndex(0);
+    setItemConfigs([{ size: sz, color: col }]);
+  }, [product.id, product.size, product.color]);
 
   const { addToCart, getItemByKey, getTotalItems } = useStore();
   const cartItem = getItemByKey(makeCartKey(product.id.toString(), selectedSize, selectedColor));
@@ -490,7 +503,10 @@ const ProductDetailsPage = ({
                   <img
                     src={currentImageUrl}
                     alt={product.name}
-                    className="w-full h-full object-contain p-4 sm:p-6 lg:p-8 transition-transform duration-500 hover:scale-105"
+                    className="w-full h-full object-contain p-2 sm:p-4 transition-transform duration-500 hover:scale-105"
+                    style={{
+                      imageRendering: '-webkit-optimize-contrast',
+                    }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = '/otherplaceholder.jpg';
@@ -504,7 +520,7 @@ const ProductDetailsPage = ({
                         -{discount}% OFF
                       </span>
                     )}
-                    {product.brand && (
+                    {product.brand && !/shopbase/i.test(product.brand) && (
                       <span className="inline-flex items-center px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-[#6E7F5C] text-white shadow-sm">
                         {product.brand}
                       </span>
@@ -555,7 +571,7 @@ const ProductDetailsPage = ({
                 {/* Product Tags */}
                 <div className="flex flex-wrap gap-2 pt-2">
                   {/* Brand Tag */}
-                  {product.brand && (
+                  {product.brand && !/shopbase/i.test(product.brand) && (
                     <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-orange-50 text-orange-700 text-xs font-mono uppercase tracking-wide border border-orange-200">
                       <FaTag className="w-3 h-3 mr-1.5" />
                       {product.brand}
@@ -587,7 +603,7 @@ const ProductDetailsPage = ({
                 {/* Product Header */}
                 <div>
                   {/* Brand - Displayed prominently above product name */}
-                  {product.brand && (
+                  {product.brand && !/shopbase/i.test(product.brand) && (
                     <div className="mb-2">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-orange-50 text-orange-700 text-xs sm:text-sm font-semibold border border-orange-200">
                         {product.brand}
@@ -1116,7 +1132,7 @@ const ProductDetailsPage = ({
                             {/* Brand in Specifications */}
                             <div className="flex justify-between pb-2 border-b border-line">
                               <span className="text-text-soft">Brand</span>
-                              <span className="font-medium text-orange-600">{product.brand || 'N/A'}</span>
+                              <span className="font-medium text-ink">{product.brand && !/shopbase/i.test(product.brand) ? product.brand : 'Exclusive'}</span>
                             </div>
                             <div className="flex justify-between pb-2 border-b border-line">
                               <span className="text-text-soft">Category</span>

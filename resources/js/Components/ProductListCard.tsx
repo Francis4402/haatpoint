@@ -107,7 +107,12 @@ export default function ProductListCard({
               <img
                 src={resolvedImageSrc}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                style={{
+                  imageRendering: '-webkit-optimize-contrast',
+                }}
                 onError={(e) => {
                   e.currentTarget.src = '/otherplaceholder.jpg';
                 }}
@@ -121,8 +126,8 @@ export default function ProductListCard({
               </span>
             )}
 
-            {/* Brand Badge */}
-            {product.brand && (
+            {/* Brand Badge (if present and not shopbase) */}
+            {product.brand && !/shopbase/i.test(product.brand) && (
               <span className="hidden sm:inline-block absolute bottom-1.5 left-1.5 bg-ink/80 backdrop-blur-sm text-white text-[9px] font-mono uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded">
                 {product.brand}
               </span>
@@ -141,23 +146,13 @@ export default function ProductListCard({
           {/* Compact Product Details Content */}
           <div className="flex-1 p-2.5 sm:p-3.5 md:p-4 min-w-0 flex flex-col justify-between">
             <div>
-              {/* Meta Line: Category, Store, Pro & Variants Pill */}
+              {/* Meta Line: Category / Subcategory & In Stock */}
               <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-text-soft truncate mb-1">
-                <span className="font-mono uppercase tracking-wider font-semibold truncate max-w-[110px] sm:max-w-none">
-                  {product.category || 'Catalog'}
+                <span className="font-mono uppercase tracking-wider font-semibold text-marigold truncate max-w-[110px] sm:max-w-none">
+                  {product.subcategory || product.category || 'Catalog'}
                 </span>
-                {product.store && (
-                  <>
-                    <span className="text-line">•</span>
-                    <Link
-                      href={`/stores/${storeSlug(product.store)}`}
-                      className="inline-flex items-center gap-1 font-medium text-ink hover:text-marigold transition-colors truncate max-w-[130px] sm:max-w-none"
-                    >
-                      <FaStore className="w-2.5 h-2.5 text-marigold shrink-0" />
-                      <span className="truncate">{product.store.name}</span>
-                    </Link>
-                  </>
-                )}
+                <span className="text-line">•</span>
+                <span className="text-emerald-600 font-semibold text-[10px]">In Stock</span>
                 {(Boolean(product.is_pro_seller) || (product.store as any)?.agent?.plan === 'pro') && (
                   <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[9px] font-bold bg-marigold/10 text-marigold-dark border border-marigold/30 shrink-0">
                     <FaCrown className="w-2 h-2 text-marigold" /> PRO

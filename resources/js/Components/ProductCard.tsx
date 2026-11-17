@@ -8,11 +8,9 @@ import { Product, User } from "@/types";
 import AddtoCartButton from "@/Pages/buttons/AddtoCartButton";
 import FormatPrice from "@/Pages/utils/FormatePrice";
 import { withMarkup } from "@/Pages/utils/price";
-import { LazyLoadImage } from 'react-lazy-load-image-component';
 import WishlistButton from "@/Pages/buttons/WishListButton";
 import { parseVariantList } from "@/Pages/utils/parseVariants";
 import SelectOptionsDialog from "@/Components/SelectOptionsDialog";
-import { storeSlug } from "@/Pages/utils/storeType";
 
 
 interface ProductCardProps {
@@ -69,12 +67,6 @@ function calculateDiscount(regularPrice: number, salePrice: number): number {
   return Math.round(((regularPrice - salePrice) / regularPrice) * 100);
 }
 
-function getStoreLogoSrc(logo?: string | null): string {
-  if (!logo) return "/fallback-logo.png";
-  if (logo.startsWith("http") || logo.startsWith("/")) return logo;
-  return `/storage/${logo}`;
-}
-
 // Render stars based on average rating
 const renderStars = (rating: number) => {
   const fullStars = Math.floor(rating);
@@ -106,17 +98,16 @@ const LazyProductImage = ({
   className?: string;
   onError?: () => void;
 }) => (
-  <LazyLoadImage
+  <img
     src={src}
     alt={alt}
-    effect="blur"
-    wrapperClassName="w-full h-full"
-    className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${className || ''}`}
-    placeholderSrc="/otherplaceholder.jpg"
-    threshold={100}
-    visibleByDefault={false}
-    onError={onError}
     loading="lazy"
+    decoding="async"
+    onError={onError}
+    className={`w-full h-full object-contain p-1.5 transition-transform duration-500 ease-out group-hover:scale-105 ${className || ''}`}
+    style={{
+      imageRendering: '-webkit-optimize-contrast',
+    }}
   />
 );
 
@@ -141,8 +132,6 @@ const ProductCard = ({
     : CATEGORY_LABEL[product.category ?? ""] ?? (product.category || "Product");
   const [gradientFrom, gradientTo] = CATEGORY_GRADIENT[product.category ?? ""] ?? DEFAULT_GRADIENT;
   const store = product.store;
-  const storeLogo = getStoreLogoSrc(store?.logo);
-  const vendor = store?.name ?? (("vendor" in product ? (product as any).vendor : null) ?? product.category ?? "General");
 
   const discount = calculateDiscount(product.regular_price, product.sale_price);
   const hasDiscount = discount > 0;
@@ -182,12 +171,12 @@ const ProductCard = ({
 
   return (
     <div
-      className="group bg-white border border-[#E3E1DB] rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-hard-sm"
+      className="group bg-white border border-[#E3E1DB]/90 hover:border-marigold/60 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-hard-md flex flex-col justify-between"
       role="article"
       aria-label={`Product: ${product.name}`}
     >
       {/* Image Container */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+      <div className="relative aspect-square overflow-hidden bg-[#F7F6F2]">
         <Link
           href={productUrl}
           className="block w-full h-full cursor-pointer"
@@ -212,64 +201,49 @@ const ProductCard = ({
               className="w-full h-full flex items-center justify-center px-3 text-center transition-transform duration-500 group-hover:scale-105"
               style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}
             >
-              <span className="font-mono text-sm font-semibold uppercase tracking-wider text-[#1B1B1B]/70">
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#1B1B1B]/70">
                 {categoryLabel}
               </span>
             </div>
           )}
         </Link>
 
-        {/* Badge - Custom badge from props */}
-        {badge && (
+        {/* Discount Badge */}
+        {hasDiscount ? (
           <span
-            className="absolute top-2.5 left-2.5 rounded-sm px-2.5 py-1 bg-[#1B1B1B] text-white font-mono text-[10px] uppercase shadow-lg z-10"
+            className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-10 inline-flex items-center gap-0.5 rounded-md px-2 py-0.5 bg-gradient-to-r from-rose-500 to-red-600 text-white font-extrabold text-[10px] sm:text-xs shadow-xs tracking-tight"
+            aria-label={`${discount}% off`}
+          >
+            -{discount}%
+          </span>
+        ) : badge && !/shopbase/i.test(badge) ? (
+          <span
+            className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-10 rounded-md px-2 py-0.5 bg-ink text-white font-mono text-[9px] sm:text-[10px] uppercase font-bold shadow-xs"
             aria-label={`${badge} badge`}
           >
             {badge}
           </span>
-        )}
-
-        {/* Brand Badge - Show brand on image if no custom badge */}
-        {!badge && product.brand && (
+        ) : variant === "trending" ? (
           <span
-            className="absolute top-2.5 left-2.5 rounded-sm px-2.5 py-1 bg-[#6E7F5C] text-white font-mono text-[10px] font-bold uppercase shadow-lg z-10"
-            aria-label={`Brand: ${product.brand}`}
-          >
-            {product.brand}
-          </span>
-        )}
-
-        {/* Trending Badge */}
-        {variant === "trending" && !badge && !product.brand && (
-          <span
-            className="absolute top-2.5 left-2.5 rounded-sm px-2.5 py-1 bg-[#E7F4EF] text-[#4F6B63] font-mono text-[10px] font-bold uppercase shadow-lg z-10 flex items-center gap-1"
+            className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-10 rounded-md px-2 py-0.5 bg-amber-500 text-white font-mono text-[9px] sm:text-[10px] font-bold uppercase shadow-xs flex items-center gap-1"
             aria-label="Trending product"
           >
-            <FiZap className="w-3 h-3" aria-hidden="true" />
+            <FiZap className="w-2.5 h-2.5" aria-hidden="true" />
             Trending
           </span>
+        ) : null}
+
+        {/* Wishlist Button - Top Right */}
+        {user && (
+          <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-10">
+            <div className="p-1 rounded-full bg-white/85 hover:bg-white backdrop-blur-sm shadow-xs transition-all scale-90 sm:scale-100">
+              <WishlistButton productId={product.id} />
+            </div>
+          </div>
         )}
 
-        {/* Action Buttons */}
-        <div
-          className="absolute top-2.5 right-2.5 flex flex-col items-start gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0 z-20"
-          role="toolbar"
-          aria-label="Product actions"
-        >
-          {user && <WishlistButton productId={product.id} />}
-          {showQuickView && (
-            <Link
-              href={`/products/${product.slug}`}
-              className="p-2 rounded-full bg-white/90 hover:bg-white shadow-lg transition-colors"
-              aria-label={`Quick view ${product.name}`}
-            >
-              <FaEye className="w-4 h-4 text-gray-600 hover:text-[#6E7F5C]" aria-hidden="true" />
-            </Link>
-          )}
-        </div>
-
-        {/* Quick Action - Bottom */}
-        <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3 sm:left-3 sm:right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 z-20">
+        {/* Desktop Quick Action Hover Overlay */}
+        <div className="hidden sm:block absolute bottom-2.5 left-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-3 group-hover:translate-y-0 z-20">
           {hasVariants ? (
             <button
               type="button"
@@ -278,9 +252,9 @@ const ProductCard = ({
                 e.stopPropagation();
                 setIsOptionsOpen(true);
               }}
-              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-ink hover:bg-marigold text-white text-xs font-semibold shadow-md transition-all duration-200"
+              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-ink hover:bg-marigold text-white text-xs font-semibold shadow-md transition-all active:scale-98"
             >
-              <FaEye className="w-3.5 h-3.5" />
+              <FaEye className="w-3.5 h-3.5 text-marigold" />
               <span>Select Options</span>
             </button>
           ) : (
@@ -294,163 +268,78 @@ const ProductCard = ({
       </div>
 
       {/* Content */}
-      <div className="p-3 sm:p-4">
-        {/* Vendor/Category & Brand */}
-        <div className="font-mono text-[10px] sm:text-[10.5px] text-[#767470] uppercase tracking-wide mb-1.5 flex items-center justify-between">
-          <div className="flex items-center gap-2 flex-wrap min-w-0">
-            {store ? (
-              <Link
-                href={`/stores/${storeSlug(store)}`}
-                className="shrink-0 flex items-center gap-1.5 min-w-0"
-                title={`Visit ${vendor}`}
-                aria-label={`Visit ${vendor}`}
-              >
-                {storeLogo ? (
-                  <img
-                    src={storeLogo}
-                    alt={`${vendor} store logo`}
-                    loading="lazy"
-                    className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border border-[#E3E1DB] bg-white shadow-sm"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/fallback-logo.png"; }}
-                  />
-                ) : (
-                  <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#E7F4EF] text-[#4F6B63] flex items-center justify-center text-[10px] sm:text-[11px] font-bold">
-                    {vendor.charAt(0)}
-                  </span>
-                )}
-                <span className="truncate max-w-[100px] sm:max-w-[130px]">{vendor}</span>
-              </Link>
+      <div className="p-2.5 sm:p-3.5 flex-1 flex flex-col justify-between">
+        <div>
+          {/* Category / Subcategory & In Stock Row (No Store Logo or Name) */}
+          <div className="flex items-center justify-between gap-1 text-[10px] sm:text-[11px] text-[#767470] mb-1">
+            <span className="font-mono uppercase tracking-wider font-semibold text-marigold truncate max-w-[130px] sm:max-w-none">
+              {product.subcategory || product.category || 'Product'}
+            </span>
+            {hasRating && averageRating > 0 ? (
+              <div className="flex items-center gap-1 shrink-0">
+                <FaStar className="w-2.5 h-2.5 text-amber-400 fill-current" />
+                <span className="font-mono font-bold text-ink text-[10px] sm:text-[11px]">{averageRating.toFixed(1)}</span>
+              </div>
             ) : (
-              <span className="min-w-0 truncate">{vendor}</span>
-            )}
-            {(Boolean((product as any).is_pro_seller) || (product.store as any)?.agent?.plan === 'pro') && (
-              <span
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 border border-amber-300 font-mono text-[9px] font-extrabold uppercase shrink-0"
-                title="Verified Pro Seller — Boosted Listing"
-              >
-                ★ Pro
-              </span>
-            )}
-            {store?.storetype && /wholesale/i.test(store.storetype) && (
-              <span
-                className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-800 border border-amber-200 font-mono text-[9px] font-bold uppercase shrink-0"
-                title="Wholesale Store"
-              >
-                Wholesale
-              </span>
-            )}
-            {store?.storetype && (/service/i.test(store.storetype) || /provider/i.test(store.storetype)) && (
-              <span
-                className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 border border-blue-200 font-mono text-[9px] font-bold uppercase shrink-0"
-                title="Service Provider"
-              >
-                Service
+              <span className="text-[9.5px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200/50">
+                In Stock
               </span>
             )}
           </div>
-          {variant === "trending" && !badge && !product.brand && (
-            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-[#E7F4EF] text-[#4F6B63] font-mono text-[9px] font-bold">
-              <FiZap className="w-3 h-3" aria-hidden="true" />
-              Trending
-            </span>
-          )}
+
+          {/* Product Name */}
+          <h3 className="font-semibold text-xs sm:text-[14px] leading-snug mb-1.5 sm:mb-2 line-clamp-2 min-h-[32px] sm:min-h-[40px] group-hover:text-marigold transition-colors text-ink">
+            <Link href={productUrl} className="hover:underline">
+              {product.name}
+            </Link>
+          </h3>
         </div>
 
-        {/* Product Name */}
-        <h3 className="font-semibold text-[13px] sm:text-[14.5px] leading-snug mb-1.5 sm:mb-2 line-clamp-2 min-h-[38px] sm:min-h-[44px] group-hover:text-[#6E7F5C] transition-colors">
-          <Link href={productUrl} className="hover:underline">
-            {product.name}
-          </Link>
-        </h3>
-
-        {/* Rating - Only show if there's a rating */}
-        {hasRating && !loading ? (
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-            {renderStars(averageRating)}
-            <span className="text-[11px] sm:text-xs font-mono text-[#767470]">
-              {averageRating.toFixed(1)}
-            </span>
-          </div>
-        ) : loading ? (
-          <div className="flex items-center gap-2 mb-1.5 sm:mb-2" aria-hidden="true">
-            <div className="w-16 sm:w-20 h-3 bg-gray-200 rounded animate-pulse"></div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
-            <span className="text-[11px] sm:text-xs font-mono text-[#767470]">No reviews yet</span>
-          </div>
-        )}
-
-        {/* Price */}
-        <div className="flex items-center justify-between gap-1">
-          <div className="flex items-baseline flex-wrap gap-x-1.5 gap-y-0.5 sm:gap-2 min-w-0">
-            <span className="font-display font-extrabold text-sm sm:text-base md:text-xl truncate" aria-label={`Price: ${displayPrice}`}>
-              <FormatPrice price={displayPrice} />
-            </span>
-            {hasSalePrice && (
-              <span className="text-[11px] sm:text-xs md:text-sm text-[#767470] line-through truncate" aria-label={`Original price: ${regularDisplayPrice}`}>
-                <FormatPrice price={regularDisplayPrice} />
+        {/* Price & Savings */}
+        <div>
+          <div className="flex items-baseline justify-between gap-1 flex-wrap mt-auto">
+            <div className="flex items-baseline flex-wrap gap-x-1.5 gap-y-0.5 min-w-0">
+              <span className="font-display font-black text-sm sm:text-base md:text-lg text-ink truncate" aria-label={`Price: ${displayPrice}`}>
+                <FormatPrice price={displayPrice} />
               </span>
-            )}
-          </div>
-          {!showQuickView && (
-            <div className="hidden sm:block opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              {hasVariants ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsOptionsOpen(true);
-                  }}
-                  className="px-2.5 py-1.5 rounded-lg bg-ink hover:bg-marigold text-white text-xs font-semibold shadow-sm transition-all"
-                >
-                  Options
-                </button>
-              ) : (
-                <AddtoCartButton
-                  product={product}
-                  showVariantPicker={false}
-                  onRequireOptions={() => setIsOptionsOpen(true)}
-                />
+              {hasSalePrice && (
+                <span className="text-[10px] sm:text-xs text-[#8E8B85] line-through truncate" aria-label={`Original price: ${regularDisplayPrice}`}>
+                  <FormatPrice price={regularDisplayPrice} />
+                </span>
               )}
             </div>
-          )}
-        </div>
-
-        {/* Mobile View Direct Action Button */}
-        <div className="sm:hidden mt-2 pt-2 border-t border-line/60">
-          {hasVariants ? (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsOptionsOpen(true);
-              }}
-              className="w-full py-1.5 px-2 rounded-lg bg-ink hover:bg-marigold text-white text-[11px] font-semibold shadow-xs flex items-center justify-center gap-1.5 active:scale-98 transition-all truncate"
-            >
-              <FaEye className="w-3.5 h-3.5 text-marigold shrink-0" />
-              <span className="truncate">Select Options</span>
-            </button>
-          ) : (
-            <AddtoCartButton
-              product={product}
-              showVariantPicker={false}
-              size="sm"
-              onRequireOptions={() => setIsOptionsOpen(true)}
-            />
-          )}
-        </div>
-
-        {/* Save Amount */}
-        {hasDiscount && (
-          <div className="mt-1.5">
-            <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[9.5px] sm:text-[10px] font-semibold text-green-600 truncate max-w-full">
-              Save <FormatPrice price={regularDisplayPrice - displayPrice} />
-            </span>
+            {hasDiscount && (
+              <span className="hidden sm:inline-block text-[9.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.2 rounded">
+                Save <FormatPrice price={regularDisplayPrice - displayPrice} />
+              </span>
+            )}
           </div>
-        )}
+
+          {/* Mobile View Action Button (Clean 2-card mobile layout) */}
+          <div className="sm:hidden mt-2 pt-1.5 border-t border-line/60">
+            {hasVariants ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsOptionsOpen(true);
+                }}
+                className="w-full py-1.5 px-2 rounded-lg bg-ink hover:bg-marigold text-white text-[11px] font-semibold shadow-xs flex items-center justify-center gap-1 active:scale-95 transition-all truncate"
+              >
+                <FaEye className="w-3 h-3 text-marigold shrink-0" />
+                <span className="truncate">Options</span>
+              </button>
+            ) : (
+              <AddtoCartButton
+                product={product}
+                showVariantPicker={false}
+                size="sm"
+                onRequireOptions={() => setIsOptionsOpen(true)}
+              />
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Select Options Dialog */}

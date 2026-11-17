@@ -10,7 +10,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 /** How many items make up one full page of the showcase. */
-const PER_PAGE = 3;
+const PER_PAGE = 8;
 
 export interface ProductShowcaseProps<T> {
   /** Items to page through. The route layer caps this at six. */
@@ -109,7 +109,7 @@ function ProductShowcase<T>({
         {isSinglePage ? (
           <div className="space-y-3">
             {slideHeader}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
               {items.map((item, index) => (
                 <div key={index}>{renderItem(item, index)}</div>
               ))}
@@ -148,7 +148,7 @@ function ProductShowcase<T>({
               <SwiperSlide key={pageIndex}>
                 <div className="space-y-3">
                   {slideHeader}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
                     {page.map((item, itemIndex) => (
                       <div key={itemIndex}>{renderItem(item, pageIndex * PER_PAGE + itemIndex)}</div>
                     ))}

@@ -34,6 +34,7 @@ import { toast } from 'sonner';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import FormatPrice from '@/Pages/utils/FormatePrice';
 import Eyebrow from '@/Pages/Components/Eyebrow';
+import { resolveProductImage } from '@/Pages/utils/resolveProductImage';
 
 interface AdminOrderProps {
     auth: {
@@ -115,10 +116,7 @@ const humanize = (value: string) => (value || '').replace(/_/g, ' ');
  * to the public disk, which would otherwise resolve against the page URL.
  */
 const resolveItemImage = (raw?: string | null): string => {
-    if (!raw) return '';
-    if (raw.startsWith('http') || raw.startsWith('/')) return raw;
-    if (raw.startsWith('storage/')) return `/${raw}`;
-    return `/storage/${raw}`;
+    return resolveProductImage(raw, '/otherplaceholder.jpg');
 };
 
 const itemImageFallback = '/otherplaceholder.jpg';

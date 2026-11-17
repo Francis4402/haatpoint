@@ -133,8 +133,8 @@ const AllProducts = ({ product, user, links, from, to, total }: allproductsprops
                     </Link>
                 </div>
 
-                {/* Products Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+                {/* Products Grid: 2 columns on mobile */}
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
                     {allproducts.map((offer) => (
                         <ProductCard
                             key={offer.id}

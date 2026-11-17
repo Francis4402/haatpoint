@@ -33,6 +33,7 @@ import { toast } from 'sonner';
 import { useStore } from '../state/cartStore';
 import ClearCartDialog from '../dialogpopups/ClearCartDialog';
 import FormatPrice from '../utils/FormatePrice';
+import { resolveProductImage } from '../utils/resolveProductImage';
 import { withMarkup } from '../utils/price';
 import { parseVariantList } from '../utils/parseVariants';
 import { isServiceProvider } from '../utils/storeType';
@@ -462,28 +463,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
   };
 
   const getFirstImage = (images: string) => {
-    try {
-      const parsed = JSON.parse(images);
-      let imageName = '';
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        imageName = parsed[0];
-      } else if (typeof parsed === 'string' && parsed) {
-        imageName = parsed;
-      }
-
-      if (imageName) {
-        return `${window.location.origin}/storage/${imageName}`;
-      }
-    } catch (error) {
-      if (typeof images === 'string' && images) {
-        const matches = images.match(/"([^"]+)"/);
-        if (matches && matches[1]) {
-          return `${window.location.origin}/storage/${matches[1]}`;
-        }
-      }
-    }
-
-    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop';
+    return resolveProductImage(images, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop');
   };
 
   const calculateSaleSavings = () => {
@@ -695,7 +675,12 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                                 <img
                                   src={imageUrl}
                                   alt={item.name}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  loading="lazy"
+                                  decoding="async"
+                                  className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+                                  style={{
+                                    imageRendering: '-webkit-optimize-contrast',
+                                  }}
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop';
                                   }}

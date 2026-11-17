@@ -274,7 +274,10 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
                       <img
                         src={imageSrc}
                         alt={product.name}
-                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border border-line flex-shrink-0 bg-white"
+                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-contain p-0.5 border border-line flex-shrink-0 bg-white"
+                        style={{
+                          imageRendering: '-webkit-optimize-contrast',
+                        }}
                         onError={(e) => {
                           (e.currentTarget as HTMLElement).style.display = 'none';
                         }}

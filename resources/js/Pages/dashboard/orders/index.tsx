@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import DeleteConfirmationDialog from '@/Pages/buttons/DeleteConfirmationDialog';
 import FormatPrice from '@/Pages/utils/FormatePrice';
 import Eyebrow from '@/Pages/Components/Eyebrow';
+import { resolveProductImage } from '@/Pages/utils/resolveProductImage';
 
 
 interface DashboardOrderType {
@@ -122,15 +123,7 @@ const DashboardOrders = ({ auth, orders }: DashboardOrderType) => {
     });
 
     const getImageUrl = (p: string | null | undefined) => {
-        if (!p) return '/otherplaceholder.jpg';
-        const c = p.replace(/\/+/g, '/');
-        if (c.startsWith('http://') || c.startsWith('https://')) return c;
-        if (c.includes('/storage/')) return c;
-        const b = window.location.origin;
-        if (c.startsWith('product_images/')) return `${b}/storage/${c}`;
-        if (c.includes('product_images')) return `${b}/storage/product_images/${c.split('/').pop()}`;
-        if (!c.includes('/')) return `${b}/storage/product_images/${c}`;
-        return `${b}/storage/${c}`;
+        return resolveProductImage(p, '/otherplaceholder.jpg');
     };
 
     const formatDate = (d: string | null) => {

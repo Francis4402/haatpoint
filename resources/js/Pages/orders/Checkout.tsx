@@ -28,6 +28,7 @@ import FormatPrice from '../utils/FormatePrice';
 import { withMarkup } from '../utils/price';
 import Eyebrow from '../Components/Eyebrow';
 import SeoHead from '@/Components/SeoHead';
+import { resolveProductImage } from '../utils/resolveProductImage';
 import { isServiceProvider } from '../utils/storeType';
 
 
@@ -84,24 +85,7 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
   const summary = getOrderSummary();
 
   const getFirstImage = (images: string) => {
-    try {
-      const parsed = JSON.parse(images);
-      const imageName = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : parsed;
-      if (imageName) {
-        return `/storage/${imageName}`;
-      }
-    } catch {
-      if (typeof images === 'string' && images) {
-        const matches = images.match(/"([^"]+)"/);
-        if (matches && matches[1]) {
-          return `/storage/${matches[1]}`;
-        }
-        if (images && !images.includes('"')) {
-          return `/storage/${images}`;
-        }
-      }
-    }
-    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop';
+    return resolveProductImage(images, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop');
   };
 
   const getSelectedCityName = () => {

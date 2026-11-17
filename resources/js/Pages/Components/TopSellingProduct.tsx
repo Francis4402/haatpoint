@@ -21,7 +21,6 @@ import { Product } from "@/types";
 import WishlistButton from "../buttons/WishListButton";
 import { parseVariantList } from "../utils/parseVariants";
 import SelectOptionsDialog from "@/Components/SelectOptionsDialog";
-import { storeSlug } from "../utils/storeType";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -60,12 +59,6 @@ function calculateDiscount(regularPrice: number, salePrice: number): number {
   return Math.round(((regularPrice - salePrice) / regularPrice) * 100);
 }
 
-function getStoreLogoSrc(logo?: string | null): string {
-  if (!logo) return "/fallback-logo.png";
-  if (logo.startsWith("http") || logo.startsWith("/")) return logo;
-  return `/storage/${logo}`;
-}
-
 const renderStars = (rating: number) => {
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating % 1 >= 0.5;
@@ -88,7 +81,7 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
   const scope = useRef<HTMLElement>(null);
   const [optionsProduct, setOptionsProduct] = useState<Product | null>(null);
 
-  // Filter products by genuine sold total and keep up to 6 for a balanced 3x2 grid
+  // Filter products by genuine sold total and keep up to 12 for a rich grid
   const topProducts = useMemo(() => {
     return products
       .map((product) => ({
@@ -97,7 +90,7 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
       }))
       .filter((product) => Number.isFinite(product.sold) && product.sold > minSold)
       .sort((a, b) => b.sold - a.sold)
-      .slice(0, 6);
+      .slice(0, 12);
   }, [products, minSold]);
 
   useGSAP(
@@ -145,8 +138,8 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
         </Link>
       </div>
 
-      {/* Relaxed, Balanced Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7">
+      {/* Relaxed, Balanced Grid: 2 columns on mobile, 4 on desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
         {topProducts.map((product, index) => {
           const rank = index + 1;
           const imageSrc = getImageSrc(product.images);
@@ -155,9 +148,6 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
           const discount = calculateDiscount(Number(product.regular_price), Number(product.sale_price));
           const numericRating = Number(product.rating || 0);
           const reviewCount = Number(product.review || 0);
-          const storeLogo = getStoreLogoSrc(product.store?.logo);
-          const storeName = product.store?.name || "Verified Store";
-          const isPro = product.store?.agent?.plan === "pro";
 
           const hasVariants =
             parseVariantList(product.size).length > 0 || parseVariantList(product.color).length > 0;
@@ -165,16 +155,21 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
           return (
             <div
               key={product.id}
-              className="top-card bg-white rounded-2xl border border-line/70 p-4 sm:p-5 hover:border-marigold/50 hover:shadow-hard-sm transition-all duration-300 flex flex-col justify-between group"
+              className="top-card bg-white rounded-2xl border border-line/70 p-2.5 sm:p-5 hover:border-marigold/50 hover:shadow-hard-sm transition-all duration-300 flex flex-col justify-between group"
             >
               <div>
                 {/* Image Container with Badges */}
-                <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-paper-dim mb-4">
+                <div className="relative aspect-square rounded-xl overflow-hidden bg-paper-dim mb-2.5 sm:mb-4">
                   <Link href={`/products/${product.slug || product.id}`} className="block w-full h-full">
                     <img
                       src={imageSrc}
                       alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-contain p-1.5 transition-transform duration-500 ease-out group-hover:scale-105"
+                      style={{
+                        imageRendering: '-webkit-optimize-contrast',
+                      }}
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = "/placeholder.jpg";
                       }}
@@ -182,22 +177,23 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                   </Link>
 
                   {/* Top-Left Rank Badge */}
-                  <div className="absolute top-3 left-3 z-10">
+                  <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
                     {rank === 1 ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200/80 shadow-xs">
+                      <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200/80 shadow-xs">
                         <span>🏆</span>
-                        <span>#1 Best Seller</span>
+                        <span className="hidden sm:inline">#1 Best Seller</span>
+                        <span className="sm:hidden">#1 Best</span>
                       </span>
                     ) : rank === 2 ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/95 backdrop-blur-sm text-ink border border-line/70 shadow-xs">
-                        <span>🥈 #2 Pick</span>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-white/95 backdrop-blur-sm text-ink border border-line/70 shadow-xs">
+                        <span>🥈 #2</span>
                       </span>
                     ) : rank === 3 ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/95 backdrop-blur-sm text-ink border border-line/70 shadow-xs">
-                        <span>🥉 #3 Pick</span>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-white/95 backdrop-blur-sm text-ink border border-line/70 shadow-xs">
+                        <span>🥉 #3</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/90 backdrop-blur-sm text-text-soft border border-line/60">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-semibold bg-white/90 backdrop-blur-sm text-text-soft border border-line/60">
                         #{rank}
                       </span>
                     )}
@@ -205,14 +201,14 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
 
                   {/* Top-Right Wishlist Button */}
                   {user && (
-                    <div className="absolute top-3 right-3 z-10 scale-95">
+                    <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 scale-90 sm:scale-95">
                       <WishlistButton productId={product.id} />
                     </div>
                   )}
 
                   {/* Bottom-Left Discount Badge */}
                   {discount > 0 && (
-                    <span className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-500 text-white shadow-xs z-10">
+                    <span className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded-md sm:rounded-full text-[10px] sm:text-[11px] font-bold bg-rose-500 text-white shadow-xs z-10">
                       -{discount}%
                     </span>
                   )}
@@ -220,98 +216,66 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                   {/* Bottom-Right Quick View Link */}
                   <Link
                     href={`/products/${product.slug || product.id}`}
-                    className="absolute bottom-3 right-3 p-2 rounded-full bg-white/90 backdrop-blur-sm text-ink hover:text-marigold hover:bg-white shadow-xs transition-colors opacity-90 sm:opacity-0 group-hover:opacity-100 z-10"
+                    className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 p-1.5 sm:p-2 rounded-full bg-white/90 backdrop-blur-sm text-ink hover:text-marigold hover:bg-white shadow-xs transition-colors opacity-90 sm:opacity-0 group-hover:opacity-100 z-10"
                     aria-label={`View ${product.name}`}
                   >
-                    <FaEye className="w-3.5 h-3.5" />
+                    <FaEye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   </Link>
                 </div>
 
-                {/* Store, Pro Badge & Category Row */}
-                <div className="flex items-center gap-2 mb-2 text-xs text-text-soft">
-                  {product.store && (
-                    <Link
-                      href={`/stores/${storeSlug(product.store)}`}
-                      className="inline-flex items-center gap-1.5 hover:text-ink transition-colors truncate max-w-[140px]"
-                    >
-                      {storeLogo ? (
-                        <img
-                          src={storeLogo}
-                          alt={storeName}
-                          className="w-4 h-4 rounded-full object-cover border border-line shrink-0"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = '/fallback-logo.png';
-                          }}
-                        />
-                      ) : (
-                        <FaStore className="w-3.5 h-3.5 text-marigold shrink-0" />
-                      )}
-                      <span className="truncate">{storeName}</span>
-                    </Link>
-                  )}
-
-                  {isPro && (
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-marigold/10 text-marigold border border-marigold/20 shrink-0">
-                      ★ Pro
-                    </span>
-                  )}
-
-                  {product.category && (
-                    <>
-                      <span className="text-line">•</span>
-                      <span className="truncate">{product.category}</span>
-                    </>
-                  )}
+                {/* Category & Sold Count Row */}
+                <div className="flex items-center justify-between gap-1 mb-1 sm:mb-1.5 text-[9.5px] sm:text-xs text-text-soft">
+                  <span className="font-mono uppercase tracking-wider text-marigold font-semibold truncate">
+                    {product.subcategory || product.category || 'Top Seller'}
+                  </span>
+                  <span className="text-[9px] sm:text-[10.5px] font-bold text-ink shrink-0 bg-paper-dim px-1.5 py-0.5 rounded border border-line/60">
+                    🔥 {product.sold ?? 0} sold
+                  </span>
                 </div>
 
                 {/* Product Title */}
-                <h3 className="text-base font-bold text-ink leading-snug line-clamp-2 group-hover:text-marigold transition-colors mb-2">
+                <h3 className="text-xs sm:text-base font-bold text-ink leading-snug line-clamp-2 group-hover:text-marigold transition-colors mb-1.5 sm:mb-2">
                   <Link href={`/products/${product.slug || product.id}`}>
                     {product.name}
                   </Link>
                 </h3>
 
                 {/* Star Rating & Sold Proof */}
-                <div className="flex items-center justify-between gap-2 mb-4 text-xs">
-                  <div className="flex items-center gap-1.5">
+                <div className="flex items-center justify-between gap-1 mb-2.5 sm:mb-4 text-xs">
+                  <div className="flex items-center gap-1 sm:gap-1.5">
                     {renderStars(numericRating > 0 ? numericRating : 5)}
-                    <span className="font-semibold text-ink text-[11px]">
+                    <span className="font-semibold text-ink text-[10px] sm:text-[11px]">
                       {numericRating > 0 ? numericRating.toFixed(1) : "5.0"}
                     </span>
-                    <span className="text-text-soft text-[11px]">
+                    <span className="text-text-soft text-[10px] sm:text-[11px]">
                       ({reviewCount > 0 ? reviewCount : "10+"})
                     </span>
                   </div>
-
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-text-soft bg-paper-dim px-2 py-0.5 rounded-full shrink-0">
-                    <FaFire className="text-amber-500 w-2.5 h-2.5" />
-                    <span>{product.sold ?? product.sold_count ?? 0} sold</span>
-                  </span>
                 </div>
               </div>
 
               {/* Price & Action Button Footer */}
-              <div className="pt-3 border-t border-line/60 flex items-center justify-between gap-3">
+              <div className="pt-2 sm:pt-3 border-t border-line/60 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 mt-auto">
                 <div className="min-w-0">
-                  <div className="text-lg sm:text-xl font-bold text-ink truncate">
+                  <div className="text-sm sm:text-base md:text-lg font-black text-ink truncate">
                     <FormatPrice price={displayPrice} />
                   </div>
-                  {discount > 0 && originalPrice > 0 && (
-                    <div className="text-xs text-text-soft line-through truncate">
+                  {discount > 0 && originalPrice > displayPrice && (
+                    <div className="text-[10px] sm:text-xs text-text-soft line-through truncate">
                       <FormatPrice price={originalPrice} />
                     </div>
                   )}
                 </div>
 
-                <div className="shrink-0">
+                <div className="w-full sm:w-auto shrink-0">
                   {hasVariants ? (
                     <button
                       type="button"
                       onClick={() => setOptionsProduct(product)}
-                      className="inline-flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl bg-ink hover:bg-marigold text-white text-xs font-semibold transition-colors duration-200 shadow-sm"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-lg bg-ink hover:bg-marigold text-white text-[11px] font-semibold transition-all shadow-xs"
                     >
-                      <FaEye className="w-3 h-3" />
-                      <span>Select Options</span>
+                      <FaEye className="w-3 h-3 text-marigold" />
+                      <span>Options</span>
                     </button>
                   ) : (
                     <AddtoCartButton
@@ -320,7 +284,7 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                       size="sm"
                       showVariantPicker={false}
                       onRequireOptions={() => setOptionsProduct(product)}
-                      className="!py-2 !px-3.5 !rounded-xl !text-xs !font-semibold"
+                      className="!w-full sm:!w-auto !py-1.5 !px-2.5 !rounded-lg !text-[11px] !font-semibold"
                     />
                   )}
                 </div>

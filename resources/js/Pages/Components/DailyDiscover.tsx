@@ -18,7 +18,7 @@ const DailyDiscover = ({ discoverProduct, user }: DailyDiscoverProps) => {
       id="daily-discover"
       eyebrow="Shuffled on every visit"
       title="Discover something new"
-      description="Six random picks from across the marketplace, different each time."
+      description="Hand-picked trending items from across the marketplace, refreshed on every visit."
       items={products}
       renderItem={(item) => <ProductCard product={item} user={user} />}
     />
