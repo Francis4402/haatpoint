@@ -18,11 +18,14 @@ class Categories extends Model
      */
     public static function all($columns = ['*'])
     {
-        return CategoryCatalog::all();
+        return CategoryCatalog::all()->map(function ($c) {
+            $c['categories'] = $c['categories'] ?? $c['name'];
+            return (object) $c;
+        });
     }
 
     public static function get($columns = ['*'])
     {
-        return CategoryCatalog::all();
+        return self::all();
     }
 }

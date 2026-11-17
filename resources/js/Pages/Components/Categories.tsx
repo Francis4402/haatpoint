@@ -91,28 +91,38 @@ const Categories = ({ categories }: { categories: categoryType[] }) => {
           loop={false}
           className="categories-swiper"
         >
-          {categories.map((c) => (
-            <SwiperSlide key={c.id}>
-              <Link
-                href={`/products?category=${encodeURIComponent(c.categories)}`}
-                className="clip-cat group flex flex-col items-center gap-2.5 text-center px-3.5 py-5 bg-white border border-line transition-all duration-200 hover:border-marigold hover:-translate-y-1 hover:shadow-hard-sm h-full"
-              >
-                <div className="text-xl transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
-                  <LazyLoadImage
-                    src={`/storage/${c.image}`}
-                    alt={c.categories}
-                    effect="blur"
-                    placeholderSrc="/otherplaceholder.jpg"
-                    threshold={100}
-                    className="w-25 h-25 object-contain"
-                  />
-                </div>
-                <span className="text-xs font-bold leading-tight text-ink group-hover:text-marigold transition-colors">
-                  {c.categories}
-                </span>
-              </Link>
-            </SwiperSlide>
-          ))}
+          {categories.map((c) => {
+            const catName = c.categories || (c as any).name || '';
+            const imgSrc = c.image 
+              ? (c.image.startsWith('http') || c.image.startsWith('/') ? c.image : `/storage/${c.image}`)
+              : '/placeholder.png';
+
+            return (
+              <SwiperSlide key={c.id}>
+                <Link
+                  href={`/products?category=${encodeURIComponent(catName)}`}
+                  className="clip-cat group flex flex-col items-center gap-2.5 text-center px-3.5 py-5 bg-white border border-line transition-all duration-200 hover:border-marigold hover:-translate-y-1 hover:shadow-hard-sm h-full"
+                >
+                  <div className="text-xl transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-3">
+                    <LazyLoadImage
+                      src={imgSrc}
+                      alt={catName}
+                      effect="blur"
+                      placeholderSrc="/otherplaceholder.jpg"
+                      threshold={100}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/placeholder.png';
+                      }}
+                      className="w-25 h-25 object-contain"
+                    />
+                  </div>
+                  <span className="text-xs font-bold leading-tight text-ink group-hover:text-marigold transition-colors">
+                    {catName}
+                  </span>
+                </Link>
+              </SwiperSlide>
+            );
+          })}
         </Swiper>
 
         {/* Mobile Pagination Dots */}

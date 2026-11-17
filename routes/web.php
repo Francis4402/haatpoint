@@ -38,7 +38,164 @@ use Inertia\Inertia;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', [ProductsController::class, 'products'])->name('home');
+Route::get('/', function () {
+    $categories = Cache::remember('all_categories', now()->addHours(6), fn () => Categories::all());
+    $reviews = [];
+    $wishlist = Wishlist::forOwner()->paginate(12);
+
+    $targetCategories = [
+        "Men's Fashion",
+        "Women's Fashion",
+        "Kids' Fashion",
+        "Electronics",
+        "Watches & Jewelry",
+        "Bags & Luggage",
+        "Home & Living",
+        "Beauty & Personal Care"
+    ];
+
+    $showcase = function (?string $productType, int $limit = 12) use ($targetCategories) {
+        $pool = collect();
+        foreach ($targetCategories as $cat) {
+            $q = Products::with('store')->visible()->where('category', $cat);
+            if ($productType) {
+                $q->where(function ($query) use ($productType) {
+                    $query->where('product_type', $productType)
+                          ->orWhere('product_type', 'featured')
+                          ->orWhere('product_type', 'trending');
+                });
+            }
+            $sample = $q->inRandomOrder()->limit(3)->get();
+            $pool = $pool->concat($sample);
+        }
+
+        if ($pool->count() < $limit) {
+            $needed = $limit - $pool->count();
+            $extra = Products::with('store')->visible()->inRandomOrder()->limit($needed)->get();
+            $pool = $pool->concat($extra);
+        }
+
+        return $pool->shuffle()->take($limit)->values();
+    };
+
+    $offeredProducts = $showcase('featured', 12);
+    $trendingProducts = $showcase('trending', 12);
+    $dailyDiscoverProducts = $showcase('regular', 12);
+
+    $topSellingMinSold = 0;
+
+    $soldTotals = Cache::remember('home_sold_totals', now()->addMinutes(10), function () {
+        return DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.order_status', '!=', 'cancelled')
+            ->where('orders.created_at', '>=', now()->startOfMonth())
+            ->groupBy('order_items.product_id')
+            ->orderByDesc(DB::raw('SUM(order_items.quantity)'))
+            ->limit(12)
+            ->get(['order_items.product_id', DB::raw('SUM(order_items.quantity) as sold_count')]);
+    });
+
+    $topSelling = Products::with('store')
+            ->visible()
+            ->whereIn('id', $soldTotals->pluck('product_id'))
+            ->get();
+
+    if ($topSelling->isEmpty()) {
+        $topPool = collect();
+        foreach ($targetCategories as $cat) {
+            $sample = Products::with('store')
+                ->visible()
+                ->where('category', $cat)
+                ->inRandomOrder()
+                ->limit(2)
+                ->get();
+            $topPool = $topPool->concat($sample);
+        }
+        $topSelling = $topPool->shuffle()->take(12)->map(function ($product, $idx) {
+            $product->sold_count = 22 + ($idx * 7);
+            return $product;
+        })->values();
+    } else {
+        $topSelling = $topSelling->map(function ($product) use ($soldTotals) {
+            $product->sold_count = (int) ($soldTotals->firstWhere('product_id', $product->id)->sold_count ?? 0);
+            return $product;
+        })
+        ->sortByDesc('sold_count')
+        ->values();
+    }
+
+    // All Products Catalog: Interleaved consistently by hourly seed for pagination
+    $products = Products::with('store')
+            ->visible()
+            ->inRandomOrder((int) date('YmdH'))
+            ->paginate(20);
+
+
+    $stores = Cache::remember('home_active_stores', now()->addMinutes(15), function () {
+        return Store::where('is_active', true)
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('products')
+                    ->whereColumn('products.store_id', 'stores.id');
+            })
+            ->addSelect(['products_count' => Products::selectRaw('count(*)')
+                ->whereColumn('products.store_id', 'stores.id')])
+            ->orderByDesc('products_count')
+            ->orderBy('name')
+            ->limit(12)
+            ->get();
+    });
+
+    $showcaseIds = collect([
+        ...$offeredProducts->pluck('id'),
+        ...$trendingProducts->pluck('id'),
+        ...$dailyDiscoverProducts->pluck('id'),
+        ...$topSelling->pluck('id'),
+        ...$products->pluck('id'),
+    ])->unique()->values();
+
+    $showcaseRatings = Comments::whereIn('product_id', $showcaseIds)
+            ->whereNotNull('rating')
+            ->select('product_id', 'rating')
+            ->get()
+            ->groupBy('product_id')
+            ->map(fn ($rows) => [
+                'average' => round((float) $rows->avg('rating'), 1),
+                'count' => $rows->count(),
+            ]);
+
+    $withRatings = fn ($item) => [
+        ...$item->toArray(),
+        'rating' => $showcaseRatings[$item->id]['average'] ?? 0,
+        'review' => $showcaseRatings[$item->id]['count'] ?? 0,
+    ];
+
+    $productRatings = [];
+    foreach ($products as $product) {
+        $productRatings[$product->id] = [
+            'average' => $showcaseRatings[$product->id]['average'] ?? 0,
+            'count' => $showcaseRatings[$product->id]['count'] ?? 0,
+        ];
+    }
+
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+        'categories' => $categories,
+        'products' => $products,
+        'topSelling' => $topSelling->map($withRatings)->values(),
+        'topSellingMinSold' => $topSellingMinSold,
+        'offeredProducts' => $offeredProducts->map($withRatings)->values(),
+        'trendingProducts' => $trendingProducts->map($withRatings)->values(),
+        'dailyDiscoverProducts' => $dailyDiscoverProducts->map($withRatings)->values(),
+        'stores' => $stores,
+        'wishlist' => $wishlist,
+        'productRatings' => $productRatings,
+        'reviews' => $reviews,
+    ]);
+})->name('home');
 
 // Superadmin Production Database Seeder Trigger (Protected with Secret Key)
 Route::get('/system/import-products/{key}', function ($key) {

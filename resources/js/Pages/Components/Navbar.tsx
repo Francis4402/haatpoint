@@ -87,21 +87,7 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const moreMenuRef = useRef<HTMLDivElement>(null)
 
-  // Rotating seller announcement ticker for mobile & tablet screens so all key points are 100% visible
-  const [sellerPerkIndex, setSellerPerkIndex] = useState(0)
-  const sellerPerks = [
-    "Keep your 100% sell profit • 0% commission",
-    "Own a shop? Sell on HaatPoint free forever",
-    "Up to 150 products • Pathao delivery handled",
-  ]
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSellerPerkIndex((prev) => (prev + 1) % sellerPerks.length)
-    }, 3600)
-    return () => clearInterval(timer)
-  }, [sellerPerks.length])
-
+  // Cart count
   const { getTotalItems } = useStore()
   const cartItems = getTotalItems()
 
@@ -213,31 +199,16 @@ const Navbar = ({ user, wishlist }: PropsWithChildren<{ user: any; wishlist: any
         role="banner"
         aria-label="Main navigation"
       >
-        {/* Top Seller Announcement Bar */}
+        {/* Top Announcement Bar */}
         <div className="bg-ink text-paper text-xs py-2 border-b border-white/10">
           <div className="container flex items-center justify-between gap-2.5 sm:gap-3">
             <div className="flex items-center gap-2 overflow-hidden text-[11px] sm:text-xs min-w-0 flex-1">
-              <span className="inline-flex items-center gap-1 font-mono uppercase tracking-wider text-[10px] font-bold bg-marigold px-2 py-0.5 rounded text-white shrink-0">
-                For Sellers
+              <span className="inline-flex items-center gap-1 font-mono uppercase tracking-wider text-[10px] font-bold bg-emerald-600 px-2 py-0.5 rounded text-white shrink-0">
+                Online Shopping
               </span>
-
-              {/* Full sentence on large desktop screens (xl and up) */}
-              <span className="hidden xl:inline truncate text-[#E3E1DB]">
-                Own a shop? Sell on HaatPoint free forever &bull; Up to 150 products &bull; Pathao delivery handled &bull; Keep your 100% sell profit
+              <span className="truncate text-[#E3E1DB] font-medium">
+                Cash on Delivery all over Bangladesh &bull; 100% Genuine Products &bull; Fast Delivery
               </span>
-
-              {/* Responsive rotating highlights on mid and mobile screens (<xl) so all points are fully readable */}
-              <div className="xl:hidden flex items-center gap-2 min-w-0 overflow-hidden">
-                <span
-                  key={sellerPerkIndex}
-                  className="truncate text-[#E3E1DB] font-medium transition-opacity duration-300"
-                >
-                  {sellerPerks[sellerPerkIndex]}
-                </span>
-                <span className="hidden sm:inline-flex items-center text-[9px] font-mono text-white/40 shrink-0">
-                  {sellerPerkIndex + 1}/{sellerPerks.length}
-                </span>
-              </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <Link
