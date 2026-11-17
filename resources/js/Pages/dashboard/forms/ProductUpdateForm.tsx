@@ -283,7 +283,7 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
         const parsedImages = JSON.parse(product.images);
         if (Array.isArray(parsedImages) && parsedImages.length > 0) {
           setExistingImages(parsedImages);
-          setImagePreviews(parsedImages.map((img: string) => `/storage/${img}`));
+          setImagePreviews(parsedImages.map((img: string) => img.startsWith('http') || img.startsWith('/') ? img : `/storage/${img}`));
         } else {
           setExistingImages([]);
           setImagePreviews([]);
@@ -1423,11 +1423,12 @@ export default function EditProductForm({ auth, store, stores = [], categories, 
                         {existingImages.map((img, i) => (
                           <div key={i} className="relative group">
                             <img
-                              src={`/storage/${img}`}
+                              src={img.startsWith('http') || img.startsWith('/') ? img : `/storage/${img}`}
                               alt={`Product ${i + 1}`}
-                              className="w-full h-32 object-cover rounded-xl group-hover:opacity-75 transition-opacity border border-line"
+                              className="w-full h-32 object-contain p-1 rounded-xl group-hover:opacity-75 transition-opacity border border-line"
+                              style={{ imageRendering: '-webkit-optimize-contrast' }}
                               onError={(e) => {
-                                e.currentTarget.src = 'https://via.placeholder.com/150?text=Image+Not+Found';
+                                e.currentTarget.src = '/placeholder.jpg';
                               }}
                             />
                             <button

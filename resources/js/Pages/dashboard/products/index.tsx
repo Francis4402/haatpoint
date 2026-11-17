@@ -28,6 +28,7 @@ import FormatPrice from '@/Pages/utils/FormatePrice';
 import { withMarkup } from '@/Pages/utils/price';
 import Eyebrow from '@/Pages/Components/Eyebrow';
 import DeleteConfirmationDialog from '@/Pages/buttons/DeleteConfirmationDialog';
+import { resolveProductImage } from '@/Pages/utils/resolveProductImage';
 
 
 interface dashboarProductProps {
@@ -614,7 +615,7 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                                 const discount = calculateDiscount(product.regular_price, product.sale_price);
                                 const stockStatus = getStockStatus(product.quantity, product.inStock);
 
-                                let images = [];
+                                let images: string[] = [];
 
                                 try {
                                     images = product.images ? JSON.parse(product.images) : [];
@@ -622,18 +623,23 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                                     images = product.images ? [product.images] : [];
                                 }
 
-                                const mainImage = images.length > 0 ? images[0] : null;
+                                const productImageUrl = resolveProductImage(product.images, '/placeholder.jpg');
 
                                 return (
                                     <div key={product.id} className="bg-white rounded-2xl shadow-hard-sm border border-line overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                                         {/* Product Image */}
                                         <div className="relative h-48 overflow-hidden bg-paper-dim">
                                             <img
-                                                src={mainImage ? `/storage/${mainImage}` : '/otherplaceholder.jpg'}
+                                                src={productImageUrl}
                                                 alt={product.name}
-                                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="w-full h-full object-contain p-2 hover:scale-105 transition-transform duration-300"
+                                                style={{
+                                                    imageRendering: '-webkit-optimize-contrast',
+                                                }}
                                                 onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = '/otherplaceholder.jpg';
+                                                    (e.target as HTMLImageElement).src = '/placeholder.jpg';
                                                 }}
                                             />
                                             {product.is_blocked ? (
