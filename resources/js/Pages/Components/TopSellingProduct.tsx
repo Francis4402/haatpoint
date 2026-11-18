@@ -21,6 +21,7 @@ import { Product } from "@/types";
 import WishlistButton from "../buttons/WishListButton";
 import { parseVariantList } from "../utils/parseVariants";
 import SelectOptionsDialog from "@/Components/SelectOptionsDialog";
+import { resolveProductImage, toHighResShopBase, handleProductImageError } from "../utils/resolveProductImage";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -38,20 +39,7 @@ type TopSellingItem = Product & {
 };
 
 function getImageSrc(images: string): string {
-  if (!images) return "/placeholder.jpg";
-
-  let raw: string | null = null;
-  try {
-    const clean = images.startsWith('"') && images.endsWith('"') ? images.slice(1, -1) : images;
-    const parsed = JSON.parse(clean);
-    if (Array.isArray(parsed) && parsed[0]) raw = parsed[0];
-  } catch {
-    const trimmed = images.trim();
-    if (trimmed.startsWith("http") || trimmed.startsWith("/")) raw = trimmed;
-  }
-
-  if (!raw) return "/placeholder.jpg";
-  return raw.startsWith("http") || raw.startsWith("/") ? raw : `/storage/${raw}`;
+  return resolveProductImage(images, '/placeholder.jpg');
 }
 
 function calculateDiscount(regularPrice: number, salePrice: number): number {
@@ -162,7 +150,7 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                 <div className="relative aspect-square rounded-xl overflow-hidden bg-paper-dim mb-2.5 sm:mb-4">
                   <Link href={`/products/${product.slug || product.id}`} className="block w-full h-full">
                     <img
-                      src={imageSrc}
+                      src={toHighResShopBase(imageSrc)}
                       alt={product.name}
                       loading="lazy"
                       decoding="async"
@@ -171,7 +159,7 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
                         imageRendering: '-webkit-optimize-contrast',
                       }}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/placeholder.jpg";
+                        handleProductImageError(e);
                       }}
                     />
                   </Link>
@@ -225,9 +213,16 @@ const TopSellingProduct = ({ products, user, minSold = 3 }: TopSellingProductPro
 
                 {/* Category & Sold Count Row */}
                 <div className="flex items-center justify-between gap-1 mb-1 sm:mb-1.5 text-[9.5px] sm:text-xs text-text-soft">
-                  <span className="font-mono uppercase tracking-wider text-marigold font-semibold truncate">
-                    {product.subcategory || product.category || 'Top Seller'}
-                  </span>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {product.brand && !/shopbase/i.test(product.brand) && (
+                      <span className="font-mono uppercase tracking-wider font-bold text-ink/80 text-[9px] sm:text-[9.5px] bg-muted/60 px-1.5 py-0.5 rounded shrink-0">
+                        {product.brand}
+                      </span>
+                    )}
+                    <span className="font-mono uppercase tracking-wider text-marigold font-semibold truncate">
+                      {product.subcategory || product.category || 'Top Seller'}
+                    </span>
+                  </div>
                   <span className="text-[9px] sm:text-[10.5px] font-bold text-ink shrink-0 bg-paper-dim px-1.5 py-0.5 rounded border border-line/60">
                     🔥 {product.sold ?? 0} sold
                   </span>

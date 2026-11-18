@@ -42,6 +42,7 @@ import AdSenseDisplay from "@/Components/AdSenseDisplay";
 import AdSenseMultiplex from "@/Components/AdSenseMultiplex";
 import { formatProductDescription } from "../utils/formatHtml";
 import { formatStoreType, isServiceProvider, isWholesale, storeSlug } from "../utils/storeType";
+import { toHighResShopBase, handleProductImageError } from "../utils/resolveProductImage";
 
 interface ProductDetailsPageProps {
   product: Product;
@@ -212,17 +213,14 @@ const ProductDetailsPage = ({
   };
 
   const getImageUrl = (imagePath: string) => {
-    if (!imagePath) return '/otherplaceholder.jpg';
+    if (!imagePath) return '/placeholder.jpg';
 
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
+    let resolved = imagePath;
+    if (!resolved.startsWith('http://') && !resolved.startsWith('https://') && !resolved.startsWith('/')) {
+      resolved = `/storage/${imagePath}`;
     }
 
-    if (imagePath.startsWith('/storage/') || imagePath.startsWith('/')) {
-      return imagePath;
-    }
-
-    return `/storage/${imagePath}`;
+    return toHighResShopBase(resolved);
   };
 
   const currentImage = productImages[selectedImageIndex] || '/otherplaceholder.jpg';
@@ -508,8 +506,7 @@ const ProductDetailsPage = ({
                       imageRendering: '-webkit-optimize-contrast',
                     }}
                     onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/otherplaceholder.jpg';
+                      handleProductImageError(e);
                     }}
                   />
 
@@ -557,10 +554,10 @@ const ProductDetailsPage = ({
                         <img
                           src={getImageUrl(image)}
                           alt={`${product.name} ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain p-1"
+                          style={{ imageRendering: '-webkit-optimize-contrast' }}
                           onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/placeholder-image.jpg';
+                            handleProductImageError(e);
                           }}
                         />
                       </button>

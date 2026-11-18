@@ -108,7 +108,7 @@ export default function CategoriesPage({ auth, categories = [], wishlist }: Cate
 
                             <div>
                                 {cat.subcategories && cat.subcategories.length > 0 && (
-                                    <div className="flex flex-wrap gap-1.5 mb-4">
+                                    <div className="flex flex-wrap gap-1.5 mb-3">
                                         {cat.subcategories.slice(0, 3).map((sub) => (
                                             <Link
                                                 key={sub}
@@ -118,6 +118,30 @@ export default function CategoriesPage({ auth, categories = [], wishlist }: Cate
                                                 {sub}
                                             </Link>
                                         ))}
+                                    </div>
+                                )}
+
+                                {cat.brands && cat.brands.length > 0 && (
+                                    <div className="mb-4 pt-2 border-t border-[#E3E1DB]/60">
+                                        <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1.5">
+                                            Brands:
+                                        </div>
+                                        <div className="flex flex-wrap gap-1">
+                                            {cat.brands.slice(0, 4).map((brand) => (
+                                                <Link
+                                                    key={brand}
+                                                    href={`/products?category=${encodeURIComponent(cat.name)}&brand=${encodeURIComponent(brand)}`}
+                                                    className="text-[10.5px] font-medium text-ink bg-muted/50 hover:bg-primary/10 hover:text-primary px-2 py-0.5 rounded transition-colors"
+                                                >
+                                                    {brand}
+                                                </Link>
+                                            ))}
+                                            {cat.brands.length > 4 && (
+                                                <span className="text-[10px] text-muted-foreground self-center">
+                                                    +{cat.brands.length - 4}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
 

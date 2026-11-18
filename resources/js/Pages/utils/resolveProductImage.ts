@@ -7,6 +7,36 @@
  *  - Root relative paths: '/images/...'
  *  - Storage paths: 'product_images/xxx.jpg' or 'storage/xxx.jpg'
  */
+export function toHighResShopBase(url: string | null | undefined): string {
+    if (!url || typeof url !== 'string') return url || '';
+    if (/shopbasebd\.com\/public\/uploads\/shop\/products\/\d+_S_\d+\.jpg/i.test(url)) {
+        return url.replace(/_S_(\d+)\.jpg$/i, '_L_$1.jpeg');
+    }
+    return url;
+}
+
+export function handleProductImageError(e: React.SyntheticEvent<HTMLImageElement, Event>, fallback: string = '/placeholder.png') {
+    const target = e.currentTarget;
+    const current = target.src || '';
+
+    // Step 1: If _L_...jpeg failed, try _L_...jpg
+    if (current.includes('_L_') && (current.endsWith('.jpeg') || current.includes('.jpeg?'))) {
+        target.src = current.replace(/\.jpeg(\?.*)?$/i, '.jpg');
+        return;
+    }
+
+    // Step 2: If _L_...jpg failed (or direct _L_ failed), try original _S_ thumbnail
+    if (current.includes('_L_')) {
+        target.src = current.replace(/_L_(\d+)\.(jpeg|jpg)(\?.*)?$/i, '_S_$1.jpg');
+        return;
+    }
+
+    // Step 3: Prevent infinite loop if already at placeholder
+    if (!current.includes('placeholder')) {
+        target.src = fallback;
+    }
+}
+
 export function resolveProductImage(images: string | null | undefined, fallback: string = '/placeholder.png'): string {
     if (!images) return fallback;
 
@@ -38,9 +68,9 @@ export function resolveProductImage(images: string | null | undefined, fallback:
         return fallback;
     }
 
-    // 2. Direct absolute URLs
+    // 2. Direct absolute URLs (Auto-upgrade ShopBase _S_ thumbnails to high-res _L_ photos)
     if (target.startsWith('http://') || target.startsWith('https://') || target.startsWith('//')) {
-        return target;
+        return toHighResShopBase(target);
     }
 
     // 3. Absolute root path

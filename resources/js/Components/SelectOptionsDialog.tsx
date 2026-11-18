@@ -18,6 +18,7 @@ import { parseVariantList } from '@/Pages/utils/parseVariants';
 import { useStore } from '@/Pages/state/cartStore';
 import FormatPrice from '@/Pages/utils/FormatePrice';
 import { withMarkup } from '@/Pages/utils/price';
+import { toHighResShopBase, handleProductImageError } from '@/Pages/utils/resolveProductImage';
 
 interface SelectOptionsDialogProps {
   isOpen: boolean;
@@ -272,14 +273,14 @@ const SelectOptionsDialog: React.FC<SelectOptionsDialogProps> = ({
                   <div className="flex items-center gap-3.5 min-w-0">
                     {imageSrc ? (
                       <img
-                        src={imageSrc}
+                        src={toHighResShopBase(imageSrc)}
                         alt={product.name}
                         className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-contain p-0.5 border border-line flex-shrink-0 bg-white"
                         style={{
                           imageRendering: '-webkit-optimize-contrast',
                         }}
                         onError={(e) => {
-                          (e.currentTarget as HTMLElement).style.display = 'none';
+                          handleProductImageError(e);
                         }}
                       />
                     ) : (

@@ -9,6 +9,7 @@ import WishlistButton from '@/Pages/buttons/WishListButton';
 import AddtoCartButton from '@/Pages/buttons/AddtoCartButton';
 import SelectOptionsDialog from '@/Components/SelectOptionsDialog';
 import { storeSlug } from '@/Pages/utils/storeType';
+import { resolveProductImage, toHighResShopBase, handleProductImageError } from '@/Pages/utils/resolveProductImage';
 
 interface ProductListCardProps {
   product: Product;
@@ -43,9 +44,7 @@ function getPrimaryImage(images: string): string {
 }
 
 function resolveImageSrc(imageSrc: string): string {
-  if (!imageSrc) return '/otherplaceholder.jpg';
-  if (imageSrc.startsWith('http') || imageSrc.startsWith('/')) return imageSrc;
-  return `/storage/${imageSrc}`;
+  return resolveProductImage(imageSrc, '/placeholder.jpg');
 }
 
 function stripHtml(html?: string | null): string {
@@ -105,7 +104,7 @@ export default function ProductListCard({
           <div className="w-28 h-28 xs:w-32 xs:h-32 sm:w-36 sm:h-36 md:w-44 md:h-44 shrink-0 aspect-square relative bg-paper-dim overflow-hidden self-center sm:self-auto">
             <Link href={productUrl} className="block w-full h-full cursor-pointer" aria-label={`View ${product.name}`}>
               <img
-                src={resolvedImageSrc}
+                src={toHighResShopBase(resolvedImageSrc)}
                 alt={product.name}
                 loading="lazy"
                 decoding="async"
@@ -114,7 +113,7 @@ export default function ProductListCard({
                   imageRendering: '-webkit-optimize-contrast',
                 }}
                 onError={(e) => {
-                  e.currentTarget.src = '/otherplaceholder.jpg';
+                  handleProductImageError(e);
                 }}
               />
             </Link>

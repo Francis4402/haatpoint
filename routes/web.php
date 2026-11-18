@@ -317,6 +317,8 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked', 'subscription']
 
     Route::post('/dashboard/products/store', [ProductsController::class, 'store'])->name('products.store');
 
+    Route::post('/dashboard/products/sync-link', [ProductsController::class, 'syncFromLink'])->name('dashboard.products.sync');
+
     Route::patch('/dashboard/products/{id}/unblock', [ProductsController::class, 'unblock'])->name('dashboard.products.unblock');
 
     Route::delete('/dashboard/products/{slug}', [ProductsController::class, 'destroy'])->name('dashboard.deleteproduct');

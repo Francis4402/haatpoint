@@ -33,7 +33,7 @@ import { toast } from 'sonner';
 import { useStore } from '../state/cartStore';
 import ClearCartDialog from '../dialogpopups/ClearCartDialog';
 import FormatPrice from '../utils/FormatePrice';
-import { resolveProductImage } from '../utils/resolveProductImage';
+import { resolveProductImage, toHighResShopBase, handleProductImageError } from '../utils/resolveProductImage';
 import { withMarkup } from '../utils/price';
 import { parseVariantList } from '../utils/parseVariants';
 import { isServiceProvider } from '../utils/storeType';
@@ -659,7 +659,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                     const currentPrice = salePrice || regularPrice;
                     const quantity = item.cartQty || 1;
                     const totalPrice = currentPrice * quantity;
-                    const imageUrl = getFirstImage(item.images);
+                    const imageUrl = resolveProductImage(item.images, '/placeholder.jpg');
                     const rating = item.rating || 0;
                     const itemCartKey = item.cartKey || `${item.id}__${item.selectedSize || ''}__${item.selectedColor || ''}`;
                     const availableColors = parseVariantList(item.color);
@@ -673,7 +673,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                             <div className="relative group">
                               <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-gray-100 border border-line">
                                 <img
-                                  src={imageUrl}
+                                  src={toHighResShopBase(imageUrl)}
                                   alt={item.name}
                                   loading="lazy"
                                   decoding="async"
@@ -682,7 +682,7 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                                     imageRendering: '-webkit-optimize-contrast',
                                   }}
                                   onError={(e) => {
-                                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop';
+                                    handleProductImageError(e);
                                   }}
                                 />
                               </div>

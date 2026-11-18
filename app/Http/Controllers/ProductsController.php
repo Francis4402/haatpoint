@@ -13,6 +13,7 @@ use App\Rules\CleanText;
 use App\Rules\SafeImage;
 use App\Services\ContentModerationBot;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -742,10 +743,19 @@ class ProductsController extends Controller
                 ->distinct()->orderBy('category')->pluck('category')->values();
         });
 
-        $cachedBrands = Cache::remember('catalog_filter_brands', now()->addHours(2), function () {
-            return Products::visible()
-                ->whereNotNull('brand')->where('brand', '!=', '')
-                ->distinct()->orderBy('brand')->pluck('brand')->values();
+        // Brands scoped dynamically according to selected products category
+        $brandCacheKey = 'catalog_filter_brands_' . md5($category);
+        $cachedBrands = Cache::remember($brandCacheKey, now()->addMinutes(30), function () use ($category) {
+            $brandQuery = Products::visible()
+                ->whereNotNull('brand')
+                ->where('brand', '!=', '')
+                ->where('brand', 'not like', '%shopbase%');
+
+            if ($category !== '' && $category !== 'all') {
+                $brandQuery->where('category', $category);
+            }
+
+            return $brandQuery->distinct()->orderBy('brand')->pluck('brand')->values();
         });
 
         return Inertia::render('products/index', [
@@ -944,5 +954,47 @@ class ProductsController extends Controller
         Cache::forget('showcase_pool_regular');
         Cache::forget('home_active_stores');
         Cache::forget('home_sold_totals');
+    }
+
+    /**
+     * Auto-sync products from a scrape link (ShopBase).
+     */
+    public function syncFromLink(Request $request)
+    {
+        $user = Auth::user();
+        if (! ($user instanceof Admin || ($user && in_array($user->role ?? '', ['admin', 'superadmin'], true)))) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $url = trim((string) $request->input('url', ''));
+        if (empty($url)) {
+            $url = env('SCRAPE_URLS', 'https://shopbasebd.com/store/products/all');
+        }
+
+        try {
+            $limit = (int) $request->input('limit', 0);
+            Artisan::call('shopbase:sync', [
+                '--url' => $url,
+                '--limit' => $limit,
+            ]);
+
+            // Re-assign accurate brands & clear all catalog caches
+            Artisan::call('haatpoint:assign-brands');
+            $this->clearProductCaches();
+
+            $total = Products::count();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully synced products from link! Total catalog: {$total} products.",
+                'total_products' => $total,
+                'url' => $url,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Auto sync failed: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

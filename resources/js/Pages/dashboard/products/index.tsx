@@ -21,6 +21,8 @@ import {
   FaPauseCircle,
   FaCheckCircle,
   FaCopy,
+  FaSyncAlt,
+  FaLink,
 } from 'react-icons/fa';
 import { PageProps, Product, storeType } from '@/types';
 import { toast } from 'sonner';
@@ -58,6 +60,44 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
     const [stockFilter, setStockFilter] = useState('all');
     const [moderationFilter, setModerationFilter] = useState<'all' | 'active' | 'paused' | 'blocked'>('all');
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+    const [syncUrl, setSyncUrl] = useState('https://shopbasebd.com/store/products/all');
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [syncStatus, setSyncStatus] = useState<string | null>(null);
+
+    const handleAutoSync = async () => {
+        setIsSyncing(true);
+        setSyncStatus('Connecting to link and syncing inventory...');
+        try {
+            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
+            const response = await fetch(route('dashboard.products.sync'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ url: syncUrl }),
+            });
+            const data = await response.json();
+            if (data.success) {
+                toast.success(data.message || 'Auto sync completed successfully!');
+                setSyncStatus('Success! ' + (data.message || ''));
+                setTimeout(() => {
+                    setIsSyncModalOpen(false);
+                    router.reload();
+                }, 1200);
+            } else {
+                toast.error(data.message || 'Sync failed');
+                setSyncStatus('Error: ' + (data.message || 'Failed'));
+            }
+        } catch (err: any) {
+            toast.error('Network error during sync: ' + (err.message || ''));
+            setSyncStatus('Error: ' + (err.message || 'Network error'));
+        } finally {
+            setIsSyncing(false);
+        }
+    };
     const [unblockingId, setUnblockingId] = useState<string | null>(null);
 
     const pausedCount = sub?.pausedProductsCount ?? products.filter(p => p.is_active === false && !p.is_blocked).length;
@@ -215,7 +255,16 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                             <p className="text-text-soft text-xs sm:text-sm mt-1">Manage your inventory and products</p>
                         </div>
 
-                        <div className="w-full sm:w-auto">
+                        <div className="w-full sm:w-auto flex items-center gap-2 flex-wrap justify-end">
+                            {isAdminOrSuperAdmin && (
+                                <button
+                                    onClick={() => setIsSyncModalOpen(true)}
+                                    className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 text-sm sm:text-base shrink-0 shadow-sm"
+                                >
+                                    <FaSyncAlt className={`h-4 w-4 shrink-0 ${isSyncing ? 'animate-spin' : ''}`} />
+                                    <span>Auto Sync from Link</span>
+                                </button>
+                            )}
                             {isLimitReached ? (
                                 <div className="flex items-center gap-3 flex-wrap">
                                     <span className="text-xs font-mono font-bold text-red-600 bg-red-50 border border-red-200 px-3.5 py-2.5 rounded-xl">
@@ -803,6 +852,96 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                         message={`Are you sure you want to delete "${getProductName()}"? This action cannot be undone and all product data will be permanently removed.`}
                         variant="danger"
                     />
+
+                    {/* Auto Sync Modal */}
+                    {isSyncModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/60 backdrop-blur-xs">
+                            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-line animate-in fade-in zoom-in-95 duration-200">
+                                <div className="flex items-center justify-between mb-4 pb-3 border-b border-line">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
+                                            <FaSyncAlt className={`h-5 w-5 ${isSyncing ? 'animate-spin' : ''}`} />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-display font-bold text-lg text-ink">Auto Sync Products from Link</h3>
+                                            <p className="text-xs text-text-soft">Scrapes and synchronizes products directly into inventory</p>
+                                        </div>
+                                    </div>
+                                    {!isSyncing && (
+                                        <button
+                                            onClick={() => setIsSyncModalOpen(false)}
+                                            className="p-1.5 rounded-lg text-text-soft hover:bg-neutral-100 hover:text-ink transition-colors"
+                                        >
+                                            <FaTimes className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="space-y-4 mb-6">
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-text-soft mb-1.5">
+                                            Source Scrape URL / Link
+                                        </label>
+                                        <div className="relative">
+                                            <FaLink className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-text-soft" />
+                                            <input
+                                                type="url"
+                                                value={syncUrl}
+                                                onChange={(e) => setSyncUrl(e.target.value)}
+                                                disabled={isSyncing}
+                                                placeholder="https://shopbasebd.com/store/products/all"
+                                                className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-line focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none disabled:bg-neutral-100 font-mono"
+                                            />
+                                        </div>
+                                        <p className="text-[11px] text-text-soft mt-1.5">
+                                            Default: <code className="bg-neutral-100 px-1 py-0.5 rounded text-ink">https://shopbasebd.com/store/products/all</code> (or specific category link)
+                                        </p>
+                                    </div>
+
+                                    {syncStatus && (
+                                        <div className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                                            syncStatus.startsWith('Success') || syncStatus.startsWith('Completed')
+                                                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                                : syncStatus.startsWith('Error')
+                                                    ? 'bg-red-50 text-red-800 border border-red-200'
+                                                    : 'bg-blue-50 text-blue-800 border border-blue-200'
+                                        }`}>
+                                            {isSyncing && <FaSyncAlt className="h-3.5 w-3.5 animate-spin shrink-0 text-emerald-600" />}
+                                            <span>{syncStatus}</span>
+                                        </div>
+                                    )}
+
+                                    <div className="p-3.5 bg-neutral-50 rounded-xl text-xs text-text-soft space-y-1">
+                                        <div className="font-semibold text-ink">Auto-Sync Features:</div>
+                                        <div>&bull; Auto-detects high-resolution images (_L_ 640px-1448px)</div>
+                                        <div>&bull; Extracts accurate colors and sizes (no 'As Shown in Image')</div>
+                                        <div>&bull; Assigns authentic brands according to product category</div>
+                                        <div>&bull; Keeps highest profit sell prices for maximum return</div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-end gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSyncModalOpen(false)}
+                                        disabled={isSyncing}
+                                        className="px-4 py-2.5 rounded-xl border border-line text-sm font-semibold text-ink hover:bg-neutral-100 disabled:opacity-50 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleAutoSync}
+                                        disabled={isSyncing || !syncUrl.trim()}
+                                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-md hover:shadow-lg disabled:opacity-50 transition-all"
+                                    >
+                                        <FaSyncAlt className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                                        <span>{isSyncing ? 'Syncing Products...' : 'Start Auto Sync'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Quick Stats */}
                     <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">

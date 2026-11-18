@@ -11,6 +11,7 @@ import { withMarkup } from "@/Pages/utils/price";
 import WishlistButton from "@/Pages/buttons/WishListButton";
 import { parseVariantList } from "@/Pages/utils/parseVariants";
 import SelectOptionsDialog from "@/Components/SelectOptionsDialog";
+import { resolveProductImage, toHighResShopBase, handleProductImageError } from "@/Pages/utils/resolveProductImage";
 
 
 interface ProductCardProps {
@@ -48,18 +49,7 @@ const CATEGORY_GRADIENT: Record<string, [string, string]> = {
 const DEFAULT_GRADIENT: [string, string] = ["#FBFBF9", "#F2F2EE"];
 
 function getImageSrc(images: string): string {
-  if (!images) return "";
-
-  try {
-    const cleanString = images.startsWith('"') && images.endsWith('"') ? images.slice(1, -1) : images;
-    const parsed = JSON.parse(cleanString);
-    const imagePath = Array.isArray(parsed) ? parsed[0] : null;
-    if (!imagePath) return "";
-    return imagePath.startsWith("http") || imagePath.startsWith("/") ? imagePath : `/storage/${imagePath}`;
-  } catch {
-    const trimmed = images.trim();
-    return trimmed.startsWith("http") || trimmed.startsWith("/") ? trimmed : "";
-  }
+  return resolveProductImage(images, '/placeholder.jpg');
 }
 
 function calculateDiscount(regularPrice: number, salePrice: number): number {
@@ -99,11 +89,13 @@ const LazyProductImage = ({
   onError?: () => void;
 }) => (
   <img
-    src={src}
+    src={toHighResShopBase(src)}
     alt={alt}
     loading="lazy"
     decoding="async"
-    onError={onError}
+    onError={(e) => {
+      handleProductImageError(e);
+    }}
     className={`w-full h-full object-contain p-1.5 transition-transform duration-500 ease-out group-hover:scale-105 ${className || ''}`}
     style={{
       imageRendering: '-webkit-optimize-contrast',
@@ -190,11 +182,10 @@ const ProductCard = ({
             }
           }}
         >
-          {showImage ? (
+          {imageSrc ? (
             <LazyProductImage
               src={imageSrc}
               alt={`${product.name} - Product image`}
-              onError={handleImageError}
             />
           ) : (
             <div
@@ -272,9 +263,16 @@ const ProductCard = ({
         <div>
           {/* Category / Subcategory & In Stock Row (No Store Logo or Name) */}
           <div className="flex items-center justify-between gap-1 text-[10px] sm:text-[11px] text-[#767470] mb-1">
-            <span className="font-mono uppercase tracking-wider font-semibold text-marigold truncate max-w-[130px] sm:max-w-none">
-              {product.subcategory || product.category || 'Product'}
-            </span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              {product.brand && !/shopbase/i.test(product.brand) && (
+                <span className="font-mono uppercase tracking-wider font-bold text-ink/80 text-[9.5px] sm:text-[10px] bg-muted/60 px-1.5 py-0.5 rounded shrink-0">
+                  {product.brand}
+                </span>
+              )}
+              <span className="font-mono uppercase tracking-wider font-semibold text-marigold truncate">
+                {product.subcategory || product.category || 'Product'}
+              </span>
+            </div>
             {hasRating && averageRating > 0 ? (
               <div className="flex items-center gap-1 shrink-0">
                 <FaStar className="w-2.5 h-2.5 text-amber-400 fill-current" />

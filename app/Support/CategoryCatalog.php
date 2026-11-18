@@ -19,7 +19,7 @@ class CategoryCatalog
                 'image' => 'category_images/category_1.webp',
                 'description' => "Trending shirts, panjabi, winter hoodies, polo shirts, jeans, and casual wear for men.",
                 'subcategories' => ['T-Shirts', 'Polo Shirts', 'Panjabi & Pajama', 'Sweaters & Hoodies', 'Formal Shirts', 'Jeans & Pants'],
-                'brands' => ['Easy', 'Sailor', 'Richman', 'Cats Eye', 'Yellow'],
+                'brands' => ['Sailor', 'Richman', 'Cats Eye', 'Easy', 'Dorjibari', 'Yellow', 'Gentle Park', 'Lubnan', 'Aarong Man'],
             ],
             [
                 'id' => 'cat-2',
@@ -28,7 +28,7 @@ class CategoryCatalog
                 'image' => 'category_images/category_2.webp',
                 'description' => "Exclusive sarees, salwar kameez, kurti, sharara three-pieces, and western wear.",
                 'subcategories' => ['Salwar Kameez', 'Sarees', 'Kurtis & Tunics', 'Sharara & Gharara', 'Hijabs & Abayas', 'Western Tops'],
-                'brands' => ['Aarong', 'Dorjibari', 'Kay Kraft', 'Anjans', 'Le Reve'],
+                'brands' => ['Aarong', 'Le Reve', 'Dorjibari', 'Kay Kraft', 'Taaga', 'Anjans', 'Dhakai Jamdani', 'Tangail Tant', 'Noor Abaya'],
             ],
             [
                 'id' => 'cat-3',
@@ -37,7 +37,7 @@ class CategoryCatalog
                 'image' => 'category_images/category_3.webp',
                 'description' => "Comfortable and trendy clothing, footwear, and accessories for babies and kids.",
                 'subcategories' => ['Baby Boys (0-2Y)', 'Baby Girls (0-2Y)', 'Boys Clothing (3-12Y)', 'Girls Clothing (3-12Y)', 'Footwear'],
-                'brands' => ['Yellow Kids', 'Aarong Baby', 'Mothercare', 'Apex Kids'],
+                'brands' => ['Aarong Baby', 'Yellow Kids', 'Mothercare', 'Noor Baby', 'Little Angel', 'Apex Kids', 'Baby Joy', 'Chicco', 'Fisher-Price'],
             ],
             [
                 'id' => 'cat-4',
@@ -46,7 +46,7 @@ class CategoryCatalog
                 'image' => 'category_images/category_4.webp',
                 'description' => "Smartphones, earphones, smartwatches, power banks, computer peripherals, and gadgets.",
                 'subcategories' => ['Smartphones & Tablets', 'Earbuds & Headphones', 'Smartwatches', 'Power Banks & Chargers', 'Computer Accessories'],
-                'brands' => ['Xiaomi', 'Samsung', 'Realme', 'Anker', 'Baseus'],
+                'brands' => ['Xiaomi Eco', 'Remax', 'Baseus', 'Anker', 'Hoco', 'Joyroom', 'Hikvision'],
             ],
             [
                 'id' => 'cat-5',
@@ -55,7 +55,7 @@ class CategoryCatalog
                 'image' => 'category_images/category_5.webp',
                 'description' => "3D printed cotton bedsheets, kitchen appliances, home organizers, and decor.",
                 'subcategories' => ['Bedding & Linen', 'Cookware & Utensils', 'Home Decor', 'Storage & Organization', 'Lighting & Lamps'],
-                'brands' => ['Walton', 'Vision', 'RFL Houseware', 'Kiam'],
+                'brands' => ['RFL Houseware', 'Homestyle', 'Swan Comforter', 'Classic Comfort', 'BMW', 'Walton', 'Vision', 'Kiam'],
             ],
             [
                 'id' => 'cat-6',
@@ -64,7 +64,7 @@ class CategoryCatalog
                 'image' => 'category_images/category_6.webp',
                 'description' => "Authentic skincare, haircare, makeup, grooming kits, and perfumes.",
                 'subcategories' => ['Skin Care', 'Hair Care', 'Fragrances & Perfumes', 'Makeup & Cosmetics', 'Men Grooming'],
-                'brands' => ['Loreal', 'The Body Shop', 'Garnier', 'Nivea', 'Focallure'],
+                'brands' => ['Bioaqua', 'Focallure', 'Hair Charm', 'Korean Style', 'Beauty Queen', 'Nivea', 'Loreal', 'Garnier', 'The Body Shop'],
             ],
             [
                 'id' => 'cat-7',
@@ -73,7 +73,7 @@ class CategoryCatalog
                 'image' => 'category_images/category_7.webp',
                 'description' => "Analog and quartz watches, stainless steel jewelry, earrings, and fashion ornaments.",
                 'subcategories' => ['Men Watches', 'Women Watches', 'Fashion Jewelry', 'Traditional Ornaments', 'Watch Accessories'],
-                'brands' => ['Casio', 'Naviforce', 'Curren', 'Fastrack', 'Titan'],
+                'brands' => ['Curren', 'Naviforce', 'Casio', 'Skmei', 'Fastrack', 'LouisWill', 'Titan'],
             ],
             [
                 'id' => 'cat-8',
@@ -82,7 +82,7 @@ class CategoryCatalog
                 'image' => 'category_images/category_8.webp',
                 'description' => "Backpacks, laptop bags, travel trolley suitcases, women handbags, and wallets.",
                 'subcategories' => ['Backpacks', 'Laptop Bags', 'Women Handbags', 'Travel Luggage & Suitcases', 'Leather Wallets'],
-                'brands' => ['Wildcraft', 'President', 'LouisWill', 'Apex Leather'],
+                'brands' => ['Wildcraft', 'President', 'LouisWill', 'Apex Leather', 'Lavie', 'Bata Red Label', 'Swiss Gear', 'American Tourister'],
             ],
             [
                 'id' => 'cat-9',
