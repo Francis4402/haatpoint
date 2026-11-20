@@ -99,7 +99,7 @@
         {{-- Structured Data (Schema.org) for Search Engines (Pre-rendered for Googlebot) --}}
         <script type="application/ld+json">
         {!! json_encode([
-            '@context' => 'https://schema.org',
+            '@' . 'context' => 'https://schema.org',
             '@graph' => [
                 [
                     '@type' => 'WebSite',

@@ -658,7 +658,7 @@ const ProductDetailsPage = ({
                       </span>
                     </div>
                     <span className="text-text-soft text-sm">
-                      ({totalReviews} rating{totalReviews !== 1 ? 's' : ''} / {totalComments} comment{totalComments !== 1 ? 's' : ''})
+                      ({totalReviews} {totalReviews === 1 ? 'rating' : 'ratings'} / {totalComments} {totalComments === 1 ? 'comment' : 'comments'})
                     </span>
                   </div>
                 </div>
@@ -1231,7 +1231,7 @@ const ProductDetailsPage = ({
                           </span>
                         </div>
                         <div className="text-text-soft mb-6">
-                          Based on {totalReviews} rating{totalReviews !== 1 ? 's' : ''} and {totalComments} comment{totalComments !== 1 ? 's' : ''}
+                          Based on {totalReviews} {totalReviews === 1 ? 'rating' : 'ratings'} and {totalComments} {totalComments === 1 ? 'comment' : 'comments'}
                         </div>
 
                         {/* Rating Distribution */}
