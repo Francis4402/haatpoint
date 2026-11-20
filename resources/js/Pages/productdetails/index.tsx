@@ -46,7 +46,7 @@ import { toHighResShopBase, handleProductImageError } from "../utils/resolveProd
 
 interface ProductDetailsPageProps {
   product: Product;
-  store: storeType;
+  store?: storeType | null;
   auth: {
     user: any
   };
@@ -74,7 +74,7 @@ const getNumericRating = (rating: any): number => {
 
 const ProductDetailsPage = ({
   product,
-  store,
+  store: initialStore,
   auth,
   wishlist,
   comments: initialComments = [],
@@ -82,6 +82,22 @@ const ProductDetailsPage = ({
   reviewCount: initialReviewCount = 0,
   userReview = null
 }: ProductDetailsPageProps) => {
+  const store: storeType = initialStore || {
+    id: (product as any)?.store_id || '01a1e9a4-01f4-71ed-852d-f5511be70424',
+    name: 'HaatPoint Official Mall',
+    email: 'store@haatpoint.com',
+    logo: '',
+    address: 'Dhaka, Bangladesh',
+    mobile: '01319052507',
+    storetype: 'retail',
+    license: '',
+    national_id: '',
+    rating: 5,
+    review_count: '0',
+    is_active: true,
+    created_at: '',
+    updated_at: '',
+  };
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<'description' | 'reviews' | 'specifications'>('description');

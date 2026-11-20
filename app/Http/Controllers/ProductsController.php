@@ -307,7 +307,21 @@ class ProductsController extends Controller
             return redirect()->route('products.index', [], 301);
         }
 
-        $store = Store::where('id', $product->store_id)->first();
+        $store = Store::where('id', $product->store_id)->first() ?? Store::first();
+        if (!$store) {
+            $store = (object) [
+                'id' => (string) ($product->store_id ?? '01a1e9a4-01f4-71ed-852d-f5511be70424'),
+                'name' => 'HaatPoint Official Mall',
+                'rating' => 5.0,
+                'review_count' => '0',
+                'logo' => '',
+                'mobile' => '01319052507',
+                'address' => 'Dhaka, Bangladesh',
+                'storetype' => 'retail',
+                'email' => 'store@haatpoint.com',
+                'is_active' => 1,
+            ];
+        }
 
         $wishlist = Wishlist::where('user_id', Auth::id())
             ->paginate(12);
