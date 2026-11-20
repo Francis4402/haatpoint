@@ -98,47 +98,47 @@
 
         {{-- Structured Data (Schema.org) for Search Engines (Pre-rendered for Googlebot) --}}
         <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@graph": [
-                {
-                    "@type": "WebSite",
-                    "@id": "https://www.haatpoint.com/#website",
-                    "url": "https://www.haatpoint.com",
-                    "name": "HaatPoint",
-                    "alternateName": ["HaatPoint BD", "Haat Point", "হাটপয়েন্ট"],
-                    "description": "Online Shopping in Bangladesh | Multivendor Marketplace",
-                    "inLanguage": "en-US",
-                    "potentialAction": {
-                        "@type": "SearchAction",
-                        "target": {
-                            "@type": "EntryPoint",
-                            "urlTemplate": "https://www.haatpoint.com/products?search={search_term_string}"
-                        },
-                        "query-input": "required name=search_term_string"
-                    }
-                },
-                {
-                    "@type": "Organization",
-                    "@id": "https://www.haatpoint.com/#organization",
-                    "name": "HaatPoint",
-                    "url": "https://www.haatpoint.com",
-                    "logo": {
-                        "@type": "ImageObject",
-                        "url": "https://www.haatpoint.com/og-image.png",
-                        "width": 1200,
-                        "height": 630
-                    },
-                    "contactPoint": {
-                        "@type": "ContactPoint",
-                        "telephone": "+8801319052507",
-                        "contactType": "customer service",
-                        "areaServed": "BD",
-                        "availableLanguage": ["en", "bn"]
-                    }
-                }
-            ]
-        }
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                [
+                    '@type' => 'WebSite',
+                    '@id' => 'https://www.haatpoint.com/#website',
+                    'url' => 'https://www.haatpoint.com',
+                    'name' => 'HaatPoint',
+                    'alternateName' => ['HaatPoint BD', 'Haat Point', 'হাটপয়েন্ট'],
+                    'description' => 'Online Shopping in Bangladesh | Multivendor Marketplace',
+                    'inLanguage' => 'en-US',
+                    'potentialAction' => [
+                        '@type' => 'SearchAction',
+                        'target' => [
+                            '@type' => 'EntryPoint',
+                            'urlTemplate' => 'https://www.haatpoint.com/products?search={search_term_string}',
+                        ],
+                        'query-input' => 'required name=search_term_string',
+                    ],
+                ],
+                [
+                    '@type' => 'Organization',
+                    '@id' => 'https://www.haatpoint.com/#organization',
+                    'name' => 'HaatPoint',
+                    'url' => 'https://www.haatpoint.com',
+                    'logo' => [
+                        '@type' => 'ImageObject',
+                        'url' => 'https://www.haatpoint.com/og-image.png',
+                        'width' => 1200,
+                        'height' => 630,
+                    ],
+                    'contactPoint' => [
+                        '@type' => 'ContactPoint',
+                        'telephone' => '+8801319052507',
+                        'contactType' => 'customer service',
+                        'areaServed' => 'BD',
+                        'availableLanguage' => ['en', 'bn'],
+                    ],
+                ],
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
         </script>
 
         <!-- Scripts -->
