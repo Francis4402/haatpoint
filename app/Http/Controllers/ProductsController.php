@@ -292,7 +292,20 @@ class ProductsController extends Controller
         $product = Products::with('store')
             ->visible()
             ->where('slug', $slug)
-            ->firstOrFail();
+            ->first();
+
+        // 1. Fallback: If accessed via numeric or UUID id, redirect 301 to the canonical slug
+        if (!$product) {
+            $product = Products::with('store')->visible()->where('id', $slug)->first();
+            if ($product && !empty($product->slug)) {
+                return redirect()->route('products.details', $product->slug, 301);
+            }
+        }
+
+        // 2. If deleted or not found, 301 redirect to catalog root (/products) to prevent 404 penalties in Google Search Console
+        if (!$product) {
+            return redirect()->route('products.index', [], 301);
+        }
 
         $store = Store::where('id', $product->store_id)->first();
 
@@ -957,7 +970,7 @@ class ProductsController extends Controller
     }
 
     /**
-     * Auto-sync products from a scrape link (ShopBase).
+     * Auto-sync products from a partner catalog link.
      */
     public function syncFromLink(Request $request)
     {
@@ -968,7 +981,14 @@ class ProductsController extends Controller
 
         $url = trim((string) $request->input('url', ''));
         if (empty($url)) {
-            $url = env('SCRAPE_URLS', 'https://shopbasebd.com/store/products/all');
+            $url = env('SCRAPE_URLS', '');
+        }
+
+        if (empty($url)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please provide a valid catalog link to sync.',
+            ], 422);
         }
 
         try {

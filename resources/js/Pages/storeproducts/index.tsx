@@ -265,9 +265,9 @@ export default function StoreShow({
               <p className="text-xs text-text-soft">On orders over ৳1000</p>
             </div>
             <div className="bg-white rounded-xl shadow-hard-sm border border-line p-4 text-center hover:shadow-xl transition-all duration-300">
-              <FaUndo className="h-6 w-6 text-green-600 mx-auto mb-2" />
-              <p className="font-medium text-ink text-sm">Easy Returns</p>
-              <p className="text-xs text-text-soft">7 days return</p>
+              <FaUndo className="h-6 w-6 text-amber-600 mx-auto mb-2" />
+              <p className="font-medium text-ink text-sm">Damage Replacement</p>
+              <p className="text-xs text-text-soft">Same item if damaged on delivery</p>
             </div>
             <div className="bg-white rounded-xl shadow-hard-sm border border-line p-4 text-center hover:shadow-xl transition-all duration-300">
               <FaShieldAlt className="h-6 w-6 text-purple-600 mx-auto mb-2" />

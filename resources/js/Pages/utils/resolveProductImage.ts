@@ -3,17 +3,19 @@
  * Handles:
  *  - JSON arrays: '["https://...", "https://..."]'
  *  - JSON string: '"https://..."'
- *  - Direct external URLs: 'https://shopbasebd.com/...' or 'http://...'
+ *  - Direct external CDN URLs: 'https://...'
  *  - Root relative paths: '/images/...'
  *  - Storage paths: 'product_images/xxx.jpg' or 'storage/xxx.jpg'
  */
-export function toHighResShopBase(url: string | null | undefined): string {
+export function toHighResCatalogImage(url: string | null | undefined): string {
     if (!url || typeof url !== 'string') return url || '';
-    if (/shopbasebd\.com\/public\/uploads\/shop\/products\/\d+_S_\d+\.jpg/i.test(url)) {
+    if (/_S_(\d+)\.jpg/i.test(url)) {
         return url.replace(/_S_(\d+)\.jpg$/i, '_L_$1.jpeg');
     }
     return url;
 }
+
+export const toHighResShopBase = toHighResCatalogImage;
 
 export function handleProductImageError(e: React.SyntheticEvent<HTMLImageElement, Event>, fallback: string = '/placeholder.png') {
     const target = e.currentTarget;
@@ -68,9 +70,9 @@ export function resolveProductImage(images: string | null | undefined, fallback:
         return fallback;
     }
 
-    // 2. Direct absolute URLs (Auto-upgrade ShopBase _S_ thumbnails to high-res _L_ photos)
+    // 2. Direct absolute URLs (Auto-upgrade catalog thumbnails to high-res photos)
     if (target.startsWith('http://') || target.startsWith('https://') || target.startsWith('//')) {
-        return toHighResShopBase(target);
+        return toHighResCatalogImage(target);
     }
 
     // 3. Absolute root path

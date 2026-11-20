@@ -36,9 +36,9 @@ export default function CategoriesPage({ auth, categories = [], wishlist }: Cate
     return (
         <AppLayout user={auth.user} wishlist={wishlist}>
             <SeoHead
-                title="Explore All Categories | HaatPoint Bangladesh"
-                description="Browse all 24 product categories at HaatPoint: Men's Fashion, Women's Clothing, Electronics, Home Essentials, and more with cash on delivery across Bangladesh."
-                keywords="online categories, shopping categories, fashion, electronics, home goods, HaatPoint"
+                title="Explore All Categories - Online Shopping BD | HaatPoint"
+                description="Browse all 24 product categories at HaatPoint: Men's Fashion, Women's Clothing, Electronics, Gadgets, Home Essentials, Beauty, and more with cash on delivery across Bangladesh."
+                keywords="online categories, shopping departments bangladesh, fashion bd, electronics gadgets bd, home goods, beauty care bd, online shopping bangladesh, ক্যাটাগরি, হাটপয়েন্ট"
             />
 
             <div className="bg-[#FAF9F6] border-b border-[#E3E1DB] py-12 md:py-16">

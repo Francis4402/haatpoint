@@ -3,12 +3,14 @@ import ProductCard from "@/Components/ProductCard";
 import ProductShowcase from "./ProductShowcase";
 
 interface TrendingProductsProps {
-  trandingproduct: Product[];
+  trendingProducts?: Product[];
+  trandingproduct?: Product[];
   user: any;
 }
 
-const TrendingProducts = ({ trandingproduct, user }: TrendingProductsProps) => {
-  const products: Product[] = (trandingproduct ?? []).map((item) => ({
+const TrendingProducts = ({ trendingProducts, trandingproduct, user }: TrendingProductsProps) => {
+  const sourceProducts = trendingProducts ?? trandingproduct ?? [];
+  const products: Product[] = sourceProducts.map((item) => ({
     ...item,
     rating: typeof item.rating === "string" ? parseFloat(item.rating) : Number(item.rating) || 0,
   }));

@@ -867,12 +867,12 @@ const CartPage = ({ auth, wishlist }: CartPageProps) => {
                 </div>
 
                 <div className="bg-white rounded-lg shadow-sm p-4 border border-line flex items-center hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-100 flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
-                    <FaUndo className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-100 flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
+                    <FaUndo className="h-5 w-5 sm:h-6 sm:w-6 text-amber-700" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium text-ink text-sm sm:text-base">Easy Returns</p>
-                    <p className="text-xs sm:text-sm text-text-soft truncate">30-day return policy</p>
+                    <p className="font-medium text-ink text-sm sm:text-base">Damage Replacement</p>
+                    <p className="text-xs sm:text-sm text-text-soft truncate">Same item if damaged on delivery (No cash return)</p>
                   </div>
                 </div>
               </div>

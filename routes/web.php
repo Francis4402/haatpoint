@@ -307,7 +307,7 @@ Route::middleware(['auth:web,superadmin,admin,agent', 'blocked', 'subscription']
     ->name('contacts.toggle-star');
 
 
-    Route::get('/dashboard/analytics', [PageController::class, 'analystics'])->name('dashboard.analytics');
+    Route::get('/dashboard/analytics', [PageController::class, 'analytics'])->name('dashboard.analytics');
 
     Route::get('/dashboard/products/productform', [ProductsController::class, 'create'])->name('dashboard.createproduct');
 
@@ -374,7 +374,10 @@ Route::redirect('/pricing', '/products', 301)->name('pricing');
 
 Route::get('/categories', [PageController::class, 'categories'])->name('categories.index');
 
-Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/sitemap.xml', [SitemapController::class, 'sitemapIndex'])->name('sitemap');
+Route::get('/sitemap-main.xml', [SitemapController::class, 'index'])->name('sitemap.main');
+Route::get('/sitemap-products-{page}.xml', [SitemapController::class, 'productSitemap'])->where('page', '[0-9]+')->name('sitemap.products');
+Route::get('/sitemap-stores-{page}.xml', [SitemapController::class, 'storeSitemap'])->where('page', '[0-9]+')->name('sitemap.stores');
 
 Route::get('/ads.txt', function () {
     $path = public_path('ads.txt');

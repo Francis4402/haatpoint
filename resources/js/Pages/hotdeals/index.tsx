@@ -196,7 +196,18 @@ const HotDeals = ({ products, auth, wishlist }: HotDealsPageProps) => {
 
     return (
         <AppLayout user={auth?.user} wishlist={wishlist}>
-            <SeoHead />
+            <SeoHead
+                title="Hot Deals & Mega Discounts - Big Savings Online Shopping BD | HaatPoint"
+                description="Save big with exclusive discounts and flash deals on electronics, fashion, and home goods at HaatPoint Bangladesh. Fast nationwide cash on delivery."
+                keywords="hot deals bd, discount offers bangladesh, online shopping discounts, flash sale bd, cheap price shopping bd, promo deals online, mega discounts bangladesh, ডিসকাউন্ট অফার, হাটপয়েন্ট"
+                jsonLd={{
+                    '@context': 'https://schema.org',
+                    '@type': 'CollectionPage',
+                    name: 'Hot Deals at HaatPoint Bangladesh',
+                    description: 'Hand-picked mega deals and top discounts from verified vendors across Bangladesh.',
+                    url: 'https://www.haatpoint.com/hotdeals',
+                }}
+            />
 
             {/* Mobile Filter Drawer */}
             <div

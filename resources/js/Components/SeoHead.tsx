@@ -4,7 +4,9 @@ import { ReactNode } from 'react';
 const SITE_URL = 'https://www.haatpoint.com';
 const SITE_NAME = 'HaatPoint';
 const DEFAULT_DESCRIPTION =
-    'Shop thousands of products from trusted vendors across Bangladesh. Find electronics, fashion, home goods & more at HaatPoint.';
+    'Shop 12,000+ authentic products from trusted vendors across Bangladesh. Find electronics, fashion, home goods & more at HaatPoint.';
+const DEFAULT_KEYWORDS =
+    'online shopping Bangladesh, best online shopping site in Bangladesh, multivendor marketplace BD, cash on delivery online shopping, buy online BD, online shopping bd cash on delivery, ecommerce Bangladesh, online shop bd, electronics online shopping bd, smart watch price in bangladesh, tws earbuds bd, mens fashion bd, saree collection online bd, home decor bd, best price in bangladesh, HaatPoint, haatpoint.com, হাটপয়েন্ট, অনলাইন শপিং বাংলাদেশ, অনলাইনে কেনাকাটা, সেরা অনলাইন শপ, ক্যাশ অন ডেলিভারি';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 const DEFAULT_TWITTER_IMAGE = `${SITE_URL}/summary_large_image.jpg`;
 
@@ -26,6 +28,7 @@ interface JsonLd {
 interface SeoData {
     title?: string;
     description?: string;
+    keywords?: string;
     canonical?: string;
     robots?: string;
     ogType?: string;
@@ -75,6 +78,7 @@ export default function SeoHead({
 
     const finalTitle = title ?? seo?.title ?? SITE_NAME;
     const finalDescription = description ?? seo?.description ?? DEFAULT_DESCRIPTION;
+    const finalKeywords = keywords ?? seo?.keywords ?? DEFAULT_KEYWORDS;
     const finalRobots = robots ?? seo?.robots ?? 'index, follow';
     const finalCanonical = canonical ?? seo?.canonical ?? '';
     const finalOgType = ogType ?? seo?.ogType ?? 'website';
@@ -107,7 +111,7 @@ export default function SeoHead({
         <Head>
             <title>{finalTitle}</title>
             <meta name="description" content={finalDescription} />
-            {keywords ? <meta name="keywords" content={keywords} /> : null}
+            {finalKeywords ? <meta name="keywords" content={finalKeywords} /> : null}
             <meta name="robots" content={finalRobots} />
             {/* Empty on error responses: a 404 must not claim a canonical. */}
             {finalCanonical ? <link rel="canonical" href={finalCanonical} /> : null}

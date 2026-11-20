@@ -221,7 +221,7 @@ class SyncShopBaseProducts extends Command
                                     'quantity' => 100,
                                     'regular_price' => $regularPrice,
                                     'sale_price' => $salePrice > 0 ? $salePrice : null,
-                                    'description' => "প্রিমিয়াম কোয়ালিটির আসল পণ্য। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি সুবিধা এবং হোম ডেলিভারি পাওয়া যাবে।",
+                                    'description' => "Premium quality {$productName} designed for superior comfort and everyday reliability. 100% authentic product directly sourced from verified manufacturers with fast nationwide cash on delivery across Bangladesh.",
                                     'color' => $color,
                                     'size' => $size,
                                     'product_type' => $productType,

@@ -43,19 +43,18 @@ class SitemapController extends Controller
         $staticPages = [
             '/' => ['priority' => 1.0, 'frequency' => Url::CHANGE_FREQUENCY_DAILY],
             '/products' => ['priority' => 0.9, 'frequency' => Url::CHANGE_FREQUENCY_DAILY],
+            '/categories' => ['priority' => 0.9, 'frequency' => Url::CHANGE_FREQUENCY_WEEKLY],
             '/new-arrivals' => ['priority' => 0.9, 'frequency' => Url::CHANGE_FREQUENCY_DAILY],
             '/hotdeals' => ['priority' => 0.8, 'frequency' => Url::CHANGE_FREQUENCY_DAILY],
             '/stores' => ['priority' => 0.8, 'frequency' => Url::CHANGE_FREQUENCY_WEEKLY],
             '/contactus' => ['priority' => 0.5, 'frequency' => Url::CHANGE_FREQUENCY_MONTHLY],
             '/aboutus' => ['priority' => 0.5, 'frequency' => Url::CHANGE_FREQUENCY_MONTHLY],
             '/track-order' => ['priority' => 0.3, 'frequency' => Url::CHANGE_FREQUENCY_YEARLY],
+            '/privacy-policy' => ['priority' => 0.3, 'frequency' => Url::CHANGE_FREQUENCY_YEARLY],
+            '/terms-and-conditions' => ['priority' => 0.3, 'frequency' => Url::CHANGE_FREQUENCY_YEARLY],
         ];
 
         foreach ($staticPages as $path => $config) {
-            // No lastmod here on purpose. These pages have no database row to
-            // read a modification date from, and stamping Carbon::now() made
-            // every static URL look like it changed on every single crawl,
-            // which trains crawlers to ignore lastmod across the whole sitemap.
             $sitemap->add(
                 Url::create($this->absolute($path))
                     ->setPriority($config['priority'])
@@ -63,87 +62,51 @@ class SitemapController extends Controller
             );
         }
 
-        // Products with proper SEO attributes
-        Products::select('id', 'slug', 'updated_at', 'name')
-            ->visible()
-            ->where('inStock', true) // Only include in-stock products
-            ->chunk(200, function ($products) use ($sitemap) {
-                foreach ($products as $product) {
-                    $sitemap->add(
-                        $this->withLastModified(
-                            Url::create($this->absolute(route('products.details', $product->slug, false)))
-                                ->setPriority(0.8)
-                                ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY),
-                            $product->updated_at
-                        )
-                    );
-                }
-            });
-
-        // Stores with proper SEO attributes
-        Store::select('id', 'updated_at', 'name')
-            ->where('is_active', true)
-            ->chunk(200, function ($stores) use ($sitemap) {
-                foreach ($stores as $store) {
-                    $sitemap->add(
-                        $this->withLastModified(
-                            Url::create($this->absolute(route('stores.show', $store, false)))
-                                ->setPriority(0.7)
-                                ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY),
-                            $store->updated_at
-                        )
-                    );
-                }
-            });
-
-        // Faceted listings (/products?product_type=...) are deliberately left
-        // out. App\Http\Middleware\SeoMeta canonicalises every query string to
-        // the bare /products path, so listing them here would submit URLs that
-        // the site itself asks Google to drop.
-
         return $sitemap->toResponse(request());
     }
 
     public function sitemapIndex()
     {
-        // These entries describe sitemap files, so their lastmod is the newest
-        // catalogue edit we can actually observe, not the current clock.
         $newestProductEdit = Products::visible()->where('inStock', true)->max('updated_at');
         $newestStoreEdit = Store::where('is_active', true)->max('updated_at');
-        $today = now()->toDateString();
+        
+        $formatDate = function ($date) {
+            if (!$date) return now()->toDateString();
+            if ($date instanceof \Carbon\CarbonInterface) return $date->toDateString();
+            return substr((string) $date, 0, 10);
+        };
+
+        $lastMod = $formatDate($newestProductEdit ?? $newestStoreEdit);
 
         $sitemapIndex = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $sitemapIndex .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
-        // Main sitemap
+        // Main sitemap (Static pages, Categories, etc.)
         $sitemapIndex .= '  <sitemap>' . "\n";
-        $sitemapIndex .= '    <loc>' . $this->absolute('/sitemap.xml') . '</loc>' . "\n";
-        $sitemapIndex .= '    <lastmod>'
-            . ($newestProductEdit ?? $newestStoreEdit ?? $today)->toDateString() . '</lastmod>' . "\n";
+        $sitemapIndex .= '    <loc>' . $this->absolute('/sitemap-main.xml') . '</loc>' . "\n";
+        $sitemapIndex .= '    <lastmod>' . $lastMod . '</lastmod>' . "\n";
         $sitemapIndex .= '  </sitemap>' . "\n";
 
-        // Product sitemaps (paginated)
+        // Product sitemaps (paginated in chunks of 1000)
         $totalProducts = Products::visible()->where('inStock', true)->count();
         $perPage = 1000;
-        $totalPages = (int) ceil($totalProducts / $perPage);
+        $totalPages = (int) max(1, ceil($totalProducts / $perPage));
 
         for ($i = 1; $i <= $totalPages; $i++) {
             $sitemapIndex .= '  <sitemap>' . "\n";
             $sitemapIndex .= '    <loc>' . $this->absolute("/sitemap-products-{$i}.xml") . '</loc>' . "\n";
-            $sitemapIndex .= '    <lastmod>'
-                . ($newestProductEdit ?? $today)->toDateString() . '</lastmod>' . "\n";
+            $sitemapIndex .= '    <lastmod>' . $lastMod . '</lastmod>' . "\n";
             $sitemapIndex .= '  </sitemap>' . "\n";
         }
 
         // Store sitemaps
         $totalStores = Store::where('is_active', true)->count();
-        $totalStorePages = (int) ceil($totalStores / $perPage);
+        $totalStorePages = (int) max(1, ceil($totalStores / $perPage));
 
         for ($i = 1; $i <= $totalStorePages; $i++) {
             $sitemapIndex .= '  <sitemap>' . "\n";
             $sitemapIndex .= '    <loc>' . $this->absolute("/sitemap-stores-{$i}.xml") . '</loc>' . "\n";
-            $sitemapIndex .= '    <lastmod>'
-                . ($newestStoreEdit ?? $today)->toDateString() . '</lastmod>' . "\n";
+            $sitemapIndex .= '    <lastmod>' . $formatDate($newestStoreEdit) . '</lastmod>' . "\n";
             $sitemapIndex .= '  </sitemap>' . "\n";
         }
 
@@ -164,9 +127,10 @@ class SitemapController extends Controller
         $sitemap = Sitemap::create();
 
         foreach ($products as $product) {
+            $slug = !empty($product->slug) ? $product->slug : $product->id;
             $sitemap->add(
                 $this->withLastModified(
-                    Url::create($this->absolute(route('products.details', $product->slug, false)))
+                    Url::create($this->absolute('/products/' . $slug))
                         ->setPriority(0.8)
                         ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY),
                     $product->updated_at
@@ -180,15 +144,16 @@ class SitemapController extends Controller
     public function storeSitemap($page = 1)
     {
         $perPage = 1000;
-        $stores = Store::where('is_active', true)->select('id', 'updated_at', 'name')
+        $stores = Store::where('is_active', true)->select('id', 'name', 'updated_at')
             ->paginate($perPage, ['*'], 'page', $page);
 
         $sitemap = Sitemap::create();
 
         foreach ($stores as $store) {
+            $slug = Store::slugifyName($store->name);
             $sitemap->add(
                 $this->withLastModified(
-                    Url::create($this->absolute(route('stores.show', $store, false)))
+                    Url::create($this->absolute('/stores/' . $slug))
                         ->setPriority(0.7)
                         ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY),
                     $store->updated_at

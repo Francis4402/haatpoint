@@ -813,11 +813,11 @@ const Checkout = ({ auth, wishlist }: CheckoutProps) => {
                             I agree to the{' '}
                             <a
                               href={route('terms.and.conditions')}
-                              className="text-marigold hover:underline"
+                              className="text-marigold hover:underline font-semibold"
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              Terms &amp; Conditions
+                              Terms &amp; Conditions (Damage Replacement Only · No Cash Returns)
                             </a>{' '}
                             and confirm that the order information is correct
                           </label>

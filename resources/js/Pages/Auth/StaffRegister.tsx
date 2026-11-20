@@ -401,7 +401,7 @@ export default function StaffRegister({
                         ? 'border-red-500 focus:ring-red-200'
                         : 'border-ink/20 focus:ring-marigold focus:border-transparent'
                     }`}
-                    placeholder="e.g. rahim@gmail.com"
+                    placeholder="Enter email address"
                     required
                   />
                 </div>

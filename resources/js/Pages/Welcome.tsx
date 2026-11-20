@@ -83,7 +83,7 @@ export default function Welcome({
     const featuredStores = stores ?? [];
 
     const keyword =
-        "online shopping Bangladesh, multivendor marketplace, buy online, electronics, fashion, home goods, HaatPoint";
+        "online shopping Bangladesh, best online shopping site in Bangladesh, multivendor marketplace BD, cash on delivery online shopping, buy online BD, online shopping bd cash on delivery, ecommerce Bangladesh, online shop bd, electronics online shopping bd, smart watch price in bangladesh, tws earbuds bd, mens fashion bd, saree collection online bd, home decor bd, best price in bangladesh, trusted online shop bd, HaatPoint, haatpoint.com, হাটপয়েন্ট, অনলাইন শপিং বাংলাদেশ, অনলাইনে কেনাকাটা, সেরা অনলাইন শপ, ক্যাশ অন ডেলিভারি";
     const Url = "https://www.haatpoint.com/";
     const currentYear = new Date().getFullYear();
 
@@ -171,6 +171,7 @@ export default function Welcome({
 
                 {trending.length > 0 && (
                     <TrendingProducts
+                        trendingProducts={trending}
                         trandingproduct={trending}
                         user={auth.user}
                     />

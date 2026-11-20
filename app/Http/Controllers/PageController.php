@@ -81,7 +81,7 @@ class PageController extends Controller
         ]);
     }
 
-    public function analystics()
+    public function analytics()
     {
         $user = Auth::user();
         $userRole = $user->role;
@@ -296,6 +296,14 @@ class PageController extends Controller
             'metrics' => null,
             'userRole' => $userRole,
         ]);
+    }
+
+    /**
+     * Backward-compatible alias for analytics().
+     */
+    public function analystics()
+    {
+        return $this->analytics();
     }
 
     public function shipping()

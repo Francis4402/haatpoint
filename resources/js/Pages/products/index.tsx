@@ -538,16 +538,19 @@ const Products = ({ products, auth, wishlist, productRatings = {}, filters }: Pr
     return (
         <AppLayout user={auth?.user} wishlist={wishlist}>
             <SeoHead
+                title="All Products - Online Shopping in Bangladesh | Cash on Delivery | HaatPoint"
+                description="Shop 12,000+ authentic products at HaatPoint. Explore electronics, men & women's fashion, gadgets, home decor, beauty & daily essentials with cash on delivery across Bangladesh."
+                keywords="buy products online bd, online shopping bangladesh, electronics online bd, smart watch price bd, mens fashion bd, womens clothing bd, home decor bangladesh, cash on delivery shop, haatpoint products, অনলাইন শপিং বাংলাদেশ, কেনাকাটা"
                 jsonLd={{
                     '@context': 'https://schema.org',
                     '@type': 'ItemList',
-                    name: 'All Products',
+                    name: 'All Products at HaatPoint Bangladesh',
                     numberOfItems: totalProducts,
-                    itemListElement: products.data?.map((p, i) => ({
+                    itemListElement: products.data?.slice(0, 24).map((p, i) => ({
                         '@type': 'ListItem',
                         position: i + 1,
                         name: p.name,
-                        url: `https://www.haatpoint.com/products/${p.id}`,
+                        url: `https://www.haatpoint.com/products/${p.slug || p.id}`,
                     })),
                 }} />
 

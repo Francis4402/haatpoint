@@ -61,7 +61,7 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
     const [moderationFilter, setModerationFilter] = useState<'all' | 'active' | 'paused' | 'blocked'>('all');
     const [isDeleting, setIsDeleting] = useState(false);
     const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
-    const [syncUrl, setSyncUrl] = useState('https://shopbasebd.com/store/products/all');
+    const [syncUrl, setSyncUrl] = useState('');
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
@@ -880,7 +880,7 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                                 <div className="space-y-4 mb-6">
                                     <div>
                                         <label className="block text-xs font-semibold uppercase tracking-wider text-text-soft mb-1.5">
-                                            Source Scrape URL / Link
+                                            Partner Catalog URL / Link
                                         </label>
                                         <div className="relative">
                                             <FaLink className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-text-soft" />
@@ -889,12 +889,12 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                                                 value={syncUrl}
                                                 onChange={(e) => setSyncUrl(e.target.value)}
                                                 disabled={isSyncing}
-                                                placeholder="https://shopbasebd.com/store/products/all"
+                                                placeholder="Enter catalog URL or category link to sync..."
                                                 className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-line focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none disabled:bg-neutral-100 font-mono"
                                             />
                                         </div>
                                         <p className="text-[11px] text-text-soft mt-1.5">
-                                            Default: <code className="bg-neutral-100 px-1 py-0.5 rounded text-ink">https://shopbasebd.com/store/products/all</code> (or specific category link)
+                                            Leave blank to use system default configured on the server.
                                         </p>
                                     </div>
 
@@ -914,7 +914,7 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                                     <div className="p-3.5 bg-neutral-50 rounded-xl text-xs text-text-soft space-y-1">
                                         <div className="font-semibold text-ink">Auto-Sync Features:</div>
                                         <div>&bull; Auto-detects high-resolution images (_L_ 640px-1448px)</div>
-                                        <div>&bull; Extracts accurate colors and sizes (no 'As Shown in Image')</div>
+                                        <div>&bull; Extracts accurate colors and sizes</div>
                                         <div>&bull; Assigns authentic brands according to product category</div>
                                         <div>&bull; Keeps highest profit sell prices for maximum return</div>
                                     </div>
@@ -932,8 +932,8 @@ const Products = ({auth, products, store, filterStore, selectedStoreId}: dashboa
                                     <button
                                         type="button"
                                         onClick={handleAutoSync}
-                                        disabled={isSyncing || !syncUrl.trim()}
-                                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-md hover:shadow-lg disabled:opacity-50 transition-all"
+                                        disabled={isSyncing}
+                                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow-md hover:shadow-lg disabled:opacity-50 transition-all cursor-pointer"
                                     >
                                         <FaSyncAlt className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
                                         <span>{isSyncing ? 'Syncing Products...' : 'Start Auto Sync'}</span>

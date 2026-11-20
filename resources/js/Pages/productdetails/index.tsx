@@ -1030,10 +1030,10 @@ const ProductDetailsPage = ({
                     <div className="text-sm font-medium text-ink">Free Delivery</div>
                       <div className="text-xs text-text-soft">On orders over Tk 1000</div>
                   </div>
-                  <div className="flex flex-col items-center text-center p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors border border-green-200">
-                    <FaUndo className="w-6 h-6 text-green-600 mb-2" />
-                    <div className="text-sm font-medium text-ink">Easy Returns</div>
-                    <div className="text-xs text-text-soft">7 days return</div>
+                  <div className="flex flex-col items-center text-center p-3 bg-amber-50 rounded-xl hover:bg-amber-100 transition-colors border border-amber-200">
+                    <FaUndo className="w-6 h-6 text-amber-600 mb-2" />
+                    <div className="text-sm font-medium text-ink">Damage Replacement</div>
+                    <div className="text-xs text-text-soft">Same item if damaged on delivery (No cash return)</div>
                   </div>
                   <div className="flex flex-col items-center text-center p-3 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors border border-purple-200">
                     <FaShieldAlt className="w-6 h-6 text-purple-600 mb-2" />

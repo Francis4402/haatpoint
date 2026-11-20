@@ -7,12 +7,12 @@
         {{-- Per-page head values are computed server-side by App\Http\Middleware\SeoMeta.
              Hardcoding one canonical here told crawlers that every page on the site duplicated
              the home page, which is why nothing else could rank. --}}
-        <title>{{ $seo['title'] ?? 'HaatPoint' }}</title>
+        <title>{{ $seo['title'] ?? 'HaatPoint - Online Shopping in Bangladesh | Best Multivendor Marketplace' }}</title>
 
-        <meta name="description" content="{{ $seo['description'] ?? 'Shop thousands of products from trusted vendors across Bangladesh. Find electronics, fashion, home goods & more at HaatPoint.' }}">
-        <meta name="keywords" content="online shopping Bangladesh, multivendor marketplace, buy online, electronics, fashion, home goods, HaatPoint">
+        <meta name="description" content="{{ $seo['description'] ?? 'Shop 12,000+ authentic products at HaatPoint, Bangladesh\'s premier multivendor online marketplace. Find electronics, gadgets, men & women\'s fashion, lifestyle, beauty & home decor with cash on delivery & nationwide fast delivery.' }}">
+        <meta name="keywords" content="{{ $seo['keywords'] ?? 'online shopping Bangladesh, best online shopping site in Bangladesh, multivendor marketplace BD, cash on delivery online shopping, buy online BD, online shopping bd cash on delivery, ecommerce Bangladesh, online shop bd, electronics online shopping bd, smart watch price in bangladesh, tws earbuds bd, mens fashion bd, saree collection online bd, home decor bd, best price in bangladesh, trusted online shop bd, HaatPoint, haatpoint.com, হাটপয়েন্ট, অনলাইন শপিং বাংলাদেশ, অনলাইনে কেনাকাটা, সেরা অনলাইন শপ, ক্যাশ অন ডেলিভারি' }}">
         <meta name="robots" content="{{ $seo['robots'] ?? 'index, follow' }}">
-        <meta http-equiv="Content-Language" content="en">
+        <meta http-equiv="Content-Language" content="en, bn">
 
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
         <link rel="manifest" href="/build/manifest.json">
@@ -95,6 +95,51 @@
 
         <!-- Google reCAPTCHA Enterprise -->
         <script src="https://www.google.com/recaptcha/enterprise.js?onload=__onRecaptchaLoaded&render=explicit" async defer></script>
+
+        {{-- Structured Data (Schema.org) for Search Engines (Pre-rendered for Googlebot) --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "WebSite",
+                    "@id": "https://www.haatpoint.com/#website",
+                    "url": "https://www.haatpoint.com",
+                    "name": "HaatPoint",
+                    "alternateName": ["HaatPoint BD", "Haat Point", "হাটপয়েন্ট"],
+                    "description": "Online Shopping in Bangladesh | Multivendor Marketplace",
+                    "inLanguage": "en-US",
+                    "potentialAction": {
+                        "@type": "SearchAction",
+                        "target": {
+                            "@type": "EntryPoint",
+                            "urlTemplate": "https://www.haatpoint.com/products?search={search_term_string}"
+                        },
+                        "query-input": "required name=search_term_string"
+                    }
+                },
+                {
+                    "@type": "Organization",
+                    "@id": "https://www.haatpoint.com/#organization",
+                    "name": "HaatPoint",
+                    "url": "https://www.haatpoint.com",
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://www.haatpoint.com/og-image.png",
+                        "width": 1200,
+                        "height": 630
+                    },
+                    "contactPoint": {
+                        "@type": "ContactPoint",
+                        "telephone": "+8801319052507",
+                        "contactType": "customer service",
+                        "areaServed": "BD",
+                        "availableLanguage": ["en", "bn"]
+                    }
+                }
+            ]
+        }
+        </script>
 
         <!-- Scripts -->
         @routes

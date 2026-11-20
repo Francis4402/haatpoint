@@ -101,12 +101,14 @@ const NewArrivals = ({
   return (
     <AppLayout user={auth?.user} wishlist={wishlist}>
       <SeoHead
-        keywords="new arrivals, newest products, latest products, fresh arrivals, just landed"
+        title="New Arrivals - Latest Products & Gadgets in Bangladesh | HaatPoint"
+        description="Discover the newest products freshly listed by verified local vendors across Bangladesh. Get the latest fashion, electronics, gadgets & trending items."
+        keywords="new arrivals bd, latest gadgets bangladesh, new fashion collection bd, trending products bd, newly launched items, buy new arrivals online, নতুন কালেকশন, হাটপয়েন্ট"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'CollectionPage',
-          name: 'New Arrivals',
-          description: 'The newest products listed on HaatPoint.',
+          name: 'New Arrivals at HaatPoint Bangladesh',
+          description: 'The newest products listed on HaatPoint by verified vendors across Bangladesh.',
           url: 'https://www.haatpoint.com/new-arrivals',
         }}
       />

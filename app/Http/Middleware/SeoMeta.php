@@ -26,8 +26,13 @@ class SeoMeta
 
     public const SITE_NAME = 'HaatPoint';
 
+    public const DEFAULT_TITLE = 'HaatPoint - Online Shopping in Bangladesh | Best Multivendor Marketplace | অনলাইন শপিং';
+
     public const DEFAULT_DESCRIPTION =
-        'Shop thousands of products from trusted vendors across Bangladesh. Find electronics, fashion, home goods & more at HaatPoint.';
+        'Shop 12,000+ authentic products at HaatPoint, Bangladesh\'s premier multivendor online marketplace. Find electronics, gadgets, men & women\'s fashion, lifestyle, beauty & home decor with cash on delivery & nationwide fast delivery.';
+
+    public const DEFAULT_KEYWORDS =
+        'online shopping Bangladesh, best online shopping site in Bangladesh, multivendor marketplace BD, cash on delivery online shopping, buy online BD, online shopping bd cash on delivery, ecommerce Bangladesh, online shop bd, electronics online shopping bd, smart watch price in bangladesh, tws earbuds bd, mens fashion bd, saree collection online bd, home decor bd, best price in bangladesh, trusted online shop bd, HaatPoint, haatpoint.com, হাটপয়েন্ট, অনলাইন শপিং বাংলাদেশ, অনলাইনে কেনাকাটা, সেরা অনলাইন শপ, ক্যাশ অন ডেলিভারি';
 
     /**
      * Title and description overrides per route name. A page missing from this
@@ -36,65 +41,80 @@ class SeoMeta
      */
     private const PAGES = [
         'products.index' => [
-            'title' => 'All Products',
-            'description' => 'Browse every product available on HaatPoint, from electronics and fashion to home goods and groceries, sold by verified local vendors.',
+            'title' => 'All Products - Buy Online in Bangladesh | Cash on Delivery | HaatPoint',
+            'description' => 'Explore 12,000+ genuine products at HaatPoint Bangladesh. Browse electronics, gadgets, men\'s & women\'s fashion, home essentials, beauty & daily lifestyle products from verified local sellers.',
+            'keywords' => 'buy products online bd, online shopping bangladesh, electronics online bd, smart watch price bd, mens fashion bd, womens clothing bd, home decor bangladesh, cash on delivery shop, haatpoint products, অনলাইন শপিং বাংলাদেশ',
         ],
         'products.newarrivals' => [
-            'title' => 'New Arrivals',
-            'description' => 'The newest products added to HaatPoint, freshly listed by our verified local vendors across Bangladesh.',
+            'title' => 'New Arrivals - Latest Products & Gadgets in Bangladesh | HaatPoint',
+            'description' => 'Discover the newest arrivals on HaatPoint, freshly listed by verified local vendors across Bangladesh. Grab the latest fashion trends, smart gadgets, electronics & home innovations.',
+            'keywords' => 'new arrivals bd, latest gadgets bangladesh, new fashion collection bd, trending products bd, newly launched items, buy new arrivals online, নতুন কালেকশন',
         ],
         'products.hotdeals' => [
-            'title' => 'Hot Deals',
-            'description' => 'Shop the biggest discounts on HaatPoint. Hand-picked deals from verified vendors across Bangladesh.',
+            'title' => 'Hot Deals & Mega Discounts - Big Savings Online Shopping BD | HaatPoint',
+            'description' => 'Save big with hot deals, flash sales & exclusive discounts on HaatPoint Bangladesh. Shop electronics, fashion, lifestyle & home goods at unbeatable prices with cash on delivery.',
+            'keywords' => 'hot deals bd, discount offers bangladesh, online shopping discounts, flash sale bd, cheap price shopping bd, promo deals online, mega discounts bangladesh, ডিসকাউন্ট অফার, হাটপয়েন্ট',
+        ],
+        'categories.index' => [
+            'title' => 'Explore All Product Categories | HaatPoint Bangladesh',
+            'description' => 'Browse all 24 product departments on HaatPoint: Electronics, Smart Gadgets, Men\'s Fashion, Women\'s Clothing, Home & Living, Beauty & Personal Care with cash on delivery.',
+            'keywords' => 'product categories bd, online shopping departments, electronics categories, fashion collection, home living, beauty products bd, haatpoint categories, ক্যাটাগরি',
         ],
         'stores.index' => [
-            'title' => 'Stores',
-            'description' => 'Discover the shops on HaatPoint and browse everything each local vendor sells.',
+            'title' => 'Browse Verified Online Stores & Local Vendors in Bangladesh | HaatPoint',
+            'description' => 'Discover verified shops, brand outlets & trusted local merchants on HaatPoint. Buy directly from reliable Bangladesh vendors with fast door-to-door delivery.',
+            'keywords' => 'online stores bangladesh, verified vendors bd, trusted sellers bd, multivendor stores, merchant shops bd, local shop online, ভেরিফাইড শপ',
         ],
         'aboutus.index' => [
-            'title' => 'About Us',
-            'description' => 'HaatPoint connects local vendors with shoppers across Bangladesh, with no middlemen on everyday goods.',
+            'title' => 'About Us - Bangladesh\'s Trusted Multivendor Marketplace | HaatPoint',
+            'description' => 'Learn how HaatPoint connects verified Bangladeshi merchants with millions of nationwide shoppers, offering fair prices, authentic products, and zero middlemen.',
+            'keywords' => 'about haatpoint, bangladesh ecommerce company, trusted online marketplace, online shopping platform bd, আমাদের সম্পর্কে',
         ],
         'contact.index' => [
-            'title' => 'Contact Us',
-            'description' => 'Get in touch with the HaatPoint team. Send us a message and we will get back to you.',
+            'title' => 'Contact Us & Customer Support | HaatPoint Bangladesh',
+            'description' => 'Get in touch with HaatPoint support. Call +8801319052507, message via WhatsApp, or submit a message through our support portal for order tracking and customer service.',
+            'keywords' => 'haatpoint contact, customer care bd, haatpoint helpline, ecommerce support bangladesh, track order contact, যোগাযোগ',
         ],
         'trackorder.index' => [
-            'title' => 'Track Your Order',
-            'description' => 'Check the current status of your HaatPoint order using your order number.',
+            'title' => 'Track Your Order - Real-Time Parcel Tracking | HaatPoint',
+            'description' => 'Track the current delivery status of your HaatPoint parcel across Bangladesh. Enter your order number for real-time Pathao courier tracking.',
+            'keywords' => 'track order bd, parcel tracking bangladesh, check order status, delivery status haatpoint, pathao courier tracking, অর্ডার ট্র্যাকিং',
         ],
         'privacy.policy' => [
-            'title' => 'Privacy Policy',
-            'description' => 'How HaatPoint collects, uses and protects your personal information.',
+            'title' => 'Privacy Policy | HaatPoint Bangladesh',
+            'description' => 'How HaatPoint collects, safeguards, and respects your personal information and privacy rights.',
+            'keywords' => 'privacy policy haatpoint, data security, ecommerce privacy',
         ],
         'terms.and.conditions' => [
-            'title' => 'Terms and Conditions',
-            'description' => 'The terms that apply when you buy from or sell on HaatPoint.',
+            'title' => 'Terms and Conditions | HaatPoint Bangladesh',
+            'description' => 'Terms of service, shipping terms, and damage replacement guarantee for shopping on HaatPoint.',
+            'keywords' => 'terms and conditions haatpoint, return policy, terms of service',
         ],
         // Not indexable, but still deserve their own tab title.
         'login' => [
-            'title' => 'Login',
+            'title' => 'Login | HaatPoint',
             'description' => 'Log in to your HaatPoint account to track orders, manage your wishlist and check out faster.',
         ],
         'register' => [
-            'title' => 'Create an Account',
-            'description' => 'Create a free HaatPoint account to shop, sell, or track your orders.',
+            'title' => 'Create a Free Account | HaatPoint',
+            'description' => 'Create a free HaatPoint account to shop, sell, or track your orders across Bangladesh.',
         ],
         'password.request' => [
-            'title' => 'Forgot Password',
+            'title' => 'Forgot Password | HaatPoint',
             'description' => 'Reset the password on your HaatPoint account.',
         ],
         'cart.index' => [
-            'title' => 'Shopping Cart',
+            'title' => 'Shopping Cart | HaatPoint',
             'description' => 'Review the items in your HaatPoint cart before you check out.',
         ],
         'wishlist.index' => [
-            'title' => 'My Wishlist',
+            'title' => 'My Wishlist | HaatPoint',
             'description' => 'The products you saved on HaatPoint.',
         ],
         'sell' => [
-            'title' => 'Become an Agent & Sell Products',
-            'description' => 'Open a free store on HaatPoint or upgrade to Pro with 7% sales commission, boosted product visibility, and unlimited listings across Bangladesh.',
+            'title' => 'Become a Seller - Open Your Free Store in Bangladesh | HaatPoint',
+            'description' => 'Open your free store on HaatPoint or upgrade to Pro with 7% sales commission, boosted product visibility, and reach nationwide customers across Bangladesh.',
+            'keywords' => 'sell online bangladesh, become a seller bd, open online store bd, ecommerce seller center bangladesh, online business bd, sell products on haatpoint, সেলার হোন',
         ],
     ];
 
@@ -163,6 +183,7 @@ class SeoMeta
         return [
             'title' => $title,
             'description' => $description,
+            'keywords' => $extra['keywords'] ?? (isset(self::PAGES[$routeName]['keywords']) ? self::PAGES[$routeName]['keywords'] : self::DEFAULT_KEYWORDS),
             'canonical' => $this->canonicalFor($request),
             'robots' => $this->robotsFor($request, $routeName),
             'ogType' => $ogType,
@@ -210,11 +231,11 @@ class SeoMeta
     private function contentFor(Request $request, ?string $routeName): array
     {
         $defaults = [
-            self::SITE_NAME . " - Bangladesh's Premier Marketplace",
+            self::DEFAULT_TITLE,
             self::DEFAULT_DESCRIPTION,
             'website',
             self::SITE_URL . '/og-image.png',
-            [],
+            ['keywords' => self::DEFAULT_KEYWORDS],
         ];
 
         if ($routeName === 'products.details') {
@@ -227,11 +248,11 @@ class SeoMeta
 
         if (isset(self::PAGES[$routeName])) {
             return [
-                self::PAGES[$routeName]['title'] . ' | ' . self::SITE_NAME,
+                self::PAGES[$routeName]['title'],
                 self::PAGES[$routeName]['description'],
                 'website',
                 $defaults[3],
-                [],
+                ['keywords' => self::PAGES[$routeName]['keywords'] ?? self::DEFAULT_KEYWORDS],
             ];
         }
 
@@ -256,23 +277,28 @@ class SeoMeta
         $product = Products::query()
             ->visible()
             ->where('slug', $slug)
-            ->first(['name', 'description', 'regular_price', 'sale_price', 'images', 'category']);
+            ->first(['name', 'description', 'regular_price', 'sale_price', 'images', 'category', 'brand']);
 
         if (! $product) {
             return $defaults;
         }
 
         $description = $this->trimDescription($product->description)
-            ?: 'Buy ' . $product->name . ' on HaatPoint from verified local vendors across Bangladesh.';
+            ?: 'Buy ' . $product->name . ' online at best price in Bangladesh on HaatPoint. Cash on delivery available.';
 
         $price = $product->sale_price ?: $product->regular_price;
+        $brandText = $product->brand ? "{$product->brand}, " : '';
+        $productKeywords = "{$product->name}, {$product->name} price in bangladesh, buy {$product->name} online, {$product->category}, {$brandText}online shopping bd, haatpoint";
 
         return [
-            $product->name . ' | ' . self::SITE_NAME,
+            $product->name . ' - Price in Bangladesh | ' . self::SITE_NAME,
             $description,
             'product',
             $this->productImage($product->images) ?? $defaults[3],
-            ['price' => $price ? (string) $price : null],
+            [
+                'price' => $price ? (string) $price : null,
+                'keywords' => $productKeywords,
+            ],
         ];
     }
 
@@ -311,13 +337,15 @@ class SeoMeta
         }
 
         return [
-            $store->name . ' | ' . self::SITE_NAME,
-            'Shop ' . $store->name . ' on HaatPoint. Browse this local vendor’s products, offers and customer reviews.',
+            $store->name . ' - Verified Store & Products | ' . self::SITE_NAME,
+            'Shop authentic products from ' . $store->name . ' on HaatPoint. Browse this verified vendor’s catalog, deals and customer ratings across Bangladesh.',
             'website',
             $store->logo
                 ? self::SITE_URL . '/storage/' . ltrim($store->logo, '/')
                 : $defaults[3],
-            [],
+            [
+                'keywords' => "{$store->name}, {$store->name} online shop, {$store->name} store bangladesh, verified sellers bd, buy from {$store->name}, haatpoint",
+            ],
         ];
     }
 

@@ -65,34 +65,34 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
             id: 'exchange-policy',
             category: 'exchange',
             icon: <FaExchangeAlt className="w-5 h-5" />,
-            title: 'No-Return & Product Exchange Policy (Strict Policy)',
-            badge: 'Crucial Policy',
+            title: 'No Cash Return & Damage-on-Delivery Replacement Policy',
+            badge: 'Strict Policy',
             highlight: true,
             content: [
                 {
                     subtitle: '1. Strictly No Cash Returns / No Cash Refunds',
-                    text: 'All sales on HaatPoint are strictly non-returnable for cash, bKash, mobile banking, or bank refunds once the package is delivered and accepted by the customer. We do not issue cash refunds under any standard circumstance. We encourage buyers to carefully inspect their orders before purchasing.',
-                    note: 'Please verify sizes, dimensions, colors, and product specifications prior to placing an order.'
+                    text: 'All sales on HaatPoint are strictly non-refundable and non-returnable for cash, bKash, Nagad, mobile banking, or bank transfers once an order is delivered and received. We do not issue cash refunds under any circumstance.',
+                    note: 'Please verify all product images, sizes, colors, and descriptions carefully before placing an order.'
                 },
                 {
-                    subtitle: '2. 7-Day Product Exchange Guarantee',
-                    text: 'While cash returns are not permitted, we fully protect our customers with a generous 7-Day Product Exchange Policy. If you receive an item with a sizing mismatch, color discrepancy, manufacturing defect, or an incorrect item, you can request an exchange within 7 calendar days of delivery.'
+                    subtitle: '2. Product Change Only for the Exact Same Product',
+                    text: 'We exclusively provide a product change / replacement for the exact same product if and only if the item was damaged when delivered. We do not accept exchanges for different products, different categories, or different models.'
                 },
                 {
-                    subtitle: '3. Mandatory Product Condition for Exchange',
-                    text: 'To be eligible for an exchange, the product must be 100% in its original received condition: brand new, unused, unwashed, unworn, odor-free, with all original price tags, barcode labels, dust covers, warranty cards, poly/box packaging, and the original invoice delivery slip intact.'
+                    subtitle: '3. Condition: Product Must Be Damaged When Delivered',
+                    text: 'To be eligible for a replacement, the product must have arrived damaged during delivery/transit. You must inspect the package at the time of delivery in front of the courier rider and report any physical damage, breakage, or tear within 24 hours of delivery.'
                 },
                 {
-                    subtitle: '4. Exchange Shipping & Delivery Fees',
-                    text: 'If the exchange is due to a seller mistake (wrong product, defective item, or damaged parcel), the seller/platform covers 100% of the courier fees. If the exchange is due to personal size preference or change of mind, the customer is responsible for both return delivery (৳70 inside Dhaka / ৳130 outside Dhaka) and re-shipment costs.'
+                    subtitle: '4. Mandatory Photo & Unboxing Video Evidence',
+                    text: 'To verify that the product was damaged upon delivery, the customer must provide clear photographs and an unboxing video showing the damaged product alongside the courier delivery parcel label with the tracking barcode.'
                 },
                 {
-                    subtitle: '5. Non-Exchangeable Categories (Hygiene & Health)',
-                    text: 'Due to health, hygiene, and consumer safety regulations in Bangladesh, the following items cannot be exchanged under any circumstances: underwear, innerwear, lingerie, swimwear, cosmetics, opened skincare/fragrances, personal grooming accessories, perishable food items, and items explicitly labeled as "Clearance / Final Sale".'
+                    subtitle: '5. 100% Free Replacement Delivery for Damaged Items',
+                    text: 'When damage upon delivery is verified, HaatPoint and the seller will dispatch a brand-new unit of the exact same product to your delivery address with 100% free delivery. The customer will not bear any extra courier or replacement charges.'
                 },
                 {
-                    subtitle: '6. Out of Stock Replacements & Store Credit',
-                    text: 'If your desired replacement size or color is out of stock with the original seller, you will be issued a Store Exchange Voucher of equivalent value, or you may choose an alternative item of equal or higher value from the same store (paying any price difference).'
+                    subtitle: '6. Ineligible Requests (No Change of Mind)',
+                    text: 'No product returns, refunds, or exchanges will be accepted for: (a) change of mind or personal dislike, (b) sizing or color change after receiving an undamaged parcel, (c) items damaged after delivery due to customer use, washing, or wear, (d) claims submitted without courier delivery damage proof.'
                 }
             ]
         },
@@ -214,24 +214,24 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
 
     const exchangeFaqs = [
         {
-            q: "Can I return an item and get a cash / bKash refund?",
-            a: "No. HaatPoint strictly operates on an Exchange-Only policy. We do not provide cash, bKash, or bank refunds once a product has been delivered and received. However, you can freely exchange the product for another size, color, or alternative item within 7 days."
+            q: "Can I return an item and get a cash or bKash refund?",
+            a: "No. HaatPoint strictly operates on a No Cash Return policy. We do not provide cash, bKash, Nagad, or bank refunds under any circumstance."
         },
         {
-            q: "How many days do I have to request a product exchange?",
-            a: "You have up to 7 calendar days from the delivery date to contact customer care or your seller and initiate an exchange request."
+            q: "Can I change an item for a different product or color?",
+            a: "No. Product changes are only allowed for the exact same product, and only if the item arrived damaged when delivered."
         },
         {
-            q: "Who pays for the courier charges during an exchange?",
-            a: "If the exchange is due to a seller error (damaged item, manufacturing defect, or wrong product sent), the seller or HaatPoint covers 100% of the courier cost. If you are requesting an exchange for a different size or personal style preference, you will cover the courier fees (৳70 inside Dhaka / ৳130 outside Dhaka)."
+            q: "What should I do if my product was damaged when delivered?",
+            a: "Inspect your package upon delivery in the presence of the courier rider. If damaged, take clear photos and an unboxing video showing the damaged product and shipping label, and contact HaatPoint support within 24 hours. We will send you a brand-new replacement of the exact same product."
         },
         {
-            q: "What condition must the item be in for an exchange to be approved?",
-            a: "The item must be completely unworn, unwashed, unaltered, and packed in its original polybag/box with all original price tags, barcodes, and invoice delivery slips intact."
+            q: "Who pays for courier delivery for a damaged product replacement?",
+            a: "HaatPoint / the seller covers 100% of the courier costs for replacing products that were damaged on delivery. You do not pay any extra shipping charges."
         },
         {
-            q: "What happens if the replacement size I need is out of stock?",
-            a: "If the desired size or color is out of stock, you can select any alternative product of equal or higher value from the same seller, or receive a Store Exchange Credit to use anytime."
+            q: "Can I return or exchange an item if I change my mind?",
+            a: "No. We do not accept returns or exchanges for change of mind, personal disinterest, or sizing preference after receiving an undamaged delivery."
         }
     ];
 
@@ -271,10 +271,10 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
                             <Eyebrow>Transparency & Marketplace Standards</Eyebrow>
                         </div>
                         <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-extrabold text-ink tracking-tight mb-4">
-                            Terms of Service & <span className="text-marigold">Exchange Policy</span>
+                            Terms of Service & <span className="text-marigold">Return Policy</span>
                         </h1>
                         <p className="text-text-soft text-sm sm:text-base leading-relaxed">
-                            Welcome to HaatPoint. Please review our marketplace terms, vendor guidelines, and our clear <strong>Exchange-Only Policy (No Cash Returns)</strong> before shopping or selling on our platform.
+                            Welcome to HaatPoint. Please review our marketplace terms and our strict <strong>No Cash Return & Damage-on-Delivery Replacement Policy</strong> before shopping or selling on our platform.
                         </p>
                         <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-white border border-line rounded-full text-xs font-mono text-text-soft shadow-sm">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -297,14 +297,17 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
                                             <FaBan className="w-3 h-3" /> No Cash Returns
                                         </span>
                                         <span className="text-xs font-mono font-bold uppercase tracking-wider bg-emerald-600 text-white px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                                            <FaCheck className="w-3 h-3" /> 7-Day Exchange Guarantee
+                                            <FaCheck className="w-3 h-3" /> Same Product Change Only
+                                        </span>
+                                        <span className="text-xs font-mono font-bold uppercase tracking-wider bg-amber-600 text-white px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                                            <FaShieldAlt className="w-3 h-3" /> If Damaged On Delivery
                                         </span>
                                     </div>
                                     <h2 className="text-xl sm:text-2xl font-display font-extrabold text-ink">
-                                        Strictly No Returns · Product Exchange Only
+                                        Strictly No Cash Returns · Same Product Change If Damaged On Delivery
                                     </h2>
                                     <p className="text-sm text-ink/80 mt-1.5 leading-relaxed max-w-2xl">
-                                        HaatPoint does <strong>not provide cash or money refunds</strong> once an order is delivered and received. However, if there is a <strong>size mismatch, color issue, defect, or wrong product</strong>, you are entitled to a full <strong>Product Exchange within 7 days</strong> of delivery.
+                                        HaatPoint strictly operates on a <strong>No Cash Return</strong> policy. We do not provide cash, bKash, or bank refunds. If an item arrives <strong>damaged when delivered</strong>, you are entitled to a <strong>100% free product replacement for the exact same product</strong>.
                                     </p>
                                 </div>
                             </div>
@@ -314,7 +317,7 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
                                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 hover:bg-marigold text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shrink-0 hover:scale-105"
                             >
                                 <FaExchangeAlt className="w-3.5 h-3.5" />
-                                View Full Exchange Terms
+                                View Replacement Policy
                             </a>
                         </div>
                     </div>
@@ -323,13 +326,13 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
                     <div className="mb-12 bg-white border border-line rounded-3xl p-6 sm:p-8 shadow-hard-sm">
                         <div className="text-center max-w-xl mx-auto mb-8">
                             <span className="text-xs font-mono font-bold uppercase tracking-wider text-marigold-dark">
-                                Hassle-Free Process
+                                Clear 4-Step Process
                             </span>
                             <h3 className="text-xl sm:text-2xl font-display font-bold text-ink mt-1">
-                                How Product Exchange Works
+                                Damaged Product Replacement Process
                             </h3>
                             <p className="text-xs sm:text-sm text-text-soft mt-1">
-                                Follow these 4 simple steps to exchange your item within 7 days of delivery.
+                                Follow these 4 steps if your product arrived damaged upon delivery.
                             </p>
                         </div>
 
@@ -339,9 +342,9 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
                                     <div className="w-9 h-9 rounded-xl bg-marigold/15 text-marigold-dark font-mono font-bold text-sm flex items-center justify-center mb-3">
                                         01
                                     </div>
-                                    <h4 className="font-bold text-sm text-ink mb-1">Check Eligibility</h4>
+                                    <h4 className="font-bold text-sm text-ink mb-1">Inspect Upon Delivery</h4>
                                     <p className="text-xs text-text-soft leading-relaxed">
-                                        Confirm item is unworn, unwashed with original tags, labels, and packaging intact within 7 days.
+                                        Check parcel in front of the courier rider. If the item is damaged or broken, record photos and an unboxing video.
                                     </p>
                                 </div>
                                 <span className="text-[11px] font-mono text-marigold mt-3 font-semibold">Step 1 of 4</span>
@@ -352,9 +355,9 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
                                     <div className="w-9 h-9 rounded-xl bg-marigold/15 text-marigold-dark font-mono font-bold text-sm flex items-center justify-center mb-3">
                                         02
                                     </div>
-                                    <h4 className="font-bold text-sm text-ink mb-1">Notify Us / Vendor</h4>
+                                    <h4 className="font-bold text-sm text-ink mb-1">Report Within 24h</h4>
                                     <p className="text-xs text-text-soft leading-relaxed">
-                                        Contact our customer support or vendor with your Order ID, reason, and desired replacement size or color.
+                                        Notify HaatPoint support with your Order ID, clear damage photos, and the parcel shipping label with tracking code.
                                     </p>
                                 </div>
                                 <span className="text-[11px] font-mono text-marigold mt-3 font-semibold">Step 2 of 4</span>
@@ -365,9 +368,9 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
                                     <div className="w-9 h-9 rounded-xl bg-marigold/15 text-marigold-dark font-mono font-bold text-sm flex items-center justify-center mb-3">
                                         03
                                     </div>
-                                    <h4 className="font-bold text-sm text-ink mb-1">Courier Handover</h4>
+                                    <h4 className="font-bold text-sm text-ink mb-1">Damage Verification</h4>
                                     <p className="text-xs text-text-soft leading-relaxed">
-                                        Hand the safely packed item to the courier rider upon pickup. Seller inspects the item upon receipt.
+                                        Our support team verifies the delivery transit damage with the courier service and approves the same-product replacement.
                                     </p>
                                 </div>
                                 <span className="text-[11px] font-mono text-marigold mt-3 font-semibold">Step 3 of 4</span>
@@ -378,9 +381,9 @@ const TermsOfService = ({ auth, wishlist }: TermsOfServiceProps) => {
                                     <div className="w-9 h-9 rounded-xl bg-marigold/15 text-marigold-dark font-mono font-bold text-sm flex items-center justify-center mb-3">
                                         04
                                     </div>
-                                    <h4 className="font-bold text-sm text-ink mb-1">Receive Replacement</h4>
+                                    <h4 className="font-bold text-sm text-ink mb-1">Receive Same Product</h4>
                                     <p className="text-xs text-text-soft leading-relaxed">
-                                        The replacement size or item is promptly shipped and delivered straight to your doorstep.
+                                        A brand-new replacement of the exact same product is promptly shipped and delivered to you with 100% free delivery.
                                     </p>
                                 </div>
                                 <span className="text-[11px] font-mono text-emerald-600 mt-3 font-semibold">Completed</span>
