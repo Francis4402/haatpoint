@@ -9,6 +9,17 @@
  */
 export function toHighResCatalogImage(url: string | null | undefined): string {
     if (!url || typeof url !== 'string') return url || '';
+
+    // Brand protection: Mask supplier domain and route through HaatPoint proxy
+    if (url.includes('shopbasebd.com')) {
+        let clean = url;
+        if (/_S_(\d+)\.jpg/i.test(clean)) {
+            clean = clean.replace(/_S_(\d+)\.jpg$/i, '_L_$1.jpeg');
+        }
+        const filename = clean.split('/').pop()?.split('?')[0];
+        return `/product-media/${filename}`;
+    }
+
     if (/_S_(\d+)\.jpg/i.test(url)) {
         return url.replace(/_S_(\d+)\.jpg$/i, '_L_$1.jpeg');
     }

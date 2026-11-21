@@ -375,6 +375,13 @@ class SeoMeta
         }
 
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            if (str_contains($path, 'shopbasebd.com')) {
+                $filename = basename(parse_url($path, PHP_URL_PATH));
+                if (preg_match('/_S_(\d+)\.jpg$/i', $filename)) {
+                    $filename = preg_replace('/_S_(\d+)\.jpg$/i', '_L_$1.jpeg', $filename);
+                }
+                return self::SITE_URL . '/product-media/' . $filename;
+            }
             return $path;
         }
 

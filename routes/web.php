@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProductMediaController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReplayMessagesController;
@@ -378,6 +379,9 @@ Route::get('/sitemap.xml', [SitemapController::class, 'sitemapIndex'])->name('si
 Route::get('/sitemap-main.xml', [SitemapController::class, 'index'])->name('sitemap.main');
 Route::get('/sitemap-products-{page}.xml', [SitemapController::class, 'productSitemap'])->where('page', '[0-9]+')->name('sitemap.products');
 Route::get('/sitemap-stores-{page}.xml', [SitemapController::class, 'storeSitemap'])->where('page', '[0-9]+')->name('sitemap.stores');
+
+// Brand-protected, edge-cached product media proxy
+Route::get('/product-media/{filename}', [ProductMediaController::class, 'show'])->name('product.media');
 
 Route::get('/ads.txt', function () {
     $path = public_path('ads.txt');
